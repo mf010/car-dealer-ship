@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../helper/api';
 import type { Car, CreateCarDTO, UpdateCarDTO, CarFilters, ExpenseUpdateDTO } from '../models/Car';
 import type { PaginatedResponse } from '../models/Make';
 
@@ -11,34 +11,40 @@ export const carServices = {
     params.append('page', page.toString());
     
     if (filters) {
-      params.append('filters', JSON.stringify(filters));
+      // Send filters as individual query parameters instead of JSON string
+      if (filters.status) {
+        params.append('status', filters.status);
+      }
+      if (filters.car_model_id) {
+        params.append('car_model_id', filters.car_model_id.toString());
+      }
     }
     
-    const response = await axios.get<PaginatedResponse<Car>>(`${BASE_URL}?${params.toString()}`);
+    const response = await api.get<PaginatedResponse<Car>>(`${BASE_URL}?${params.toString()}`);
     return response.data;
   },
 
   // Create a new car
   createCar: async (carData: CreateCarDTO): Promise<Car> => {
-    const response = await axios.post<Car>(BASE_URL, carData);
+    const response = await api.post<Car>(BASE_URL, carData);
     return response.data;
   },
 
   // Get a single car by ID
   getCarById: async (id: number): Promise<Car> => {
-    const response = await axios.get<Car>(`${BASE_URL}/${id}`);
+    const response = await api.get<Car>(`${BASE_URL}/${id}`);
     return response.data;
   },
 
   // Update a car
   updateCar: async (id: number, carData: UpdateCarDTO): Promise<Car> => {
-    const response = await axios.put<Car>(`${BASE_URL}/${id}`, carData);
+    const response = await api.put<Car>(`${BASE_URL}/${id}`, carData);
     return response.data;
   },
 
   // Delete a car
   deleteCar: async (id: number): Promise<void> => {
-    await axios.delete(`${BASE_URL}/${id}`);
+    await api.delete(`${BASE_URL}/${id}`);
   },
 
   // Get all deleted cars with pagination and filtering
@@ -47,28 +53,34 @@ export const carServices = {
     params.append('page', page.toString());
     
     if (filters) {
-      params.append('filters', JSON.stringify(filters));
+      // Send filters as individual query parameters instead of JSON string
+      if (filters.status) {
+        params.append('status', filters.status);
+      }
+      if (filters.car_model_id) {
+        params.append('car_model_id', filters.car_model_id.toString());
+      }
     }
     
-    const response = await axios.get<PaginatedResponse<Car>>(`${BASE_URL}/deleted?${params.toString()}`);
+    const response = await api.get<PaginatedResponse<Car>>(`${BASE_URL}/deleted?${params.toString()}`);
     return response.data;
   },
 
   // Restore a deleted car
   restoreCar: async (id: number): Promise<Car> => {
-    const response = await axios.post<Car>(`${BASE_URL}/${id}/restore`);
+    const response = await api.post<Car>(`${BASE_URL}/${id}/restore`);
     return response.data;
   },
 
   // Add expense to car
   addExpenseToCar: async (id: number, data: ExpenseUpdateDTO): Promise<Car> => {
-    const response = await axios.post<Car>(`${BASE_URL}/${id}/add-expense`, data);
+    const response = await api.post<Car>(`${BASE_URL}/${id}/add-expense`, data);
     return response.data;
   },
 
   // Remove expense from car
   removeExpenseFromCar: async (id: number, data: ExpenseUpdateDTO): Promise<Car> => {
-    const response = await axios.post<Car>(`${BASE_URL}/${id}/remove-expense`, data);
+    const response = await api.post<Car>(`${BASE_URL}/${id}/remove-expense`, data);
     return response.data;
   }
 };

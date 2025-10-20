@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../helper/api';
 import type { CarModel, CreateCarModelDTO, UpdateCarModelDTO, CarModelFilters } from '../models/CarModel';
 import type { PaginatedResponse } from '../models/Make';
 
@@ -14,31 +14,31 @@ export const carModelServices = {
       params.append('filters', JSON.stringify(filters));
     }
     
-    const response = await axios.get<PaginatedResponse<CarModel>>(`${BASE_URL}?${params.toString()}`);
+    const response = await api.get<PaginatedResponse<CarModel>>(`${BASE_URL}?${params.toString()}`);
     return response.data;
   },
 
   // Create a new car model
   createCarModel: async (carModelData: CreateCarModelDTO): Promise<CarModel> => {
-    const response = await axios.post<CarModel>(BASE_URL, carModelData);
+    const response = await api.post<CarModel>(BASE_URL, carModelData);
     return response.data;
   },
 
   // Get a single car model by ID
   getCarModelById: async (id: number): Promise<CarModel> => {
-    const response = await axios.get<CarModel>(`${BASE_URL}/${id}`);
+    const response = await api.get<CarModel>(`${BASE_URL}/${id}`);
     return response.data;
   },
 
   // Update a car model
   updateCarModel: async (id: number, carModelData: UpdateCarModelDTO): Promise<CarModel> => {
-    const response = await axios.put<CarModel>(`${BASE_URL}/${id}`, carModelData);
+    const response = await api.put<CarModel>(`${BASE_URL}/${id}`, carModelData);
     return response.data;
   },
 
   // Delete a car model
   deleteCarModel: async (id: number): Promise<void> => {
-    await axios.delete(`${BASE_URL}/${id}`);
+    await api.delete(`${BASE_URL}/${id}`);
   },
 
   // Get all deleted car models with pagination and filtering
@@ -50,13 +50,13 @@ export const carModelServices = {
       params.append('filters', JSON.stringify(filters));
     }
     
-    const response = await axios.get<PaginatedResponse<CarModel>>(`${BASE_URL}/deleted?${params.toString()}`);
+    const response = await api.get<PaginatedResponse<CarModel>>(`${BASE_URL}/deleted?${params.toString()}`);
     return response.data;
   },
 
   // Restore a deleted car model
   restoreCarModel: async (id: number): Promise<CarModel> => {
-    const response = await axios.post<CarModel>(`${BASE_URL}/${id}/restore`);
+    const response = await api.post<CarModel>(`${BASE_URL}/${id}/restore`);
     return response.data;
   }
 };

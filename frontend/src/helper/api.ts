@@ -2,7 +2,7 @@ import axios from "axios";
 import type { AxiosRequestConfig } from "axios";
 
 const config: AxiosRequestConfig = {
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:8000",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -11,3 +11,5 @@ const config: AxiosRequestConfig = {
 };
 
 const api = axios.create(config);
+
+export default api;

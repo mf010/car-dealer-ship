@@ -2,13 +2,23 @@
 "use client";
 import { Component as UserCard } from "../Pages/userPages/userCard";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
-import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
+import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards, HiTag, HiCollection, HiDocumentText } from "react-icons/hi";
 
-export function Component() {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export function Component({ onNavigate }: SidebarProps = {}) {
+  const handleNavClick = () => {
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
+
   return (
     <Sidebar 
       aria-label="Main navigation sidebar" 
-      className="h-screen fixed left-0 top-0 z-40 shadow-lg border-r border-gray-200 dark:border-gray-700"
+      className="h-full shadow-lg border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
     >
       <SidebarItems className="h-full flex flex-col">
         {/* User Profile Section */}
@@ -26,6 +36,7 @@ export function Component() {
             href="dashboard" 
             icon={HiChartPie}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
           >
             <span className="font-medium">Dashboard</span>
           </SidebarItem>
@@ -34,14 +45,43 @@ export function Component() {
             href="cars" 
             icon={HiViewBoards}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
           >
             <span className="font-medium">Cars</span>
           </SidebarItem>
           
           <SidebarItem 
-            href="employees" 
+            href="invoices" 
+            icon={HiDocumentText}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">Invoices</span>
+          </SidebarItem>
+          
+          <SidebarItem 
+            href="make" 
+            icon={HiTag}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">Car Makes</span>
+          </SidebarItem>
+          
+          <SidebarItem 
+            href="car-models" 
+            icon={HiCollection}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">Car Models</span>
+          </SidebarItem>
+          
+          <SidebarItem 
+            href="accounts" 
             icon={HiInbox}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
           >
             <span className="font-medium">Employee Accounts</span>
           </SidebarItem>
@@ -50,6 +90,7 @@ export function Component() {
             href="clients" 
             icon={HiUser}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
           >
             <span className="font-medium">Client Accounts</span>
           </SidebarItem>
@@ -58,6 +99,7 @@ export function Component() {
             href="expenses" 
             icon={HiShoppingBag}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
           >
             <span className="font-medium">General Expense</span>
           </SidebarItem>
@@ -69,6 +111,7 @@ export function Component() {
             href="settings" 
             icon={HiTable}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
           >
             <span className="font-medium">Settings</span>
           </SidebarItem>
@@ -77,6 +120,7 @@ export function Component() {
             href="sign-in" 
             icon={HiArrowSmRight}
             className="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 text-red-600 dark:text-red-400"
+            onClick={handleNavClick}
           >
             <span className="font-medium">Sign Out</span>
           </SidebarItem>

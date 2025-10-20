@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../helper/api';
 import type { Client, CreateClientDTO, UpdateClientDTO, ClientFilters, BalanceUpdateDTO } from '../models/Client';
 import type { PaginatedResponse } from '../models/Make';
 
@@ -14,31 +14,31 @@ export const clientServices = {
       params.append('filters', JSON.stringify(filters));
     }
     
-    const response = await axios.get<PaginatedResponse<Client>>(`${BASE_URL}?${params.toString()}`);
+    const response = await api.get<PaginatedResponse<Client>>(`${BASE_URL}?${params.toString()}`);
     return response.data;
   },
 
   // Create a new client
   createClient: async (clientData: CreateClientDTO): Promise<Client> => {
-    const response = await axios.post<Client>(BASE_URL, clientData);
+    const response = await api.post<Client>(BASE_URL, clientData);
     return response.data;
   },
 
   // Get a single client by ID
   getClientById: async (id: number): Promise<Client> => {
-    const response = await axios.get<Client>(`${BASE_URL}/${id}`);
+    const response = await api.get<Client>(`${BASE_URL}/${id}`);
     return response.data;
   },
 
   // Update a client
   updateClient: async (id: number, clientData: UpdateClientDTO): Promise<Client> => {
-    const response = await axios.put<Client>(`${BASE_URL}/${id}`, clientData);
+    const response = await api.put<Client>(`${BASE_URL}/${id}`, clientData);
     return response.data;
   },
 
   // Delete a client
   deleteClient: async (id: number): Promise<void> => {
-    await axios.delete(`${BASE_URL}/${id}`);
+    await api.delete(`${BASE_URL}/${id}`);
   },
 
   // Get all deleted clients with pagination and filtering
@@ -50,25 +50,25 @@ export const clientServices = {
       params.append('filters', JSON.stringify(filters));
     }
     
-    const response = await axios.get<PaginatedResponse<Client>>(`${BASE_URL}/deleted?${params.toString()}`);
+    const response = await api.get<PaginatedResponse<Client>>(`${BASE_URL}/deleted?${params.toString()}`);
     return response.data;
   },
 
   // Restore a deleted client
   restoreClient: async (id: number): Promise<Client> => {
-    const response = await axios.post<Client>(`${BASE_URL}/${id}/restore`);
+    const response = await api.post<Client>(`${BASE_URL}/${id}/restore`);
     return response.data;
   },
 
   // Add amount to client balance
   addToClientBalance: async (id: number, data: BalanceUpdateDTO): Promise<Client> => {
-    const response = await axios.post<Client>(`${BASE_URL}/${id}/add-balance`, data);
+    const response = await api.post<Client>(`${BASE_URL}/${id}/add-balance`, data);
     return response.data;
   },
 
   // Subtract amount from client balance
   subtractFromClientBalance: async (id: number, data: BalanceUpdateDTO): Promise<Client> => {
-    const response = await axios.post<Client>(`${BASE_URL}/${id}/subtract-balance`, data);
+    const response = await api.post<Client>(`${BASE_URL}/${id}/subtract-balance`, data);
     return response.data;
   }
 };
