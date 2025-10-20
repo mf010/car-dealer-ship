@@ -20,7 +20,7 @@ class Invoice extends Model
         'payed',
         'account_cut',
     ];
-    public function clients(){
+    public function client(){
         return $this->belongsTo(Client::class);
     }
     public function account(){

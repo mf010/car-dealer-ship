@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Http\Requests\AccountRequest;
+use Illuminate\Http\Request;
 
 class AccountController extends Controller
 {
@@ -92,6 +93,15 @@ class AccountController extends Controller
     {
         $account = Account::findOrFail($id);
         $account->balance -= $request->amount;
+        $account->save();
+
+        return response()->json($account);
+    }
+
+    public function AddAccountCut($id, Request $request)
+    {
+        $account = Account::findOrFail($id);
+        $account->balance += $request->amount;
         $account->save();
 
         return response()->json($account);

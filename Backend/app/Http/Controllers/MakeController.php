@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Make;
+use App\Http\Requests\MakeRequest;
 use Illuminate\Http\Request;
 
 class MakeController extends Controller

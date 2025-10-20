@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Http\Requests\PaymentRequest;
-use app\Http\Controllers\Api\InvoiceController;
+use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {

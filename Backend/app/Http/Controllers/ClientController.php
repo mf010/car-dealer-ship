@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Http\Requests\ClientRequest;
+use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
@@ -94,6 +95,15 @@ class ClientController extends Controller
         return response()->json($client);
     }
     public function SubtractFromClient($id, Request $request)
+    {
+        $client = Client::findOrFail($id);
+        $client->balance -= $request->amount;
+        $client->save();
+
+        return response()->json($client);
+    }
+
+    public function SubtractFromClientBalance($id, Request $request)
     {
         $client = Client::findOrFail($id);
         $client->balance -= $request->amount;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CarModel;
 use App\Http\Requests\CarModelRequest;
+use Illuminate\Http\Request;
 
 class CarModelController extends Controller
 {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CarExpense;
 use App\Http\Requests\CarExpenseRequest;
+use Illuminate\Http\Request;
 
 class CarExpenseController extends Controller
 {

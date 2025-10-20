@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Http\Requests\CarRequest;
+use Illuminate\Http\Request;
 
 class CarController extends Controller
 {
@@ -12,8 +13,15 @@ class CarController extends Controller
     {
         $query = Car::with(['carModel.make']);
         
+        // Support both filters[field] and direct field parameters
         if ($request->has('filters')) {
             $query->filter($request->filters);
+        } else {
+            // Support direct query parameters like ?status=available
+            $directFilters = $request->except(['page', 'per_page']);
+            if (!empty($directFilters)) {
+                $query->filter($directFilters);
+            }
         }
         
         return response()->json($query->paginate(10));

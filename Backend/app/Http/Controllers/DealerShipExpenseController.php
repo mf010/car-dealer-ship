@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DealerShipExpense;
 use App\Http\Requests\DealerShipExpenseRequest;
+use Illuminate\Http\Request;
 
 class DealerShipExpenseController extends Controller
 {
