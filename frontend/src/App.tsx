@@ -8,6 +8,10 @@ import { ClientList } from './Pages/clientPages/ClientList'
 import { AccountList } from './Pages/accountPages/AccountList'
 import { CarList } from './Pages/carPages/CarList'
 import { InvoiceList } from './Pages/invoicePages/InvoiceList'
+import { PaymentList } from './Pages/paymentPages/PaymentList'
+import { AccountWithdrawalList } from './Pages/accountWithdrawalPages/AccountWithdrawalList'
+import { CarExpenseList } from './Pages/carExpensePages/CarExpenseList'
+import { ExpenseList } from './Pages/expensePages/ExpenseList'
 
 function App() {
 
@@ -19,10 +23,13 @@ function App() {
           <Route path="dashboard" element={<div>Dashboard</div>} />
           <Route path="cars" element={<CarList />}/>
           <Route path="invoices" element={<InvoiceList />} />
+          <Route path="payments" element={<PaymentList />} />
+          <Route path="account-withdrawals" element={<AccountWithdrawalList />} />
+          <Route path="car-expenses" element={<CarExpenseList />} />
           <Route path="employees" element={<AccountList />} />
           <Route path="accounts" element={<AccountList />} />
           <Route path="clients" element={<ClientList />} />
-          <Route path="expenses" element={<div>Expenses</div>} />
+          <Route path="expenses" element={<ExpenseList />} />
           <Route path="make" element={<MakeList />} />
           <Route path="car-models" element={<CarModelList />} />
           <Route path="about" element={<div>About</div>} />

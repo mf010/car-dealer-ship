@@ -2,7 +2,7 @@
 "use client";
 import { Component as UserCard } from "../Pages/userPages/userCard";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
-import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards, HiTag, HiCollection, HiDocumentText } from "react-icons/hi";
+import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards, HiTag, HiCollection, HiDocumentText, HiCash, HiCurrencyDollar } from "react-icons/hi";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -57,6 +57,33 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             onClick={handleNavClick}
           >
             <span className="font-medium">Invoices</span>
+          </SidebarItem>
+          
+          <SidebarItem 
+            href="payments" 
+            icon={HiCash}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">Payments</span>
+          </SidebarItem>
+          
+          <SidebarItem 
+            href="account-withdrawals" 
+            icon={HiCurrencyDollar}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">Account Withdrawals</span>
+          </SidebarItem>
+          
+          <SidebarItem 
+            href="car-expenses" 
+            icon={HiShoppingBag}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">Car Expenses</span>
           </SidebarItem>
           
           <SidebarItem 
