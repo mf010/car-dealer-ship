@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Button, Pagination, Card, Badge } from "flowbite-react";
-import { HiPlus, HiPencil, HiTrash, HiCube, HiTag, HiInformationCircle } from "react-icons/hi";
+import { Button, Pagination, Card, Badge, Label, TextInput, Select } from "flowbite-react";
+import { HiPlus, HiPencil, HiTrash, HiCube, HiTag, HiInformationCircle, HiFilter, HiX } from "react-icons/hi";
 import { carServices } from "../../services/carServices";
+import { makeServices } from "../../services/makeServices";
 import type { Car } from "../../models/Car";
+import type { Make } from "../../models/Make";
 import { CarForm } from "./CarForm";
 import { CarUpdate } from "./CarUpdate";
 import { CarInfoModal } from "./CarInfoModal";
@@ -15,20 +17,55 @@ export function CarList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // New filter states
+  const [makes, setMakes] = useState<Make[]>([]);
+  const [filterMakeId, setFilterMakeId] = useState<string>("");
+  const [filterCarId, setFilterCarId] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
+  
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCarInfoOpen, setIsCarInfoOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
+  // Fetch makes for dropdown
+  const fetchMakes = async () => {
+    try {
+      const response = await makeServices.getAllMakes(1);
+      setMakes(response.data);
+    } catch (err) {
+      console.error("Error fetching makes:", err);
+    }
+  };
+
   // Fetch cars from API
   const fetchCars = async () => {
     setLoading(true);
     setError(null);
     try {
-      const filters = searchStatus ? { status: searchStatus } : undefined;
-      const response = await carServices.getAllCars(currentPage, filters);
-      setCars(response.data);
+      const filters: any = {};
+      
+      if (searchStatus) filters.status = searchStatus;
+      
+      // Client-side filtering will be applied after fetching
+      const response = await carServices.getAllCars(currentPage, Object.keys(filters).length > 0 ? filters : undefined);
+      
+      let filteredCars = response.data;
+      
+      // Apply make filter (client-side)
+      if (filterMakeId) {
+        const makeId = parseInt(filterMakeId);
+        filteredCars = filteredCars.filter(car => car.carModel?.make_id === makeId);
+      }
+      
+      // Apply car ID filter (client-side)
+      if (filterCarId) {
+        const carId = parseInt(filterCarId);
+        filteredCars = filteredCars.filter(car => car.id === carId);
+      }
+      
+      setCars(filteredCars);
       setTotalPages(response.last_page);
     } catch (err) {
       console.error("Error fetching cars:", err);
@@ -41,11 +78,16 @@ export function CarList() {
     }
   };
 
+  // Fetch makes on mount
+  useEffect(() => {
+    fetchMakes();
+  }, []);
+
   // Fetch cars when page or search changes
   useEffect(() => {
     fetchCars();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchStatus]);
+  }, [currentPage, searchStatus, filterMakeId, filterCarId]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -81,6 +123,17 @@ export function CarList() {
     setCurrentPage(page);
   };
 
+  // Clear all filters
+  const clearFilters = () => {
+    setFilterMakeId("");
+    setFilterCarId("");
+    setSearchStatus("");
+    setCurrentPage(1);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = filterMakeId || filterCarId || searchStatus;
+
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -115,8 +168,9 @@ export function CarList() {
       )}
 
       {/* Filter Bar */}
-      <div className="flex gap-4 items-center">
-        <div className="flex gap-2">
+      <div className="space-y-4">
+        {/* Quick Status Filters */}
+        <div className="flex flex-wrap gap-2 items-center">
           <Button
             color={searchStatus === "" ? "blue" : "gray"}
             size="sm"
@@ -147,7 +201,115 @@ export function CarList() {
           >
             Sold
           </Button>
+          
+          <div className="ml-auto flex gap-2">
+            <Button
+              color="light"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <HiFilter className="mr-2 h-4 w-4" />
+              {showFilters ? "Hide Filters" : "More Filters"}
+            </Button>
+            
+            {hasActiveFilters && (
+              <Button
+                color="gray"
+                size="sm"
+                onClick={clearFilters}
+              >
+                <HiX className="mr-2 h-4 w-4" />
+                Clear All
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Advanced Filters */}
+        {showFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            {/* Make Filter */}
+            <div>
+              <Label htmlFor="filterMake" className="mb-2">
+                Filter by Make
+              </Label>
+              <Select
+                id="filterMake"
+                value={filterMakeId}
+                onChange={(e) => {
+                  setFilterMakeId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="">All Makes</option>
+                {makes.map((make) => (
+                  <option key={make.id} value={make.id}>
+                    {make.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {/* Car ID Filter */}
+            <div>
+              <Label htmlFor="filterCarId" className="mb-2">
+                Filter by Car ID
+              </Label>
+              <TextInput
+                id="filterCarId"
+                type="number"
+                placeholder="Enter car ID..."
+                value={filterCarId}
+                onChange={(e) => {
+                  setFilterCarId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Active Filters Badge */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Active Filters:
+            </span>
+            {filterMakeId && (
+              <Badge color="info" size="sm">
+                Make: {makes.find(m => m.id === parseInt(filterMakeId))?.name}
+                <button
+                  onClick={() => setFilterMakeId("")}
+                  className="ml-2 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {filterCarId && (
+              <Badge color="info" size="sm">
+                Car ID: {filterCarId}
+                <button
+                  onClick={() => setFilterCarId("")}
+                  className="ml-2 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {searchStatus && (
+              <Badge color="info" size="sm">
+                Status: {searchStatus.charAt(0).toUpperCase() + searchStatus.slice(1)}
+                <button
+                  onClick={() => setSearchStatus("")}
+                  className="ml-2 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Loading State */}

@@ -6,7 +6,12 @@ trait Filterable
 {
     public function scopeFilter($query, $filters)
     {
-        if (!$filters) {
+        // Handle JSON string filters
+        if (is_string($filters)) {
+            $filters = json_decode($filters, true);
+        }
+        
+        if (!$filters || !is_array($filters)) {
             return $query;
         }
 

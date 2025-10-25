@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Filterable;
 
 class CarModel extends Model
 {
     /** @use HasFactory<\Database\Factories\CarModelFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes, Filterable;
     protected $fillable = [
         'name',
         'make_id',

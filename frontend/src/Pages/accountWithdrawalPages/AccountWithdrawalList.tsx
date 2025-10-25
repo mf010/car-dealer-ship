@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button, Badge, Pagination, Spinner } from 'flowbite-react';
 import { HiPlus, HiEye, HiPencil, HiTrash, HiFilter } from 'react-icons/hi';
 import { accountWithdrawalServices } from '../../services/accountWithdrawalServices';
@@ -10,9 +11,11 @@ import { AccountWithdrawalUpdate } from './AccountWithdrawalUpdate';
 import { AccountWithdrawalInfoModal } from './AccountWithdrawalInfoModal';
 
 export function AccountWithdrawalList() {
+  const [searchParams] = useSearchParams();
   const [withdrawals, setWithdrawals] = useState<AccountWithdrawal[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -22,19 +25,36 @@ export function AccountWithdrawalList() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<AccountWithdrawalFilters>({});
 
+  // Initialize filters from URL query parameters
+  useEffect(() => {
+    const accountIdParam = searchParams.get('account_id');
+    if (accountIdParam) {
+      const accountId = Number(accountIdParam);
+      if (!isNaN(accountId)) {
+        setFilters(prev => ({ ...prev, account_id: accountId }));
+        setShowFilters(true); // Auto-show filters when navigating from account
+      }
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     fetchWithdrawals();
     fetchAccounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filters]);
 
   const fetchWithdrawals = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await accountWithdrawalServices.getAllWithdrawals(currentPage, filters);
       setWithdrawals(response.data);
       setTotalPages(response.last_page);
     } catch (error) {
       console.error('Error fetching withdrawals:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch withdrawals. Please check if the API server is running.';
+      setError(errorMessage);
+      setWithdrawals([]);
     } finally {
       setLoading(false);
     }
@@ -109,6 +129,14 @@ export function AccountWithdrawalList() {
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Manage employee account withdrawals and track balances
           </p>
+          {/* Show filtered account info */}
+          {filters.account_id && (
+            <div className="mt-2">
+              <Badge color="info" size="sm">
+                Filtered by Account: {accounts.find(a => a.id === filters.account_id)?.name || `#${filters.account_id}`}
+              </Badge>
+            </div>
+          )}
         </div>
         <div className="flex gap-3">
           <Button
@@ -128,6 +156,16 @@ export function AccountWithdrawalList() {
           </Button>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Error:</span>
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
 
       {/* Filters Panel */}
       {showFilters && (
@@ -215,7 +253,7 @@ export function AccountWithdrawalList() {
           <div className="flex justify-center items-center h-64">
             <Spinner size="xl" />
           </div>
-        ) : withdrawals.length === 0 ? (
+        ) : !withdrawals || withdrawals.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <p className="text-lg font-medium">No withdrawals found</p>
             <p className="text-sm mt-2">Try adjusting your filters or add a new withdrawal</p>
@@ -234,7 +272,7 @@ export function AccountWithdrawalList() {
                 </tr>
               </thead>
               <tbody>
-                {withdrawals.map((withdrawal) => (
+                {withdrawals?.map((withdrawal) => (
                   <tr
                     key={withdrawal.id}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"

@@ -24,8 +24,8 @@ export function AccountInfoModal({ isOpen, onClose, account }: AccountInfoModalP
     if (account) {
       // Close the modal first
       onClose();
-      // Navigate to withdrawals page (empty implementation as requested)
-      navigate(`/account-withdrawals/${account.id}`);
+      // Navigate to withdrawals page with account filter
+      navigate(`/account-withdrawals?account_id=${account.id}`);
     }
   };
 

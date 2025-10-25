@@ -12,6 +12,7 @@ export function AccountList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchName, setSearchName] = useState("");
+  const [showDebtOnly, setShowDebtOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -45,7 +46,7 @@ export function AccountList() {
   useEffect(() => {
     fetchAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchName]);
+  }, [currentPage, searchName, showDebtOnly]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -89,6 +90,11 @@ export function AccountList() {
     }).format(amount);
   };
 
+  // Filter accounts based on debt filter
+  const filteredAccounts = showDebtOnly 
+    ? accounts.filter(account => account.balance < 0)
+    : accounts;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -114,18 +120,41 @@ export function AccountList() {
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="max-w-md">
-        <TextInput
-          icon={HiSearch}
-          placeholder="Search by name..."
-          value={searchName}
-          onChange={(e) => {
-            setSearchName(e.target.value);
-            setCurrentPage(1);
-          }}
-          sizing="md"
-        />
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 max-w-md">
+          <TextInput
+            icon={HiSearch}
+            placeholder="Search by name..."
+            value={searchName}
+            onChange={(e) => {
+              setSearchName(e.target.value);
+              setCurrentPage(1);
+            }}
+            sizing="md"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showDebtOnly}
+              onChange={(e) => {
+                setShowDebtOnly(e.target.checked);
+                setCurrentPage(1);
+              }}
+              className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-300">
+              Show Accounts with Debt Only
+            </span>
+          </label>
+          {showDebtOnly && (
+            <Badge color="failure" size="sm">
+              Active
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Loading State */}
@@ -142,11 +171,17 @@ export function AccountList() {
             No accounts found
           </p>
         </div>
+      ) : filteredAccounts.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500 dark:text-gray-400 text-lg">
+            No accounts with debt found
+          </p>
+        </div>
       ) : (
         <>
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {accounts.map((account) => (
+            {filteredAccounts.map((account) => (
               <Card key={account.id} className="hover:shadow-lg transition-shadow duration-200">
                 <div className="space-y-4">
                   {/* Header with Name and Balance Badge */}
