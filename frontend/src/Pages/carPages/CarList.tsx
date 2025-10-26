@@ -3,8 +3,13 @@ import { Button, Pagination, Card, Badge, Label, TextInput, Select } from "flowb
 import { HiPlus, HiPencil, HiTrash, HiCube, HiTag, HiInformationCircle, HiFilter, HiX } from "react-icons/hi";
 import { carServices } from "../../services/carServices";
 import { makeServices } from "../../services/makeServices";
+import { clientServices } from "../../services/clientServices";
+import { accountServices } from "../../services/accountServices";
+import { invoiceServices } from "../../services/invoiceServices";
 import type { Car } from "../../models/Car";
 import type { Make } from "../../models/Make";
+import type { Client } from "../../models/Client";
+import type { Account } from "../../models/Account";
 import { CarForm } from "./CarForm";
 import { CarUpdate } from "./CarUpdate";
 import { CarInfoModal } from "./CarInfoModal";
@@ -19,8 +24,12 @@ export function CarList() {
   
   // New filter states
   const [makes, setMakes] = useState<Make[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [filterMakeId, setFilterMakeId] = useState<string>("");
   const [filterCarId, setFilterCarId] = useState<string>("");
+  const [filterClientId, setFilterClientId] = useState<string>("");
+  const [filterAccountId, setFilterAccountId] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
   
   // Modal states
@@ -39,6 +48,26 @@ export function CarList() {
     }
   };
 
+  // Fetch clients for dropdown
+  const fetchClients = async () => {
+    try {
+      const response = await clientServices.getAllClients(1);
+      setClients(response.data);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    }
+  };
+
+  // Fetch accounts for dropdown
+  const fetchAccounts = async () => {
+    try {
+      const response = await accountServices.getAllAccounts(1);
+      setAccounts(response.data);
+    } catch (err) {
+      console.error("Error fetching accounts:", err);
+    }
+  };
+
   // Fetch cars from API
   const fetchCars = async () => {
     setLoading(true);
@@ -51,21 +80,50 @@ export function CarList() {
       // Client-side filtering will be applied after fetching
       const response = await carServices.getAllCars(currentPage, Object.keys(filters).length > 0 ? filters : undefined);
       
-      let filteredCars = response.data;
+      // Normalize the API response to handle snake_case and string prices
+      let normalizedCars = response.data.map((car: any) => ({
+        ...car,
+        // Convert string prices to numbers
+        purchase_price: typeof car.purchase_price === 'string' 
+          ? parseFloat(car.purchase_price) 
+          : car.purchase_price,
+        total_expenses: typeof car.total_expenses === 'string' 
+          ? parseFloat(car.total_expenses) 
+          : car.total_expenses,
+        // Normalize car_model to carModel
+        carModel: car.car_model || car.carModel,
+      }));
       
       // Apply make filter (client-side)
       if (filterMakeId) {
         const makeId = parseInt(filterMakeId);
-        filteredCars = filteredCars.filter(car => car.carModel?.make_id === makeId);
+        normalizedCars = normalizedCars.filter((car: any) => 
+          car.carModel?.make_id === makeId || car.carModel?.make?.id === makeId
+        );
       }
       
       // Apply car ID filter (client-side)
       if (filterCarId) {
         const carId = parseInt(filterCarId);
-        filteredCars = filteredCars.filter(car => car.id === carId);
+        normalizedCars = normalizedCars.filter((car: any) => car.id === carId);
+      }
+
+      // Apply client/account filters (need to fetch invoices)
+      if (filterClientId || filterAccountId) {
+        const invoiceFilters: any = {};
+        if (filterClientId) invoiceFilters.client_id = parseInt(filterClientId);
+        if (filterAccountId) invoiceFilters.account_id = parseInt(filterAccountId);
+        
+        try {
+          const invoiceResponse = await invoiceServices.getAllInvoices(1, invoiceFilters);
+          const carIdsWithInvoices = new Set(invoiceResponse.data.map((invoice: any) => invoice.car_id));
+          normalizedCars = normalizedCars.filter((car: any) => carIdsWithInvoices.has(car.id));
+        } catch (invoiceErr) {
+          console.error("Error fetching invoices for filtering:", invoiceErr);
+        }
       }
       
-      setCars(filteredCars);
+      setCars(normalizedCars);
       setTotalPages(response.last_page);
     } catch (err) {
       console.error("Error fetching cars:", err);
@@ -81,13 +139,15 @@ export function CarList() {
   // Fetch makes on mount
   useEffect(() => {
     fetchMakes();
+    fetchClients();
+    fetchAccounts();
   }, []);
 
   // Fetch cars when page or search changes
   useEffect(() => {
     fetchCars();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchStatus, filterMakeId, filterCarId]);
+  }, [currentPage, searchStatus, filterMakeId, filterCarId, filterClientId, filterAccountId]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -127,12 +187,14 @@ export function CarList() {
   const clearFilters = () => {
     setFilterMakeId("");
     setFilterCarId("");
+    setFilterClientId("");
+    setFilterAccountId("");
     setSearchStatus("");
     setCurrentPage(1);
   };
 
   // Check if any filters are active
-  const hasActiveFilters = filterMakeId || filterCarId || searchStatus;
+  const hasActiveFilters = filterMakeId || filterCarId || filterClientId || filterAccountId || searchStatus;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -227,7 +289,7 @@ export function CarList() {
 
         {/* Advanced Filters */}
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             {/* Make Filter */}
             <div>
               <Label htmlFor="filterMake" className="mb-2">
@@ -266,6 +328,50 @@ export function CarList() {
                 }}
               />
             </div>
+
+            {/* Client Filter */}
+            <div>
+              <Label htmlFor="filterClient" className="mb-2">
+                Filter by Client
+              </Label>
+              <Select
+                id="filterClient"
+                value={filterClientId}
+                onChange={(e) => {
+                  setFilterClientId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="">All Clients</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {/* Account Filter */}
+            <div>
+              <Label htmlFor="filterAccount" className="mb-2">
+                Filter by Account
+              </Label>
+              <Select
+                id="filterAccount"
+                value={filterAccountId}
+                onChange={(e) => {
+                  setFilterAccountId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="">All Accounts</option>
+                {accounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
         )}
 
@@ -291,6 +397,28 @@ export function CarList() {
                 Car ID: {filterCarId}
                 <button
                   onClick={() => setFilterCarId("")}
+                  className="ml-2 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {filterClientId && (
+              <Badge color="info" size="sm">
+                Client: {clients.find(c => c.id === parseInt(filterClientId))?.name}
+                <button
+                  onClick={() => setFilterClientId("")}
+                  className="ml-2 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {filterAccountId && (
+              <Badge color="info" size="sm">
+                Account: {accounts.find(a => a.id === parseInt(filterAccountId))?.name}
+                <button
+                  onClick={() => setFilterAccountId("")}
                   className="ml-2 hover:text-red-500"
                 >
                   ×

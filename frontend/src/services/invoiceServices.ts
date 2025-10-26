@@ -63,7 +63,22 @@ export const invoiceServices = {
     params.append('page', page.toString());
     
     if (filters) {
-      params.append('filters', JSON.stringify(filters));
+      // Send filters as individual query parameters instead of JSON string
+      if (filters.client_id) {
+        params.append('client_id', filters.client_id.toString());
+      }
+      if (filters.account_id) {
+        params.append('account_id', filters.account_id.toString());
+      }
+      if (filters.car_id) {
+        params.append('car_id', filters.car_id.toString());
+      }
+      if (filters.invoice_date) {
+        params.append('invoice_date', filters.invoice_date);
+      }
+      if (filters.paid !== undefined) {
+        params.append('paid', filters.paid.toString());
+      }
     }
     
     const response = await api.get<PaginatedResponse<Invoice>>(`${BASE_URL}/deleted?${params.toString()}`);

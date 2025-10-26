@@ -20,6 +20,13 @@ trait Filterable
                 continue;
             }
 
+            // Check if model has a scope for this filter
+            $scopeMethod = 'scope' . ucfirst($field);
+            if (method_exists($this, $scopeMethod)) {
+                $query->{$field}($value);
+                continue;
+            }
+
             // Handle special date range filters
             if (in_array($field, ['date_from', 'date_to'])) {
                 $dateField = $this->getDateFieldName();

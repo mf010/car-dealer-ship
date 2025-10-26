@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CarController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Requests\InvoiceRequest;
+use App\Http\Requests\PaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,8 +19,15 @@ class InvoiceController extends Controller
     {
         $query = Invoice::with(['client', 'account', 'car.carModel.make']);
         
+        // Support both filters[field] and direct field parameters
         if ($request->has('filters')) {
             $query->filter($request->filters);
+        } else {
+            // Support direct query parameters like ?paid=false
+            $directFilters = $request->except(['page', 'per_page']);
+            if (!empty($directFilters)) {
+                $query->filter($directFilters);
+            }
         }
         
         return response()->json($query->paginate(10));
@@ -45,6 +57,20 @@ class InvoiceController extends Controller
                 'amount' => $request->amount - $request->payed
             ]));
         }
+
+        if ($request->payed > 0){
+            $paymentRequest = new PaymentRequest();
+            $paymentRequest->merge([
+                'invoice_id' => $invoice->id,
+                'amount' => $request->payed,
+                'payment_date' => now(),
+            ]);
+            app(PaymentController::class)->existstore($paymentRequest);
+        }
+
+        app(CarController::class)->setCarStatus($request->car_id, new Request([
+            'status' => 'Sold'
+        ]));
 
         // Load relationships for the response
         return response()->json($invoice->load(['client', 'account', 'car.carModel.make']), 201);

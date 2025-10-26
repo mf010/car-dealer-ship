@@ -19,6 +19,19 @@ class PaymentController extends Controller
         
         return response()->json($query->paginate(10));
     }
+    
+    // Store a new existing payment
+    public function existstore(PaymentRequest $request)
+    {
+        $payment = Payment::create([
+            'invoice_id' => $request->invoice_id,
+            'amount' => $request->amount,
+            'payment_date' => $request->payment_date,
+        ]);
+
+        // Load relationships for the response
+        return response()->json($payment->load(['invoice.client', 'invoice.car']), 201);
+    }
 
     // Store a new payment
     public function store(PaymentRequest $request)
@@ -31,6 +44,10 @@ class PaymentController extends Controller
 
         // Add the payment amount to the invoice's paid amount
         app(InvoiceController::class)->AddPaymentToInvoice($request->invoice_id, new Request([
+            'amount' => $request->amount
+        ]));
+         // Add the payment amount to the Account Balance
+        app(ClientController::class)->AddToClient($payment->invoice->client_id, new Request([
             'amount' => $request->amount
         ]));
 

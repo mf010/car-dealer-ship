@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Modal, Badge, Button } from "flowbite-react";
 import { HiX, HiCube, HiTag, HiCurrencyDollar, HiDocumentText, HiUser, HiPhone, HiLocationMarker, HiIdentification } from "react-icons/hi";
 import { invoiceServices } from "../../services/invoiceServices";
+import { carServices } from "../../services/carServices";
 import type { Car } from "../../models/Car";
 import type { Invoice } from "../../models/Invoice";
 
@@ -17,23 +18,54 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
   const navigate = useNavigate();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loadingInvoice, setLoadingInvoice] = useState(false);
+  const [fullCarData, setFullCarData] = useState<Car | null>(null);
+  const [loadingCar, setLoadingCar] = useState(false);
 
-  // Fetch invoice if car is sold
-  useEffect(() => {
-    if (isOpen && car && car.status === "sold") {
-      fetchInvoice();
-    } else {
-      setInvoice(null);
+  const fetchCarData = async () => {
+    if (!car) return;
+    
+    setLoadingCar(true);
+    try {
+      const response = await carServices.getCarById(car.id);
+      console.log("Fetched car data:", response);
+      
+      // Handle snake_case from API - normalize to camelCase
+      const apiResponse = response as any;
+      const normalizedResponse: Car = {
+        ...response,
+        // Convert string prices to numbers
+        purchase_price: typeof response.purchase_price === 'string' 
+          ? parseFloat(response.purchase_price) 
+          : response.purchase_price,
+        total_expenses: typeof response.total_expenses === 'string' 
+          ? parseFloat(response.total_expenses) 
+          : response.total_expenses,
+        carModel: apiResponse.car_model || response.carModel,
+      };
+      
+      console.log("Normalized response:", normalizedResponse);
+      console.log("Car Model Name:", normalizedResponse.carModel?.name);
+      console.log("Make Name:", normalizedResponse.carModel?.make?.name);
+      console.log("Purchase Price (number):", normalizedResponse.purchase_price);
+      console.log("Total Expenses (number):", normalizedResponse.total_expenses);
+      
+      setFullCarData(normalizedResponse);
+    } catch (error) {
+      console.error("Error fetching car data:", error);
+      // Fallback to the passed car data if fetch fails
+      setFullCarData(car);
+    } finally {
+      setLoadingCar(false);
     }
-  }, [isOpen, car]);
+  };
 
   const fetchInvoice = async () => {
-    if (!car) return;
+    if (!fullCarData) return;
     
     setLoadingInvoice(true);
     try {
       // Fetch all invoices and find the one for this car
-      const response = await invoiceServices.getAllInvoices(1, { car_id: car.id });
+      const response = await invoiceServices.getAllInvoices(1, { car_id: fullCarData.id });
       if (response.data && response.data.length > 0) {
         setInvoice(response.data[0]);
       }
@@ -43,6 +75,25 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
       setLoadingInvoice(false);
     }
   };
+
+  // Fetch complete car data when modal opens
+  useEffect(() => {
+    if (isOpen && car) {
+      fetchCarData();
+    } else {
+      setFullCarData(null);
+      setInvoice(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, car?.id]);
+
+  // Fetch invoice if car is sold
+  useEffect(() => {
+    if (isOpen && fullCarData && fullCarData.status === "sold") {
+      fetchInvoice();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, fullCarData?.id, fullCarData?.status]);
 
   const handleNavigateToInvoice = () => {
     if (invoice) {
@@ -68,21 +119,34 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
 
   if (!car) return null;
 
+  // Use fullCarData if available, otherwise fallback to car prop
+  const displayCar = fullCarData || car;
+
   return (
     <Modal show={isOpen} onClose={onClose} size="3xl">
       <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <HiCube className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              {car.carModel?.make?.name} {car.carModel?.name}
+        {/* Loading State */}
+        {loadingCar ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-500 dark:text-gray-400">
+              Loading car details...
             </span>
           </div>
-          <Badge color={car.status === "sold" ? "failure" : "success"} size="lg">
-            {car.status === "sold" ? "Sold" : "Available"}
-          </Badge>
-        </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <HiCube className="h-6 w-6 text-blue-600" />
+                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  {displayCar.carModel?.make?.name} {displayCar.carModel?.name}
+                </span>
+              </div>
+              <Badge color={displayCar.status === "sold" ? "failure" : "success"} size="lg">
+                {displayCar.status === "sold" ? "Sold" : "Available"}
+              </Badge>
+            </div>
 
         <div className="space-y-6">
           {/* Car Information Section */}
@@ -95,25 +159,25 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Car ID</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">
-                  #{car.id}
+                  #{displayCar.id}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Model ID</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">
-                  {car.car_model_id}
+                  {displayCar.car_model_id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Make</p>
-                <p className="text-base font-semibold text-gray-900 dark:text-white">
-                  {car.carModel?.make?.name || "N/A"}
+                <p className="text-sm text-gray-500 dark:text-gray-400">Make (Manufacturer)</p>
+                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                  {displayCar.carModel?.make?.name || "N/A"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Model</p>
-                <p className="text-base font-semibold text-gray-900 dark:text-white">
-                  {car.carModel?.name || "N/A"}
+                <p className="text-sm text-gray-500 dark:text-gray-400">Car Model</p>
+                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                  {displayCar.carModel?.name || "N/A"}
                 </p>
               </div>
             </div>
@@ -129,26 +193,26 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Price</p>
                 <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(car.purchase_price)}
+                  {formatCurrency(displayCar.purchase_price)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Expenses</p>
                 <p className="text-base font-semibold text-orange-600 dark:text-orange-400">
-                  {formatCurrency(car.total_expenses)}
+                  {formatCurrency(displayCar.total_expenses)}
                 </p>
               </div>
               <div className="col-span-2 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Cost</p>
                 <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  {formatCurrency(car.purchase_price + car.total_expenses)}
+                  {formatCurrency(displayCar.purchase_price + displayCar.total_expenses)}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Invoice & Customer Information (Only for Sold Cars) */}
-          {car.status === "sold" && (
+          {displayCar.status === "sold" && (
             <>
               {loadingInvoice ? (
                 <div className="flex justify-center items-center py-8">
@@ -303,11 +367,11 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
             <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 dark:text-gray-400">
               <div>
                 <p className="font-medium">Created At</p>
-                <p>{formatDate(car.created_at)}</p>
+                <p>{formatDate(displayCar.created_at)}</p>
               </div>
               <div>
                 <p className="font-medium">Updated At</p>
-                <p>{formatDate(car.updated_at)}</p>
+                <p>{formatDate(displayCar.updated_at)}</p>
               </div>
             </div>
           </div>
@@ -320,6 +384,8 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
             Close
           </Button>
         </div>
+          </>
+        )}
       </div>
     </Modal>
   );

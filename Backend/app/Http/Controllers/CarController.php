@@ -109,5 +109,14 @@ class CarController extends Controller
         return response()->json($car->load(['carModel.make']));
     }
 
+    public function setCarStatus($id, Request $request)
+    {
+        $car = Car::findOrFail($id);
+        $car->status = $request->status;
+        $car->save();
+
+        return response()->json($car->load(['carModel.make']));
+    }
+
     
 }

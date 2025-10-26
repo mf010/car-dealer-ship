@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Modal, Button, Label, TextInput, Select } from "flowbite-react";
 import { HiPlus } from "react-icons/hi";
 import { invoiceServices } from "../../services/invoiceServices";
@@ -22,6 +22,16 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
+  // Searchable select states
+  const [clientSearch, setClientSearch] = useState("");
+  const [accountSearch, setAccountSearch] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  
+  // Refs for click outside detection
+  const clientDropdownRef = useRef<HTMLDivElement>(null);
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
+
   const [formData, setFormData] = useState({
     client_id: "",
     car_id: "",
@@ -38,6 +48,25 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
   useEffect(() => {
     if (isOpen) {
       fetchInitialData();
+    }
+  }, [isOpen]);
+
+  // Click outside handler for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (clientDropdownRef.current && !clientDropdownRef.current.contains(event.target as Node)) {
+        setShowClientDropdown(false);
+      }
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setShowAccountDropdown(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
     }
   }, [isOpen]);
 
@@ -90,11 +119,15 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
     }
 
     if (parseFloat(formData.payed) > parseFloat(formData.amount)) {
-      newErrors.payed = "Paid amount cannot exceed total amount";
+      newErrors.payed = "Amount paid cannot exceed total amount";
     }
 
     if (parseFloat(formData.account_cut) < 0) {
       newErrors.account_cut = "Account cut cannot be negative";
+    }
+
+    if (parseFloat(formData.account_cut) > parseFloat(formData.amount)) {
+      newErrors.account_cut = "Account cut cannot exceed total amount";
     }
 
     if (!formData.invoice_date) {
@@ -135,6 +168,8 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
         account_cut: "0",
         invoice_date: new Date().toISOString().split('T')[0],
       });
+      setClientSearch("");
+      setAccountSearch("");
       setErrors({});
       onSuccess();
       onClose();
@@ -170,26 +205,71 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
               </div>
             )}
 
-            {/* Client Selection */}
-            <div>
+            {/* Client Selection - Searchable */}
+            <div ref={clientDropdownRef}>
               <Label htmlFor="client_id" className="mb-2 block">
                 Client <span className="text-red-500">*</span>
               </Label>
-              <Select
-                id="client_id"
-                name="client_id"
-                value={formData.client_id}
-                onChange={handleChange}
-                color={errors.client_id ? "failure" : undefined}
-                required
-              >
-                <option value="">Select a client</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </Select>
+              <div className="relative">
+                <TextInput
+                  id="client_search"
+                  type="text"
+                  placeholder="Search client by name..."
+                  value={clientSearch}
+                  onChange={(e) => {
+                    setClientSearch(e.target.value);
+                    setShowClientDropdown(true);
+                  }}
+                  onFocus={() => setShowClientDropdown(true)}
+                  color={errors.client_id ? "failure" : undefined}
+                />
+                {showClientDropdown && clientSearch && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {clients
+                      .filter(client => 
+                        client.name.toLowerCase().includes(clientSearch.toLowerCase())
+                      )
+                      .slice(0, 10)
+                      .map((client) => (
+                        <button
+                          key={client.id}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, client_id: client.id.toString() }));
+                            setClientSearch(client.name);
+                            setShowClientDropdown(false);
+                            if (errors.client_id) {
+                              setErrors(prev => ({ ...prev, client_id: "" }));
+                            }
+                          }}
+                        >
+                          {client.name}
+                        </button>
+                      ))}
+                    {clients.filter(client => 
+                      client.name.toLowerCase().includes(clientSearch.toLowerCase())
+                    ).length === 0 && (
+                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                        No clients found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {formData.client_id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, client_id: "" }));
+                    setClientSearch("");
+                    setShowClientDropdown(false);
+                  }}
+                  className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
+                >
+                  Clear client selection
+                </button>
+              )}
               {errors.client_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.client_id}</p>
               )}
@@ -220,24 +300,67 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
               )}
             </div>
 
-            {/* Account Selection (Optional) */}
-            <div>
+            {/* Account Selection - Searchable (Optional) */}
+            <div ref={accountDropdownRef}>
               <Label htmlFor="account_id" className="mb-2 block">
                 Account (Optional)
               </Label>
-              <Select
-                id="account_id"
-                name="account_id"
-                value={formData.account_id}
-                onChange={handleChange}
-              >
-                <option value="">No account</option>
-                {accounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.name}
-                  </option>
-                ))}
-              </Select>
+              <div className="relative">
+                <TextInput
+                  id="account_search"
+                  type="text"
+                  placeholder="Search account by name..."
+                  value={accountSearch}
+                  onChange={(e) => {
+                    setAccountSearch(e.target.value);
+                    setShowAccountDropdown(true);
+                  }}
+                  onFocus={() => setShowAccountDropdown(true)}
+                />
+                {showAccountDropdown && accountSearch && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {accounts
+                      .filter(account => 
+                        account.name.toLowerCase().includes(accountSearch.toLowerCase())
+                      )
+                      .slice(0, 10)
+                      .map((account) => (
+                        <button
+                          key={account.id}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, account_id: account.id.toString() }));
+                            setAccountSearch(account.name);
+                            setShowAccountDropdown(false);
+                          }}
+                        >
+                          {account.name}
+                        </button>
+                      ))}
+                    {accounts.filter(account => 
+                      account.name.toLowerCase().includes(accountSearch.toLowerCase())
+                    ).length === 0 && (
+                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                        No accounts found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {formData.account_id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, account_id: "" }));
+                    setAccountSearch("");
+                    setShowAccountDropdown(false);
+                  }}
+                  className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
+                >
+                  Clear account selection
+                </button>
+              )}
             </div>
 
             {/* Amount and Paid */}

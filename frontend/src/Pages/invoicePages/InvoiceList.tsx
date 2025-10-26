@@ -3,10 +3,8 @@ import { Button, TextInput, Pagination, Badge, Select } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiInformationCircle, HiFilter } from "react-icons/hi";
 import { invoiceServices } from "../../services/invoiceServices";
 import { clientServices } from "../../services/clientServices";
-import { carServices } from "../../services/carServices";
 import type { Invoice, InvoiceFilters } from "../../models/Invoice";
 import type { Client } from "../../models/Client";
-import type { Car } from "../../models/Car";
 import { InvoiceForm } from "./InvoiceForm";
 import { InvoiceUpdate } from "./InvoiceUpdate";
 import { InvoiceInfoModal } from "./InvoiceInfoModal";
@@ -22,7 +20,8 @@ export function InvoiceList() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<InvoiceFilters>({});
   const [clients, setClients] = useState<Client[]>([]);
-  const [cars, setCars] = useState<Car[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [carIdSearch, setCarIdSearch] = useState("");
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -33,7 +32,6 @@ export function InvoiceList() {
   // Fetch data on mount
   useEffect(() => {
     fetchClients();
-    fetchCars();
   }, []);
 
   // Fetch invoices from API
@@ -41,7 +39,20 @@ export function InvoiceList() {
     setLoading(true);
     setError(null);
     try {
-      const response = await invoiceServices.getAllInvoices(currentPage, filters);
+      // Build filters object with only defined values
+      const activeFilters: InvoiceFilters = {};
+      
+      if (filters.client_id) activeFilters.client_id = filters.client_id;
+      if (filters.car_id) activeFilters.car_id = filters.car_id;
+      if (filters.account_id) activeFilters.account_id = filters.account_id;
+      if (filters.invoice_date) activeFilters.invoice_date = filters.invoice_date;
+      if (filters.paid !== undefined) activeFilters.paid = filters.paid;
+      
+      const response = await invoiceServices.getAllInvoices(
+        currentPage, 
+        Object.keys(activeFilters).length > 0 ? activeFilters : undefined
+      );
+      
       setInvoices(response.data);
       setTotalPages(response.last_page);
     } catch (err) {
@@ -61,15 +72,6 @@ export function InvoiceList() {
       setClients(response.data);
     } catch (error) {
       console.error("Error fetching clients:", error);
-    }
-  };
-
-  const fetchCars = async () => {
-    try {
-      const response = await carServices.getAllCars(1);
-      setCars(response.data);
-    } catch (error) {
-      console.error("Error fetching cars:", error);
     }
   };
 
@@ -125,6 +127,8 @@ export function InvoiceList() {
   // Clear all filters
   const clearFilters = () => {
     setFilters({});
+    setClientSearch("");
+    setCarIdSearch("");
     setCurrentPage(1);
   };
 
@@ -205,42 +209,76 @@ export function InvoiceList() {
       {showFilters && (
         <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Client Filter */}
+            {/* Client Filter - Searchable */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Client
+                Client (Search)
               </label>
-              <Select
-                value={filters.client_id || "all"}
-                onChange={(e) => handleFilterChange('client_id', e.target.value === "all" ? undefined : parseInt(e.target.value))}
-                sizing="sm"
-              >
-                <option value="all">All Clients</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </Select>
+              <div className="relative">
+                <TextInput
+                  type="text"
+                  placeholder="Search client by name..."
+                  value={clientSearch}
+                  onChange={(e) => setClientSearch(e.target.value)}
+                  sizing="sm"
+                />
+                {clientSearch && (
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {clients
+                      .filter(client => 
+                        client.name.toLowerCase().includes(clientSearch.toLowerCase())
+                      )
+                      .slice(0, 10)
+                      .map((client) => (
+                        <button
+                          key={client.id}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white"
+                          onClick={() => {
+                            handleFilterChange('client_id', client.id);
+                            setClientSearch(client.name);
+                          }}
+                        >
+                          {client.name}
+                        </button>
+                      ))}
+                    {clients.filter(client => 
+                      client.name.toLowerCase().includes(clientSearch.toLowerCase())
+                    ).length === 0 && (
+                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                        No clients found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {filters.client_id && (
+                <button
+                  onClick={() => {
+                    handleFilterChange('client_id', undefined);
+                    setClientSearch("");
+                  }}
+                  className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
+                >
+                  Clear client filter
+                </button>
+              )}
             </div>
 
-            {/* Car Filter */}
+            {/* Car Filter - TextBox for Car ID */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Car
+                Car ID
               </label>
-              <Select
-                value={filters.car_id || "all"}
-                onChange={(e) => handleFilterChange('car_id', e.target.value === "all" ? undefined : parseInt(e.target.value))}
+              <TextInput
+                type="number"
+                placeholder="Enter car ID..."
+                value={carIdSearch}
+                onChange={(e) => {
+                  setCarIdSearch(e.target.value);
+                  handleFilterChange('car_id', e.target.value ? parseInt(e.target.value) : undefined);
+                }}
                 sizing="sm"
-              >
-                <option value="all">All Cars</option>
-                {cars.map((car) => (
-                  <option key={car.id} value={car.id}>
-                    {car.carModel?.make?.name} {car.carModel?.name} (#{car.id})
-                  </option>
-                ))}
-              </Select>
+              />
             </div>
 
             {/* Payment Status Filter */}
@@ -298,7 +336,7 @@ export function InvoiceList() {
                 <tr>
                   <th scope="col" className="px-6 py-3">ID</th>
                   <th scope="col" className="px-6 py-3">Client</th>
-                  <th scope="col" className="px-6 py-3">Car</th>
+                  <th scope="col" className="px-6 py-3">Car ID</th>
                   <th scope="col" className="px-6 py-3">Date</th>
                   <th scope="col" className="px-6 py-3">Amount</th>
                   <th scope="col" className="px-6 py-3">Paid</th>
@@ -321,8 +359,8 @@ export function InvoiceList() {
                     <td className="px-6 py-4">
                       {invoice.client?.name || 'N/A'}
                     </td>
-                    <td className="px-6 py-4">
-                      {invoice.car?.carModel?.make?.name} {invoice.car?.carModel?.name}
+                    <td className="px-6 py-4 font-medium text-blue-600 dark:text-blue-400">
+                      #{invoice.car_id || 'N/A'}
                     </td>
                     <td className="px-6 py-4">
                       {formatDate(invoice.invoice_date)}
