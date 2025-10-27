@@ -22,8 +22,8 @@ export function ExpenseList() {
   
   // Filter states
   const [filterDate, setFilterDate] = useState<string>("");
-  const [filterMinAmount, setFilterMinAmount] = useState<string>("");
-  const [filterMaxAmount, setFilterMaxAmount] = useState<string>("");
+  const [filterAmountFrom, setFilterAmountFrom] = useState<string>("");
+  const [filterAmountTo, setFilterAmountTo] = useState<string>("");
   const [filterDescription, setFilterDescription] = useState<string>("");
   
   // Modal states
@@ -43,19 +43,28 @@ export function ExpenseList() {
       const filters: any = {};
       
       if (filterDate) filters.expense_date = filterDate;
-      if (filterMinAmount) filters.min_amount = parseFloat(filterMinAmount);
-      if (filterMaxAmount) filters.max_amount = parseFloat(filterMaxAmount);
+      if (filterAmountFrom) filters.amount_from = parseFloat(filterAmountFrom);
+      if (filterAmountTo) filters.amount_to = parseFloat(filterAmountTo);
       if (filterDescription) filters.description = filterDescription;
       
       const response = await dealerShipExpenseServices.getAllDealerShipExpenses(
         currentPage, 
         Object.keys(filters).length > 0 ? filters : undefined
       );
-      setExpenses(response.data);
+      
+      // Normalize the API response to handle string amounts
+      const normalizedExpenses = response.data.map((expense: any) => ({
+        ...expense,
+        amount: typeof expense.amount === 'string' 
+          ? parseFloat(expense.amount) 
+          : expense.amount,
+      }));
+      
+      setExpenses(normalizedExpenses);
       setTotalPages(response.last_page);
       
       // Calculate monthly data
-      calculateMonthlyData(response.data);
+      calculateMonthlyData(normalizedExpenses);
     } catch (err) {
       console.error("Error fetching expenses:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch expenses. Please check if the API server is running.";
@@ -108,7 +117,7 @@ export function ExpenseList() {
   useEffect(() => {
     fetchExpenses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filterDate, filterMinAmount, filterMaxAmount, filterDescription]);
+  }, [currentPage, filterDate, filterAmountFrom, filterAmountTo, filterDescription]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -255,27 +264,27 @@ export function ExpenseList() {
             />
           </div>
 
-          {/* Min Amount Filter */}
+          {/* Amount From Filter */}
           <div>
-            <Label htmlFor="filterMinAmount">Min Amount</Label>
+            <Label htmlFor="filterAmountFrom">Amount From</Label>
             <TextInput
-              id="filterMinAmount"
+              id="filterAmountFrom"
               type="number"
               placeholder="Min amount"
-              value={filterMinAmount}
-              onChange={(e) => setFilterMinAmount(e.target.value)}
+              value={filterAmountFrom}
+              onChange={(e) => setFilterAmountFrom(e.target.value)}
             />
           </div>
 
-          {/* Max Amount Filter */}
+          {/* Amount To Filter */}
           <div>
-            <Label htmlFor="filterMaxAmount">Max Amount</Label>
+            <Label htmlFor="filterAmountTo">Amount To</Label>
             <TextInput
-              id="filterMaxAmount"
+              id="filterAmountTo"
               type="number"
               placeholder="Max amount"
-              value={filterMaxAmount}
-              onChange={(e) => setFilterMaxAmount(e.target.value)}
+              value={filterAmountTo}
+              onChange={(e) => setFilterAmountTo(e.target.value)}
             />
           </div>
 

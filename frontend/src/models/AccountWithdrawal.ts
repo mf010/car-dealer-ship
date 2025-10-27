@@ -29,7 +29,7 @@ export interface UpdateAccountWithdrawalDTO {
 export interface AccountWithdrawalFilters {
   account_id?: number;
   withdrawal_date?: string;
-  min_amount?: number;
-  max_amount?: number;
+  amount_from?: number;
+  amount_to?: number;
   // Add any other filter parameters you need
 }

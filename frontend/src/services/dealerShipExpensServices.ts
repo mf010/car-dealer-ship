@@ -11,7 +11,19 @@ export const dealerShipExpenseServices = {
     params.append('page', page.toString());
     
     if (filters) {
-      params.append('filters', JSON.stringify(filters));
+      // Send filters as individual query parameters instead of JSON string
+      if (filters.description) {
+        params.append('description', filters.description);
+      }
+      if (filters.expense_date) {
+        params.append('expense_date', filters.expense_date);
+      }
+      if (filters.amount_from !== undefined) {
+        params.append('amount_from', filters.amount_from.toString());
+      }
+      if (filters.amount_to !== undefined) {
+        params.append('amount_to', filters.amount_to.toString());
+      }
     }
     
     const response = await api.get<PaginatedResponse<DealerShipExpense>>(`${BASE_URL}?${params.toString()}`);
@@ -47,7 +59,19 @@ export const dealerShipExpenseServices = {
     params.append('page', page.toString());
     
     if (filters) {
-      params.append('filters', JSON.stringify(filters));
+      // Send filters as individual query parameters instead of JSON string
+      if (filters.description) {
+        params.append('description', filters.description);
+      }
+      if (filters.expense_date) {
+        params.append('expense_date', filters.expense_date);
+      }
+      if (filters.amount_from !== undefined) {
+        params.append('amount_from', filters.amount_from.toString());
+      }
+      if (filters.amount_to !== undefined) {
+        params.append('amount_to', filters.amount_to.toString());
+      }
     }
     
     const response = await api.get<PaginatedResponse<DealerShipExpense>>(`${BASE_URL}/deleted?${params.toString()}`);

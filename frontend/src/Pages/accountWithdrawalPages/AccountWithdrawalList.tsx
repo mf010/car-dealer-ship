@@ -205,33 +205,33 @@ export function AccountWithdrawalList() {
               />
             </div>
 
-            {/* Min Amount Filter */}
+            {/* Amount From Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Min Amount
+                Amount From
               </label>
               <input
                 type="number"
                 placeholder="0.00"
-                value={filters.min_amount || ''}
+                value={filters.amount_from || ''}
                 onChange={(e) =>
-                  handleFilterChange('min_amount', e.target.value ? Number(e.target.value) : undefined)
+                  handleFilterChange('amount_from', e.target.value ? Number(e.target.value) : undefined)
                 }
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
-            {/* Max Amount Filter */}
+            {/* Amount To Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Max Amount
+                Amount To
               </label>
               <input
                 type="number"
                 placeholder="0.00"
-                value={filters.max_amount || ''}
+                value={filters.amount_to || ''}
                 onChange={(e) =>
-                  handleFilterChange('max_amount', e.target.value ? Number(e.target.value) : undefined)
+                  handleFilterChange('amount_to', e.target.value ? Number(e.target.value) : undefined)
                 }
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />

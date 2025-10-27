@@ -13,8 +13,15 @@ class DealerShipExpenseController extends Controller
     {
         $query = DealerShipExpense::query();
         
+        // Support both filters[field] and direct field parameters
         if ($request->has('filters')) {
             $query->filter($request->filters);
+        } else {
+            // Support direct query parameters like ?expense_date=2025-09-12&amount_from=5
+            $directFilters = $request->except(['page', 'per_page']);
+            if (!empty($directFilters)) {
+                $query->filter($directFilters);
+            }
         }
         
         return response()->json($query->paginate(10));

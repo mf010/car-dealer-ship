@@ -116,4 +116,13 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
+    public function AddToAccountBalance($id, Request $request)
+    {
+        $account = Account::findOrFail($id);
+        $account->balance += $request->amount;
+        $account->save();
+
+        return response()->json($account);
+    }
+
 }
