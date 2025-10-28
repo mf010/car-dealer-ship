@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Label, TextInput, Select } from "flowbite-react";
 import { HiPencil } from "react-icons/hi";
+import axios from "axios";
 import { invoiceServices } from "../../services/invoiceServices";
 import { clientServices } from "../../services/clientServices";
 import { carServices } from "../../services/carServices";
@@ -146,7 +147,19 @@ export function InvoiceUpdate({
       onClose();
     } catch (error) {
       console.error("Error updating invoice:", error);
-      setErrors({ submit: "Failed to update invoice. Please try again." });
+      
+      // Handle validation error from backend (422)
+      if (axios.isAxiosError(error) && error.response?.status === 422) {
+        const backendMessage = error.response?.data?.message;
+        if (backendMessage) {
+          alert(backendMessage);
+          setErrors({ submit: backendMessage });
+        } else {
+          setErrors({ submit: "Validation failed. Please check your inputs." });
+        }
+      } else {
+        setErrors({ submit: "Failed to update invoice. Please try again." });
+      }
     } finally {
       setLoading(false);
     }
@@ -272,7 +285,7 @@ export function InvoiceUpdate({
 
               <div>
                 <Label htmlFor="payed" className="mb-2 block">
-                  Amount Paid
+                  Amount Paid (Read-only)
                 </Label>
                 <TextInput
                   id="payed"
@@ -281,6 +294,8 @@ export function InvoiceUpdate({
                   step="0.01"
                   value={formData.payed}
                   onChange={handleChange}
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
                   color={errors.payed ? "failure" : undefined}
                   placeholder="0.00"
                 />

@@ -62,7 +62,16 @@ class CarController extends Controller
     // Delete a car
     public function destroy($id)
     {
-        $car = Car::findOrFail($id);
+        $car = Car::with('invoices')->findOrFail($id);
+        
+        // Check if car has any linked invoices
+        if ($car->invoices()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete car',
+                'message' => 'This car is linked to one or more invoices. Please remove or reassign the invoices before deleting the car.'
+            ], 422);
+        }
+        
         $car->delete();
 
         return response()->json(null, 204);

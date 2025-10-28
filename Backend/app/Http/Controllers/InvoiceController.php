@@ -86,6 +86,14 @@ class InvoiceController extends Controller
     // Update an invoice
     public function update(InvoiceRequest $request, $id)
     {
+        // Validate that new amount is greater than or equal to payed amount
+        if ($request->amount < $request->payed) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'message' => 'The invoice amount must be greater than or equal to the paid amount. Current paid amount: ' . $request->payed
+            ], 422);
+        }
+        
         // Begin transaction to ensure data consistency
         DB::beginTransaction();
         
@@ -99,8 +107,8 @@ class InvoiceController extends Controller
             // Handle account changes and account cut updates
             if ($oldAccountId) {
                 if ($request->account_id != $oldAccountId) {
-                    // Account changed - remove old cut and add new cut
-                    app(AccountController::class)->SubtractFromAccountCut($oldAccountId, new Request([
+                    // Account changed - subtract old cut and add new cut
+                    app(AccountController::class)->SubtractFromAccountBalance($oldAccountId, new Request([
                         'amount' => $oldAccountCut
                     ]));
                     
@@ -110,9 +118,12 @@ class InvoiceController extends Controller
                         ]));
                     }
                 } elseif ($request->account_cut != $oldAccountCut) {
-                    // Same account but different cut
+                    // Same account but different cut - subtract old and add new
+                    app(AccountController::class)->SubtractFromAccountBalance($oldAccountId, new Request([
+                        'amount' => $oldAccountCut
+                    ]));
                     app(AccountController::class)->AddAccountCut($oldAccountId, new Request([
-                        'amount' => $request->account_cut - $oldAccountCut
+                        'amount' => $request->account_cut
                     ]));
                 }
             } elseif ($request->account_id) {
@@ -165,19 +176,35 @@ class InvoiceController extends Controller
     // Delete an invoice
     public function destroy($id)
     {
-        $invoice = Invoice::findOrFail($id);
-        $invoice->delete();
-
-        if ($invoice->account_id){
-            app(AccountController::class)->SubtractFromAccountCut($invoice->account_id, new Request([
+        $invoice = Invoice::with('payments')->findOrFail($id);
+        
+        // Delete all linked payments first
+        foreach ($invoice->payments as $payment) {
+            $payment->delete();
+        }
+        
+        // Add payed amount back to client balance (if any amount was paid)
+        if ($invoice->payed > 0) {
+            app(ClientController::class)->AddToClient($invoice->client_id, new Request([
+                'amount' => $invoice->payed
+            ]));
+        }
+        
+        // Subtract account cut from account balance (if there's an account linked)
+        if ($invoice->account_id) {
+            app(AccountController::class)->SubtractFromAccountBalance($invoice->account_id, new Request([
                 'amount' => $invoice->account_cut
             ]));
         }
-        if ($invoice->payed < $invoice->amount){
+        
+        // Add unpaid amount back to client balance (reverse the debt)
+        if ($invoice->payed < $invoice->amount) {
             app(ClientController::class)->AddToClient($invoice->client_id, new Request([
                 'amount' => $invoice->amount - $invoice->payed
             ]));
         }
+        
+        $invoice->delete();
 
         return response()->json(null, 204);
     }

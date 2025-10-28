@@ -155,8 +155,23 @@ export function CarList() {
       try {
         await carServices.deleteCar(id);
         fetchCars();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error deleting car:", error);
+        
+        // Handle validation error (422) when car has linked invoices
+        if (error.response?.status === 422) {
+          const errorMessage = error.response?.data?.message || 
+            "This car is linked to one or more invoices. Please remove or reassign the invoices before deleting the car.";
+          
+          alert(`Cannot Delete Car\n\n${errorMessage}`);
+        } else {
+          // Handle other errors
+          const errorMessage = error.response?.data?.message || 
+            error.message || 
+            "Failed to delete car. Please try again.";
+          
+          alert(`Error: ${errorMessage}`);
+        }
       }
     }
   };
