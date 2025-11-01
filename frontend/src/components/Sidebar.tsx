@@ -1,18 +1,27 @@
 
 "use client";
+import { useState } from "react";
 import { Component as UserCard } from "../Pages/userPages/userCard";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
-import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards, HiTag, HiCollection, HiDocumentText, HiCash, HiCurrencyDollar } from "react-icons/hi";
+import { HiChartPie, HiInbox, HiShoppingBag, HiUser, HiViewBoards, HiTag, HiCollection, HiDocumentText, HiCash, HiCurrencyDollar, HiUsers, HiCog } from "react-icons/hi";
+import { SettingsModal } from "./SettingsModal";
 
 interface SidebarProps {
   onNavigate?: () => void;
 }
 
 export function Component({ onNavigate }: SidebarProps = {}) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const handleNavClick = () => {
     if (onNavigate) {
       onNavigate();
     }
+  };
+
+  const handleSettingsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsSettingsOpen(true);
   };
 
   return (
@@ -123,6 +132,15 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
+            href="users" 
+            icon={HiUsers}
+            className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            onClick={handleNavClick}
+          >
+            <span className="font-medium">User Management</span>
+          </SidebarItem>
+          
+          <SidebarItem 
             href="expenses" 
             icon={HiShoppingBag}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
@@ -135,24 +153,21 @@ export function Component({ onNavigate }: SidebarProps = {}) {
         {/* Bottom Section */}
         <SidebarItemGroup className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-auto">
           <SidebarItem 
-            href="settings" 
-            icon={HiTable}
+            href="#" 
+            icon={HiCog}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
-            onClick={handleNavClick}
+            onClick={handleSettingsClick}
           >
             <span className="font-medium">Settings</span>
           </SidebarItem>
-          
-          <SidebarItem 
-            href="sign-in" 
-            icon={HiArrowSmRight}
-            className="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 text-red-600 dark:text-red-400"
-            onClick={handleNavClick}
-          >
-            <span className="font-medium">Sign Out</span>
-          </SidebarItem>
         </SidebarItemGroup>
       </SidebarItems>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </Sidebar>
   );
 }
