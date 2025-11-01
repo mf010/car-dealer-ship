@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained('clients');
-            $table->foreignId('account_id')->constrained('accounts')->nullable();//dealer
+            $table->foreignId('account_id')->nullable()->constrained('accounts');//dealer
             $table->decimal('amount', 10, 2);
             $table->date('invoice_date');
             $table->foreignId('car_id')->constrained('cars');
             $table->decimal('payed', 10, 2);
-            $table->decimal('account_cut', 10, 2);// dealer cut
+            $table->decimal('account_cut', 10, 2)->nullable();// dealer cut
+            $table->softDeletes();
             $table->timestamps();
         });
     }

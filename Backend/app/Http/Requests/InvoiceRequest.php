@@ -20,29 +20,21 @@ class InvoiceRequest extends FormRequest
             'invoice_date' => 'required|date',
             'car_id' => 'required|exists:cars,id',
             'payed' => 'required|numeric|decimal:0,2',
-            'account_cut' => 'required|numeric|decimal:0,2',
+            'account_cut' => 'nullable|numeric|decimal:0,2',
         ];
     }
 
-    public function messages()
+    public function withValidator($validator)
     {
-        return [
-            'client_id.required' => 'The client is required.',
-            'client_id.exists' => 'The selected client does not exist.',
-            'account_id.exists' => 'The selected dealer account does not exist.',
-            'amount.required' => 'The invoice amount is required.',
-            'amount.numeric' => 'The amount must be a number.',
-            'amount.decimal' => 'The amount must have 2 decimal places.',
-            'invoice_date.required' => 'The invoice date is required.',
-            'invoice_date.date' => 'Please provide a valid date.',
-            'car_id.required' => 'The car is required.',
-            'car_id.exists' => 'The selected car does not exist.',
-            'payed.required' => 'The paid amount is required.',
-            'payed.numeric' => 'The paid amount must be a number.',
-            'payed.decimal' => 'The paid amount must have 2 decimal places.',
-            'account_cut.required' => 'The dealer cut is required.',
-            'account_cut.numeric' => 'The dealer cut must be a number.',
-            'account_cut.decimal' => 'The dealer cut must have 2 decimal places.',
-        ];
+        $validator->after(function ($validator) {
+            $accountId = $this->input('account_id');
+            $accountCut = $this->input('account_cut');
+
+            // If one is provided, both must be provided
+            if (($accountId && !$accountCut) || (!$accountId && $accountCut)) {
+                $validator->errors()->add('account_id', 'Both dealer account and dealer cut must be provided together, or leave both empty.');
+                $validator->errors()->add('account_cut', 'Both dealer account and dealer cut must be provided together, or leave both empty.');
+            }
+        });
     }
 }

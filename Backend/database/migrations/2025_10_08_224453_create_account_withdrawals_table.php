@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+
 return new class extends Migration
 {
     /**
@@ -16,6 +17,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('accounts');
             $table->decimal('amount', 10, 2);
             $table->date('withdrawal_date');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

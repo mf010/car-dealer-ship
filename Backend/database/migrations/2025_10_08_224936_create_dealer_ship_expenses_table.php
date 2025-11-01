@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('description');
             $table->decimal('amount', 10, 2);
             $table->date('expense_date');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -97,7 +97,10 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
 
   const handleNavigateToInvoice = () => {
     if (invoice) {
-      navigate(`/invoice/${invoice.id}`);
+      // Close the modal first
+      onClose();
+      // Navigate to invoices page
+      navigate('/invoices');
     }
   };
 
@@ -124,7 +127,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
 
   return (
     <Modal show={isOpen} onClose={onClose} size="3xl">
-      <div className="p-6">
+      <div className="p-6 max-h-[90vh] overflow-y-auto">
         {/* Loading State */}
         {loadingCar ? (
           <div className="flex justify-center items-center py-12">
