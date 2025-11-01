@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal, Button, Label, TextInput } from "flowbite-react";
 import { HiUserAdd } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { authServices } from "../../services/authServices";
 import type { RegisterRequest } from "../../models/User";
 
@@ -11,6 +12,7 @@ interface UserFormProps {
 }
 
 export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<RegisterRequest>({
     name: "",
@@ -35,23 +37,23 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = t('validation.nameRequired');
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t('validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = t('validation.invalidEmail');
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t('validation.passwordRequired');
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = t('validation.passwordMinLength');
     }
 
     if (formData.password !== formData.password_confirmation) {
-      newErrors.password_confirmation = "Passwords do not match";
+      newErrors.password_confirmation = t('validation.passwordsDoNotMatch');
     }
 
     setErrors(newErrors);
@@ -86,7 +88,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
         const backendErrors = error.response?.data?.errors || {};
         setErrors(backendErrors);
       } else {
-        setErrors({ submit: "Failed to create user. Please try again." });
+        setErrors({ submit: t('messages.createFailed') });
       }
     } finally {
       setLoading(false);
@@ -110,7 +112,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
         <div className="flex items-center gap-2 mb-6">
           <HiUserAdd className="h-6 w-6 text-gray-600" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Add New User
+            {t('user.addUser')}
           </h3>
         </div>
 
@@ -118,7 +120,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
           {/* Name */}
           <div>
             <Label htmlFor="name" className="mb-2 block">
-              Name <span className="text-red-500">*</span>
+              {t('user.name')} <span className="text-red-500">*</span>
             </Label>
             <TextInput
               id="name"
@@ -127,7 +129,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
-              placeholder="Enter user name"
+              placeholder={t('user.enterName')}
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -137,7 +139,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
           {/* Email */}
           <div>
             <Label htmlFor="email" className="mb-2 block">
-              Email <span className="text-red-500">*</span>
+              {t('user.email')} <span className="text-red-500">*</span>
             </Label>
             <TextInput
               id="email"
@@ -146,7 +148,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
               value={formData.email}
               onChange={handleChange}
               color={errors.email ? "failure" : undefined}
-              placeholder="user@example.com"
+              placeholder={t('user.emailPlaceholder')}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -156,7 +158,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
           {/* Password */}
           <div>
             <Label htmlFor="password" className="mb-2 block">
-              Password <span className="text-red-500">*</span>
+              {t('auth.password')} <span className="text-red-500">*</span>
             </Label>
             <TextInput
               id="password"
@@ -165,7 +167,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
               value={formData.password}
               onChange={handleChange}
               color={errors.password ? "failure" : undefined}
-              placeholder="Min 6 characters"
+              placeholder={t('settings.minCharacters')}
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password}</p>
@@ -175,7 +177,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
           {/* Password Confirmation */}
           <div>
             <Label htmlFor="password_confirmation" className="mb-2 block">
-              Confirm Password <span className="text-red-500">*</span>
+              {t('user.confirmPassword')} <span className="text-red-500">*</span>
             </Label>
             <TextInput
               id="password_confirmation"
@@ -184,7 +186,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
               value={formData.password_confirmation}
               onChange={handleChange}
               color={errors.password_confirmation ? "failure" : undefined}
-              placeholder="Re-enter password"
+              placeholder={t('user.reEnterPassword')}
             />
             {errors.password_confirmation && (
               <p className="mt-1 text-sm text-red-600">
@@ -203,10 +205,10 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? "Creating..." : "Create User"}
+              {loading ? t('common.creating') : t('user.createUser')}
             </Button>
             <Button color="gray" onClick={handleClose} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

@@ -1,16 +1,19 @@
 
 "use client";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Component as UserCard } from "../Pages/userPages/userCard";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
 import { HiChartPie, HiInbox, HiShoppingBag, HiUser, HiViewBoards, HiTag, HiCollection, HiDocumentText, HiCash, HiCurrencyDollar, HiUsers, HiCog } from "react-icons/hi";
 import { SettingsModal } from "./SettingsModal";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface SidebarProps {
   onNavigate?: () => void;
 }
 
 export function Component({ onNavigate }: SidebarProps = {}) {
+  const { t } = useTranslation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleNavClick = () => {
@@ -47,7 +50,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Dashboard</span>
+            <span className="font-medium">{t('sidebar.dashboard')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -56,7 +59,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Cars</span>
+            <span className="font-medium">{t('sidebar.cars')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -65,7 +68,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Invoices</span>
+            <span className="font-medium">{t('sidebar.invoices')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -74,7 +77,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Payments</span>
+            <span className="font-medium">{t('sidebar.payments')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -83,7 +86,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Account Withdrawals</span>
+            <span className="font-medium">{t('sidebar.accountWithdrawals')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -92,7 +95,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Car Expenses</span>
+            <span className="font-medium">{t('sidebar.carExpenses')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -101,7 +104,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Car Makes</span>
+            <span className="font-medium">{t('sidebar.carMakes')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -110,7 +113,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Car Models</span>
+            <span className="font-medium">{t('sidebar.carModels')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -119,7 +122,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Employee Accounts</span>
+            <span className="font-medium">{t('sidebar.accounts')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -128,7 +131,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">Client Accounts</span>
+            <span className="font-medium">{t('sidebar.clients')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -137,7 +140,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">User Management</span>
+            <span className="font-medium">{t('sidebar.users')}</span>
           </SidebarItem>
           
           <SidebarItem 
@@ -146,19 +149,24 @@ export function Component({ onNavigate }: SidebarProps = {}) {
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">General Expense</span>
+            <span className="font-medium">{t('sidebar.expenses')}</span>
           </SidebarItem>
         </SidebarItemGroup>
 
         {/* Bottom Section */}
         <SidebarItemGroup className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-auto">
+          {/* Language Switcher */}
+          <SidebarItem href="#" className="hover:bg-transparent cursor-default">
+            <LanguageSwitcher />
+          </SidebarItem>
+          
           <SidebarItem 
             href="#" 
             icon={HiCog}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleSettingsClick}
           >
-            <span className="font-medium">Settings</span>
+            <span className="font-medium">{t('sidebar.settings')}</span>
           </SidebarItem>
         </SidebarItemGroup>
       </SidebarItems>

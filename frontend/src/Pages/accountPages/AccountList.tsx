@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, TextInput, Pagination, Card, Badge } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiSearch, HiUser, HiPhone, HiInformationCircle } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "../../utils/formatters";
 import { accountServices } from "../../services/accountServices";
 import type { Account } from "../../models/Account";
 import { AccountForm } from "./AccountForm";
@@ -8,6 +10,7 @@ import { AccountUpdate } from "./AccountUpdate";
 import { AccountInfoModal } from "./AccountInfoModal";
 
 export function AccountList() {
+  const { t, i18n } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -50,7 +53,7 @@ export function AccountList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this account?")) {
+    if (window.confirm(t('account.deleteConfirm'))) {
       try {
         await accountServices.deleteAccount(id);
         fetchAccounts();
@@ -82,14 +85,6 @@ export function AccountList() {
     setCurrentPage(page);
   };
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   // Filter accounts based on debt filter
   const filteredAccounts = showDebtOnly 
     ? accounts.filter(account => account.balance < 0)
@@ -101,22 +96,22 @@ export function AccountList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Employee Accounts
+            {t('account.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage employee account information and balances
+            {t('account.manageDescription')}
           </p>
         </div>
         <Button onClick={handleAddAccount} color="blue" size="md">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Account
+          {t('account.addAccount')}
         </Button>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-          <span className="font-medium">Error!</span> {error}
+          <span className="font-medium">{t('common.error')}</span> {error}
         </div>
       )}
 
@@ -125,7 +120,7 @@ export function AccountList() {
         <div className="flex-1 max-w-md">
           <TextInput
             icon={HiSearch}
-            placeholder="Search by name..."
+            placeholder={t('account.searchPlaceholder')}
             value={searchName}
             onChange={(e) => {
               setSearchName(e.target.value);
@@ -146,12 +141,12 @@ export function AccountList() {
               className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-300">
-              Show Accounts with Debt Only
+              {t('account.showDebtOnly')}
             </span>
           </label>
           {showDebtOnly && (
             <Badge color="failure" size="sm">
-              Active
+              {t('common.active')}
             </Badge>
           )}
         </div>
@@ -162,19 +157,19 @@ export function AccountList() {
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-500 dark:text-gray-400">
-            Loading accounts...
+            {t('account.loadingAccounts')}
           </span>
         </div>
       ) : !accounts || accounts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            No accounts found
+            {t('account.noAccounts')}
           </p>
         </div>
       ) : filteredAccounts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            No accounts with debt found
+            {t('account.noAccountsWithDebt')}
           </p>
         </div>
       ) : (
@@ -194,7 +189,7 @@ export function AccountList() {
                     </div>
                     {account.balance < 0 && (
                       <Badge color="failure" size="sm">
-                        Debt
+                        {t('account.debt')}
                       </Badge>
                     )}
                   </div>
@@ -210,7 +205,7 @@ export function AccountList() {
                     
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <HiInformationCircle className="h-4 w-4" />
-                      <span>Account ID: {account.id}</span>
+                      <span>{t('account.accountId')}: {account.id}</span>
                     </div>
                   </div>
 
@@ -218,14 +213,14 @@ export function AccountList() {
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Balance:
+                        {t('account.balance')}:
                       </span>
                       <span className={`text-lg font-bold ${
                         account.balance < 0 
                           ? 'text-red-600 dark:text-red-400' 
                           : 'text-green-600 dark:text-green-400'
                       }`}>
-                        {formatCurrency(account.balance)}
+                        {formatCurrency(account.balance, i18n.language)}
                       </span>
                     </div>
                   </div>
@@ -238,7 +233,7 @@ export function AccountList() {
                       className="flex-1"
                       onClick={() => handleViewAccount(account)}
                     >
-                      View Details
+                      {t('account.viewDetails')}
                     </Button>
                     <Button
                       size="sm"

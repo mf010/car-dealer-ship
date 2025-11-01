@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, TextInput, Pagination, Badge, Select } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiInformationCircle, HiFilter } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
+import { formatCurrency, formatDate } from "../../utils/formatters";
 import { invoiceServices } from "../../services/invoiceServices";
 import { clientServices } from "../../services/clientServices";
 import type { Invoice, InvoiceFilters } from "../../models/Invoice";
@@ -10,6 +12,7 @@ import { InvoiceUpdate } from "./InvoiceUpdate";
 import { InvoiceInfoModal } from "./InvoiceInfoModal";
 
 export function InvoiceList() {
+  const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -83,7 +86,7 @@ export function InvoiceList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this invoice?")) {
+    if (window.confirm(t('invoice.deleteConfirm'))) {
       try {
         await invoiceServices.deleteInvoice(id);
         fetchInvoices();
@@ -132,23 +135,6 @@ export function InvoiceList() {
     setCurrentPage(1);
   };
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   // Check if invoice is fully paid
   const isFullyPaid = (invoice: Invoice) => {
     return invoice.payed >= invoice.amount;
@@ -165,22 +151,22 @@ export function InvoiceList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Invoices
+            {t('invoice.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage sales invoices and track payments
+            {t('invoice.manageDescription')}
           </p>
         </div>
         <Button onClick={handleAddInvoice} color="blue" size="md">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Invoice
+          {t('invoice.addInvoice')}
         </Button>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-          <span className="font-medium">Error!</span> {error}
+          <span className="font-medium">{t('common.error')}</span> {error}
         </div>
       )}
 
@@ -192,7 +178,7 @@ export function InvoiceList() {
           onClick={() => setShowFilters(!showFilters)}
         >
           <HiFilter className="mr-2 h-4 w-4" />
-          {showFilters ? 'Hide Filters' : 'Show Filters'}
+          {showFilters ? t('common.hideFilters') : t('common.showFilters')}
         </Button>
         {Object.keys(filters).length > 0 && (
           <Button
@@ -200,7 +186,7 @@ export function InvoiceList() {
             size="sm"
             onClick={clearFilters}
           >
-            Clear Filters
+            {t('common.clearFilters')}
           </Button>
         )}
       </div>
@@ -245,7 +231,7 @@ export function InvoiceList() {
                       client.name.toLowerCase().includes(clientSearch.toLowerCase())
                     ).length === 0 && (
                       <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                        No clients found
+                        {t('common.noClientsFound')}
                       </div>
                     )}
                   </div>
@@ -259,7 +245,7 @@ export function InvoiceList() {
                   }}
                   className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
                 >
-                  Clear client filter
+                  {t('common.clearClientFilter')}
                 </button>
               )}
             </div>
@@ -267,11 +253,11 @@ export function InvoiceList() {
             {/* Car Filter - TextBox for Car ID */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Car ID
+                {t('car.carId')}
               </label>
               <TextInput
                 type="number"
-                placeholder="Enter car ID..."
+                placeholder={t('car.enterCarId')}
                 value={carIdSearch}
                 onChange={(e) => {
                   setCarIdSearch(e.target.value);
@@ -284,23 +270,23 @@ export function InvoiceList() {
             {/* Payment Status Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Payment Status
+                {t('invoice.paymentStatus')}
               </label>
               <Select
                 value={filters.paid === undefined ? "all" : filters.paid ? "paid" : "unpaid"}
                 onChange={(e) => handleFilterChange('paid', e.target.value === "all" ? undefined : e.target.value === "paid")}
                 sizing="sm"
               >
-                <option value="all">All Invoices</option>
-                <option value="paid">Fully Paid</option>
-                <option value="unpaid">Unpaid/Partial</option>
+                <option value="all">{t('invoice.allInvoices')}</option>
+                <option value="paid">{t('invoice.fullyPaid')}</option>
+                <option value="unpaid">{t('invoice.unpaidPartial')}</option>
               </Select>
             </div>
 
             {/* Invoice Date Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Invoice Date
+                {t('invoice.invoiceDate')}
               </label>
               <TextInput
                 type="date"
@@ -318,13 +304,13 @@ export function InvoiceList() {
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-500 dark:text-gray-400">
-            Loading invoices...
+            {t('invoice.loadingInvoices')}
           </span>
         </div>
       ) : !invoices || invoices.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            No invoices found
+            {t('invoice.noInvoices')}
           </p>
         </div>
       ) : (
@@ -334,16 +320,16 @@ export function InvoiceList() {
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th scope="col" className="px-6 py-3">ID</th>
-                  <th scope="col" className="px-6 py-3">Client</th>
-                  <th scope="col" className="px-6 py-3">Car ID</th>
-                  <th scope="col" className="px-6 py-3">Date</th>
-                  <th scope="col" className="px-6 py-3">Amount</th>
-                  <th scope="col" className="px-6 py-3">Paid</th>
-                  <th scope="col" className="px-6 py-3">Balance</th>
-                  <th scope="col" className="px-6 py-3">Status</th>
+                  <th scope="col" className="px-6 py-3">{t('common.id')}</th>
+                  <th scope="col" className="px-6 py-3">{t('client.client')}</th>
+                  <th scope="col" className="px-6 py-3">{t('car.carId')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.date')}</th>
+                  <th scope="col" className="px-6 py-3">{t('invoice.amount')}</th>
+                  <th scope="col" className="px-6 py-3">{t('invoice.paid')}</th>
+                  <th scope="col" className="px-6 py-3">{t('invoice.balance')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.status')}</th>
                   <th scope="col" className="px-6 py-3">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('common.actions')}</span>
                   </th>
                 </tr>
               </thead>
@@ -357,30 +343,30 @@ export function InvoiceList() {
                       #{invoice.id}
                     </td>
                     <td className="px-6 py-4">
-                      {invoice.client?.name || 'N/A'}
+                      {invoice.client?.name || t('common.notAvailable')}
                     </td>
                     <td className="px-6 py-4 font-medium text-blue-600 dark:text-blue-400">
-                      #{invoice.car_id || 'N/A'}
+                      #{invoice.car_id || t('common.notAvailable')}
                     </td>
                     <td className="px-6 py-4">
-                      {formatDate(invoice.invoice_date)}
+                      {formatDate(invoice.invoice_date, i18n.language)}
                     </td>
                     <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
-                      {formatCurrency(invoice.amount)}
+                      {formatCurrency(invoice.amount, i18n.language)}
                     </td>
                     <td className="px-6 py-4 font-semibold text-blue-600 dark:text-blue-400">
-                      {formatCurrency(invoice.payed)}
+                      {formatCurrency(invoice.payed, i18n.language)}
                     </td>
                     <td className="px-6 py-4 font-semibold text-orange-600 dark:text-orange-400">
-                      {formatCurrency(getRemainingBalance(invoice))}
+                      {formatCurrency(getRemainingBalance(invoice), i18n.language)}
                     </td>
                     <td className="px-6 py-4">
                       {isFullyPaid(invoice) ? (
-                        <Badge color="success" size="sm">Paid</Badge>
+                        <Badge color="success" size="sm">{t('invoice.paid')}</Badge>
                       ) : invoice.payed > 0 ? (
-                        <Badge color="warning" size="sm">Partial</Badge>
+                        <Badge color="warning" size="sm">{t('invoice.partial')}</Badge>
                       ) : (
-                        <Badge color="failure" size="sm">Unpaid</Badge>
+                        <Badge color="failure" size="sm">{t('invoice.unpaid')}</Badge>
                       )}
                     </td>
                     <td className="px-6 py-4">

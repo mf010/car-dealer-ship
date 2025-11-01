@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, Badge, Pagination, Spinner } from 'flowbite-react';
 import { HiPlus, HiEye, HiPencil, HiTrash, HiFilter } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import { accountWithdrawalServices } from '../../services/accountWithdrawalServices';
 import { accountServices } from '../../services/accountServices';
 import type { AccountWithdrawal, AccountWithdrawalFilters } from '../../models/AccountWithdrawal';
@@ -9,8 +10,10 @@ import type { Account } from '../../models/Account';
 import { AccountWithdrawalForm } from './AccountWithdrawalForm';
 import { AccountWithdrawalUpdate } from './AccountWithdrawalUpdate';
 import { AccountWithdrawalInfoModal } from './AccountWithdrawalInfoModal';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from '../../utils/formatters';
 
 export function AccountWithdrawalList() {
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const [withdrawals, setWithdrawals] = useState<AccountWithdrawal[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -70,7 +73,7 @@ export function AccountWithdrawalList() {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this withdrawal?')) {
+    if (window.confirm(t('messages.confirmDeleteWithdrawal'))) {
       try {
         await accountWithdrawalServices.deleteWithdrawal(id);
         fetchWithdrawals();
@@ -104,18 +107,11 @@ export function AccountWithdrawalList() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   return (
@@ -124,16 +120,16 @@ export function AccountWithdrawalList() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Account Withdrawals
+            {t('accountWithdrawal.management')}
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Manage employee account withdrawals and track balances
+            {t('accountWithdrawal.managementDescription')}
           </p>
           {/* Show filtered account info */}
           {filters.account_id && (
             <div className="mt-2">
               <Badge color="info" size="sm">
-                Filtered by Account: {accounts.find(a => a.id === filters.account_id)?.name || `#${filters.account_id}`}
+                {t('accountWithdrawal.filteredByAccount', { account: accounts.find(a => a.id === filters.account_id)?.name || `#${filters.account_id}` })}
               </Badge>
             </div>
           )}
@@ -145,14 +141,14 @@ export function AccountWithdrawalList() {
             className="flex items-center gap-2"
           >
             <HiFilter className="h-5 w-5" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            {showFilters ? t('common.hideFilters') : t('common.showFilters')}
           </Button>
           <Button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2"
           >
             <HiPlus className="h-5 w-5" />
-            Add Withdrawal
+            {t('accountWithdrawal.addWithdrawal')}
           </Button>
         </div>
       </div>
@@ -161,7 +157,7 @@ export function AccountWithdrawalList() {
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
           <div className="flex items-center gap-2">
-            <span className="font-semibold">Error:</span>
+            <span className="font-semibold">{t('common.error')}:</span>
             <span>{error}</span>
           </div>
         </div>
@@ -174,7 +170,7 @@ export function AccountWithdrawalList() {
             {/* Account Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Account
+                {t('account.account')}
               </label>
               <select
                 value={filters.account_id || ''}
@@ -183,7 +179,7 @@ export function AccountWithdrawalList() {
                 }
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Accounts</option>
+                <option value="">{t('account.allAccounts')}</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name}
@@ -195,7 +191,7 @@ export function AccountWithdrawalList() {
             {/* Withdrawal Date Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Withdrawal Date
+                {t('accountWithdrawal.withdrawalDate')}
               </label>
               <input
                 type="date"
@@ -208,7 +204,7 @@ export function AccountWithdrawalList() {
             {/* Amount From Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Amount From
+                {t('financial.amountFrom')}
               </label>
               <input
                 type="number"
@@ -224,7 +220,7 @@ export function AccountWithdrawalList() {
             {/* Amount To Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Amount To
+                {t('financial.amountTo')}
               </label>
               <input
                 type="number"
@@ -241,7 +237,7 @@ export function AccountWithdrawalList() {
           {/* Clear Filters Button */}
           <div className="mt-4 flex justify-end">
             <Button color="light" size="sm" onClick={clearFilters}>
-              Clear Filters
+              {t('common.clearFilters')}
             </Button>
           </div>
         </div>
@@ -255,20 +251,20 @@ export function AccountWithdrawalList() {
           </div>
         ) : !withdrawals || withdrawals.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-            <p className="text-lg font-medium">No withdrawals found</p>
-            <p className="text-sm mt-2">Try adjusting your filters or add a new withdrawal</p>
+            <p className="text-lg font-medium">{t('accountWithdrawal.noWithdrawalsFound')}</p>
+            <p className="text-sm mt-2">{t('accountWithdrawal.noWithdrawalsFoundDescription')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Withdrawal ID</th>
-                  <th scope="col" className="px-6 py-3">Account</th>
-                  <th scope="col" className="px-6 py-3">Amount</th>
-                  <th scope="col" className="px-6 py-3">Withdrawal Date</th>
-                  <th scope="col" className="px-6 py-3">Status</th>
-                  <th scope="col" className="px-6 py-3">Actions</th>
+                  <th scope="col" className="px-6 py-3">{t('accountWithdrawal.withdrawalId')}</th>
+                  <th scope="col" className="px-6 py-3">{t('account.account')}</th>
+                  <th scope="col" className="px-6 py-3">{t('accountWithdrawal.amount')}</th>
+                  <th scope="col" className="px-6 py-3">{t('accountWithdrawal.withdrawalDate')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.status')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -283,10 +279,10 @@ export function AccountWithdrawalList() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {withdrawal.account?.name || 'N/A'}
+                          {withdrawal.account?.name || t('common.notAvailable')}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {withdrawal.account?.phone || 'No phone'}
+                          {withdrawal.account?.phone || t('account.noPhone')}
                         </span>
                       </div>
                     </td>
@@ -298,7 +294,7 @@ export function AccountWithdrawalList() {
                     <td className="px-6 py-4">{formatDate(withdrawal.withdrawal_date)}</td>
                     <td className="px-6 py-4">
                       <Badge color="success" size="sm">
-                        Completed
+                        {t('accountWithdrawal.completed')}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
@@ -310,7 +306,7 @@ export function AccountWithdrawalList() {
                           className="flex items-center gap-1"
                         >
                           <HiEye className="h-4 w-4" />
-                          View
+                          {t('common.view')}
                         </Button>
                         <Button
                           size="xs"
@@ -319,7 +315,7 @@ export function AccountWithdrawalList() {
                           className="flex items-center gap-1"
                         >
                           <HiPencil className="h-4 w-4" />
-                          Edit
+                          {t('common.edit')}
                         </Button>
                         <Button
                           size="xs"
@@ -328,7 +324,7 @@ export function AccountWithdrawalList() {
                           className="flex items-center gap-1"
                         >
                           <HiTrash className="h-4 w-4" />
-                          Delete
+                          {t('common.delete')}
                         </Button>
                       </div>
                     </td>

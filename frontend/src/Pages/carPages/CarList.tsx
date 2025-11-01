@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button, Pagination, Card, Badge, Label, TextInput, Select } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiCube, HiTag, HiInformationCircle, HiFilter, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { carServices } from "../../services/carServices";
 import { makeServices } from "../../services/makeServices";
 import { clientServices } from "../../services/clientServices";
 import { accountServices } from "../../services/accountServices";
 import { invoiceServices } from "../../services/invoiceServices";
+import { formatCurrency } from "../../utils/formatters";
 import type { Car } from "../../models/Car";
 import type { Make } from "../../models/Make";
 import type { Client } from "../../models/Client";
@@ -15,6 +17,7 @@ import { CarUpdate } from "./CarUpdate";
 import { CarInfoModal } from "./CarInfoModal";
 
 export function CarList() {
+  const { t } = useTranslation();
   const [cars, setCars] = useState<Car[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -151,7 +154,7 @@ export function CarList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this car?")) {
+    if (window.confirm(t('car.deleteConfirm'))) {
       try {
         await carServices.deleteCar(id);
         fetchCars();
@@ -161,16 +164,16 @@ export function CarList() {
         // Handle validation error (422) when car has linked invoices
         if (error.response?.status === 422) {
           const errorMessage = error.response?.data?.message || 
-            "This car is linked to one or more invoices. Please remove or reassign the invoices before deleting the car.";
+            t('car.deleteLinkedError');
           
-          alert(`Cannot Delete Car\n\n${errorMessage}`);
+          alert(`${t('car.cannotDelete')}\n\n${errorMessage}`);
         } else {
           // Handle other errors
           const errorMessage = error.response?.data?.message || 
             error.message || 
-            "Failed to delete car. Please try again.";
+            t('messages.deleteFailed');
           
-          alert(`Error: ${errorMessage}`);
+          alert(`${t('common.error')}: ${errorMessage}`);
         }
       }
     }
@@ -211,36 +214,28 @@ export function CarList() {
   // Check if any filters are active
   const hasActiveFilters = filterMakeId || filterCarId || filterClientId || filterAccountId || searchStatus;
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Cars Inventory
+            {t('car.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage vehicle inventory and track sales
+            {t('car.manageDescription')}
           </p>
         </div>
         <Button onClick={handleAddCar} color="blue" size="md">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Car
+          {t('car.addCar')}
         </Button>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-          <span className="font-medium">Error!</span> {error}
+          <span className="font-medium">{t('common.error')}</span> {error}
         </div>
       )}
 
@@ -256,7 +251,7 @@ export function CarList() {
               setCurrentPage(1);
             }}
           >
-            All
+            {t('common.all')}
           </Button>
           <Button
             color={searchStatus === "available" ? "blue" : "gray"}
@@ -266,7 +261,7 @@ export function CarList() {
               setCurrentPage(1);
             }}
           >
-            Available
+            {t('car.available')}
           </Button>
           <Button
             color={searchStatus === "sold" ? "blue" : "gray"}
@@ -276,7 +271,7 @@ export function CarList() {
               setCurrentPage(1);
             }}
           >
-            Sold
+            {t('car.sold')}
           </Button>
           
           <div className="ml-auto flex gap-2">
@@ -286,7 +281,7 @@ export function CarList() {
               onClick={() => setShowFilters(!showFilters)}
             >
               <HiFilter className="mr-2 h-4 w-4" />
-              {showFilters ? "Hide Filters" : "More Filters"}
+              {showFilters ? t('common.hideFilters') : t('common.moreFilters')}
             </Button>
             
             {hasActiveFilters && (
@@ -296,7 +291,7 @@ export function CarList() {
                 onClick={clearFilters}
               >
                 <HiX className="mr-2 h-4 w-4" />
-                Clear All
+                {t('common.clearAll')}
               </Button>
             )}
           </div>
@@ -308,7 +303,7 @@ export function CarList() {
             {/* Make Filter */}
             <div>
               <Label htmlFor="filterMake" className="mb-2">
-                Filter by Make
+                {t('car.filterByMake')}
               </Label>
               <Select
                 id="filterMake"
@@ -318,7 +313,7 @@ export function CarList() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="">All Makes</option>
+                <option value="">{t('car.allMakes')}</option>
                 {makes.map((make) => (
                   <option key={make.id} value={make.id}>
                     {make.name}
@@ -330,12 +325,12 @@ export function CarList() {
             {/* Car ID Filter */}
             <div>
               <Label htmlFor="filterCarId" className="mb-2">
-                Filter by Car ID
+                {t('car.filterByCarId')}
               </Label>
               <TextInput
                 id="filterCarId"
                 type="number"
-                placeholder="Enter car ID..."
+                placeholder={t('car.enterCarId')}
                 value={filterCarId}
                 onChange={(e) => {
                   setFilterCarId(e.target.value);
@@ -347,7 +342,7 @@ export function CarList() {
             {/* Client Filter */}
             <div>
               <Label htmlFor="filterClient" className="mb-2">
-                Filter by Client
+                {t('car.filterByClient')}
               </Label>
               <Select
                 id="filterClient"
@@ -357,7 +352,7 @@ export function CarList() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="">All Clients</option>
+                <option value="">{t('car.allClients')}</option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name}
@@ -369,7 +364,7 @@ export function CarList() {
             {/* Account Filter */}
             <div>
               <Label htmlFor="filterAccount" className="mb-2">
-                Filter by Account
+                {t('car.filterByAccount')}
               </Label>
               <Select
                 id="filterAccount"
@@ -379,7 +374,7 @@ export function CarList() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="">All Accounts</option>
+                <option value="">{t('car.allAccounts')}</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name}
@@ -394,11 +389,11 @@ export function CarList() {
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Active Filters:
+              {t('common.activeFilters')}:
             </span>
             {filterMakeId && (
               <Badge color="info" size="sm">
-                Make: {makes.find(m => m.id === parseInt(filterMakeId))?.name}
+                {t('make.make')}: {makes.find(m => m.id === parseInt(filterMakeId))?.name}
                 <button
                   onClick={() => setFilterMakeId("")}
                   className="ml-2 hover:text-red-500"
@@ -409,7 +404,7 @@ export function CarList() {
             )}
             {filterCarId && (
               <Badge color="info" size="sm">
-                Car ID: {filterCarId}
+                {t('car.carId')}: {filterCarId}
                 <button
                   onClick={() => setFilterCarId("")}
                   className="ml-2 hover:text-red-500"
@@ -420,7 +415,7 @@ export function CarList() {
             )}
             {filterClientId && (
               <Badge color="info" size="sm">
-                Client: {clients.find(c => c.id === parseInt(filterClientId))?.name}
+                {t('client.client')}: {clients.find(c => c.id === parseInt(filterClientId))?.name}
                 <button
                   onClick={() => setFilterClientId("")}
                   className="ml-2 hover:text-red-500"
@@ -431,7 +426,7 @@ export function CarList() {
             )}
             {filterAccountId && (
               <Badge color="info" size="sm">
-                Account: {accounts.find(a => a.id === parseInt(filterAccountId))?.name}
+                {t('account.account')}: {accounts.find(a => a.id === parseInt(filterAccountId))?.name}
                 <button
                   onClick={() => setFilterAccountId("")}
                   className="ml-2 hover:text-red-500"
@@ -442,7 +437,7 @@ export function CarList() {
             )}
             {searchStatus && (
               <Badge color="info" size="sm">
-                Status: {searchStatus.charAt(0).toUpperCase() + searchStatus.slice(1)}
+                {t('common.status')}: {searchStatus === 'available' ? t('car.available') : t('car.sold')}
                 <button
                   onClick={() => setSearchStatus("")}
                   className="ml-2 hover:text-red-500"
@@ -460,13 +455,13 @@ export function CarList() {
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-500 dark:text-gray-400">
-            Loading cars...
+            {t('common.loading')}
           </span>
         </div>
       ) : !cars || cars.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 dark:text-gray-400 text-lg">
-            No cars found
+            {t('car.noCars')}
           </p>
         </div>
       ) : (
@@ -485,7 +480,7 @@ export function CarList() {
                       </h5>
                     </div>
                     <Badge color={car.status === "sold" ? "failure" : "success"} size="sm">
-                      {car.status === "sold" ? "Sold" : "Available"}
+                      {car.status === "sold" ? t('car.sold') : t('car.available')}
                     </Badge>
                   </div>
 
@@ -493,12 +488,12 @@ export function CarList() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <HiTag className="h-4 w-4" />
-                      <span>Car ID: {car.id}</span>
+                      <span>{t('car.carId')}: {car.id}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <HiInformationCircle className="h-4 w-4" />
-                      <span>Model ID: {car.car_model_id}</span>
+                      <span>{t('car.modelId')}: {car.car_model_id}</span>
                     </div>
                   </div>
 
@@ -506,7 +501,7 @@ export function CarList() {
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Purchase Price:
+                        {t('car.purchasePrice')}:
                       </span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white">
                         {formatCurrency(car.purchase_price)}
@@ -514,7 +509,7 @@ export function CarList() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Total Expenses:
+                        {t('car.totalExpenses')}:
                       </span>
                       <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
                         {formatCurrency(car.total_expenses)}
@@ -522,7 +517,7 @@ export function CarList() {
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-600">
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Total Cost:
+                        {t('car.totalCost')}:
                       </span>
                       <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                         {formatCurrency(car.purchase_price + car.total_expenses)}
@@ -538,7 +533,7 @@ export function CarList() {
                       className="flex-1"
                       onClick={() => handleViewCar(car)}
                     >
-                      View Details
+                      {t('car.viewDetails')}
                     </Button>
                     <Button
                       size="sm"

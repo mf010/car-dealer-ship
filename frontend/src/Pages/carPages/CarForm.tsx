@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import ReactSelect from "react-select";
 import { carServices } from "../../services/carServices";
 import { carModelServices } from "../../services/carModelServices";
@@ -18,6 +19,7 @@ interface CarFormProps {
 }
 
 export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateCarDTO>({
     car_model_id: 0,
     purchase_price: 0,
@@ -50,7 +52,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
       setCarModelOptions(options);
     } catch (error) {
       console.error("Error fetching car models:", error);
-      setErrors({ car_model_id: "Failed to load car models" });
+      setErrors({ car_model_id: t('car.failedLoadModels') });
     } finally {
       setLoadingCarModels(false);
     }
@@ -61,13 +63,13 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
     const newErrors: { car_model_id?: string; purchase_price?: string } = {};
 
     if (!formData.car_model_id || formData.car_model_id === 0) {
-      newErrors.car_model_id = "Car model is required";
+      newErrors.car_model_id = t('validation.carModelRequired');
     }
 
     if (formData.purchase_price === undefined || formData.purchase_price === null) {
-      newErrors.purchase_price = "Purchase price is required";
+      newErrors.purchase_price = t('validation.purchasePriceRequired');
     } else if (formData.purchase_price < 0) {
-      newErrors.purchase_price = "Purchase price cannot be negative";
+      newErrors.purchase_price = t('validation.priceNonNegative');
     }
 
     setErrors(newErrors);
@@ -87,7 +89,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
 
     try {
       await carServices.createCar(formData);
-      setSuccessMessage("Car added successfully!");
+      setSuccessMessage(t('messages.createSuccess'));
       
       // Reset form
       setFormData({ car_model_id: 0, purchase_price: 0, status: "available" });
@@ -101,7 +103,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
       }, 1500);
     } catch (error) {
       console.error("Error creating car:", error);
-      setErrors({ car_model_id: "Failed to create car. Please try again." });
+      setErrors({ car_model_id: t('messages.createFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -136,7 +138,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
     <Modal show={isOpen} onClose={handleClose} size="md">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Add New Car
+          {t('car.addCar')}
         </h3>
 
         {successMessage && (
@@ -150,7 +152,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
           {/* Car Model Selection */}
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="car_model_id">Car Model *</Label>
+              <Label htmlFor="car_model_id">{t('car.carModel')} *</Label>
             </div>
             <ReactSelect
               id="car_model_id"
@@ -170,7 +172,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
               isLoading={loadingCarModels}
               isDisabled={loadingCarModels}
               isClearable
-              placeholder={loadingCarModels ? "Loading car models..." : "Select a car model"}
+              placeholder={loadingCarModels ? t('common.loading') : t('car.selectCarModel')}
               className="react-select-container"
               classNamePrefix="react-select"
               styles={{
@@ -198,14 +200,14 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
           {/* Purchase Price */}
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="purchase_price">Purchase Price *</Label>
+              <Label htmlFor="purchase_price">{t('car.purchasePrice')} *</Label>
             </div>
             <TextInput
               id="purchase_price"
               name="purchase_price"
               type="number"
               step="0.01"
-              placeholder="Enter purchase price"
+              placeholder={t('car.enterPurchasePrice')}
               value={formData.purchase_price}
               onChange={handleChange}
               color={errors.purchase_price ? "failure" : "gray"}
@@ -220,7 +222,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
           {/* Status */}
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t('common.status')}</Label>
             </div>
             <select
               id="status"
@@ -229,8 +231,8 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
               onChange={handleChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             >
-              <option value="available">Available</option>
-              <option value="sold">Sold</option>
+              <option value="available">{t('car.available')}</option>
+              <option value="sold">{t('car.sold')}</option>
             </select>
           </div>
 
@@ -245,12 +247,12 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Adding...
+                  {t('common.creating')}
                 </>
               ) : (
                 <>
                   <HiCheck className="mr-2 h-5 w-5" />
-                  Add Car
+                  {t('car.addCar')}
                 </>
               )}
             </Button>
@@ -261,7 +263,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
               disabled={isSubmitting}
             >
               <HiX className="mr-2 h-5 w-5" />
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

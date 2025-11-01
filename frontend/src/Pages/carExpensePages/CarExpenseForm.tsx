@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Label, TextInput, Textarea } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import { carExpenseServices } from '../../services/carExpensServices';
 import { carServices } from '../../services/carServices';
+import { formatCurrency as formatCurrencyUtil } from '../../utils/formatters';
 import type { CreateCarExpenseDTO } from '../../models/CarExpens';
 import type { Car } from '../../models/Car';
 
@@ -12,6 +14,7 @@ interface CarExpenseFormProps {
 }
 
 export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
+  const { t, i18n } = useTranslation();
   const [cars, setCars] = useState<Car[]>([]);
   const [formData, setFormData] = useState<CreateCarExpenseDTO>({
     car_id: 0,
@@ -30,7 +33,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
         setCars(response.data);
       } catch (err) {
         console.error('Error fetching cars:', err);
-        setError('Failed to load cars');
+        setError(t('messages.loadingError'));
       }
     };
     fetchCars();
@@ -41,19 +44,19 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
     
     // Validation
     if (!formData.car_id || formData.car_id === 0) {
-      setError('Please select a car');
+      setError(t('validation.selectCar'));
       return;
     }
     if (!formData.amount || formData.amount <= 0) {
-      setError('Please enter a valid amount');
+      setError(t('validation.amountGreaterThanZero'));
       return;
     }
     if (!formData.description.trim()) {
-      setError('Please enter a description');
+      setError(t('validation.descriptionRequired'));
       return;
     }
     if (!formData.expense_date) {
-      setError('Please select an expense date');
+      setError(t('validation.expenseDateRequired'));
       return;
     }
 
@@ -65,16 +68,13 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
       onSuccess();
     } catch (err) {
       console.error('Error creating expense:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create expense');
+      setError(err instanceof Error ? err.message : t('messages.createFailed'));
       setLoading(false);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const selectedCar = cars.find(c => c.id === formData.car_id);
@@ -85,7 +85,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Add Car Expense
+            {t('carExpense.addExpense')}
           </h3>
           <button
             type="button"
@@ -108,7 +108,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
             {/* Car Selection */}
             <div>
               <Label htmlFor="car_id">
-                Car <span className="text-red-500">*</span>
+                {t('car.car')} <span className="text-red-500">*</span>
               </Label>
               <select
                 id="car_id"
@@ -117,7 +117,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
                 className="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                 required
               >
-                <option value="0">Select a car...</option>
+                <option value="0">{t('car.selectCar')}</option>
                 {cars.map((car) => (
                   <option key={car.id} value={car.id}>
                     {car.carModel?.make?.name} {car.carModel?.name} (#{car.id})
@@ -130,29 +130,29 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
             {selectedCar && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
-                  Car Information
+                  {t('car.carInformation')}
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-blue-700 dark:text-blue-400">Make:</span>
+                    <span className="text-blue-700 dark:text-blue-400">{t('make.make')}:</span>
                     <span className="ml-2 text-blue-900 dark:text-blue-300 font-medium">
-                      {selectedCar.carModel?.make?.name || 'N/A'}
+                      {selectedCar.carModel?.make?.name || t('common.notAvailable')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-blue-700 dark:text-blue-400">Model:</span>
+                    <span className="text-blue-700 dark:text-blue-400">{t('carModel.model')}:</span>
                     <span className="ml-2 text-blue-900 dark:text-blue-300 font-medium">
-                      {selectedCar.carModel?.name || 'N/A'}
+                      {selectedCar.carModel?.name || t('common.notAvailable')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-blue-700 dark:text-blue-400">Status:</span>
+                    <span className="text-blue-700 dark:text-blue-400">{t('common.status')}:</span>
                     <span className="ml-2 text-blue-900 dark:text-blue-300 font-medium capitalize">
                       {selectedCar.status}
                     </span>
                   </div>
                   <div>
-                    <span className="text-blue-700 dark:text-blue-400">Total Expenses:</span>
+                    <span className="text-blue-700 dark:text-blue-400">{t('carExpense.totalExpenses')}:</span>
                     <span className={`ml-2 font-bold ${
                       selectedCar.total_expenses > 0 
                         ? 'text-orange-600 dark:text-orange-400' 
@@ -168,14 +168,14 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
             {/* Amount */}
             <div>
               <Label htmlFor="amount">
-                Amount <span className="text-red-500">*</span>
+                {t('carExpense.amount')} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="amount"
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Enter expense amount"
+                placeholder={t('carExpense.enterAmount')}
                 value={formData.amount || ''}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
                 required
@@ -185,7 +185,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
             {/* Expense Date */}
             <div>
               <Label htmlFor="expense_date">
-                Expense Date <span className="text-red-500">*</span>
+                {t('carExpense.expenseDate')} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="expense_date"
@@ -199,18 +199,18 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
             {/* Description */}
             <div>
               <Label htmlFor="description">
-                Description <span className="text-red-500">*</span>
+                {t('common.description')} <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="description"
-                placeholder="Enter expense description (e.g., Oil change, Tire replacement, Body repair)"
+                placeholder={t('carExpense.enterDescription')}
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Provide details about the expense, service, or repair
+                {t('carExpense.descriptionHelp')}
               </p>
             </div>
           </div>
@@ -218,10 +218,10 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
           {/* Footer */}
           <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
             <Button color="gray" onClick={onClose} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Adding...' : 'Add Expense'}
+              {loading ? t('common.creating') : t('carExpense.addExpense')}
             </Button>
           </div>
         </form>

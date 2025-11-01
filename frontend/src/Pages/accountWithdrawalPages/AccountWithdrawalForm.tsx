@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Label, TextInput, Spinner } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import { accountWithdrawalServices } from '../../services/accountWithdrawalServices';
 import { accountServices } from '../../services/accountServices';
 import type { CreateAccountWithdrawalDTO } from '../../models/AccountWithdrawal';
 import type { Account } from '../../models/Account';
+import { formatCurrency as formatCurrencyUtil } from '../../utils/formatters';
 
 interface AccountWithdrawalFormProps {
   onClose: () => void;
@@ -12,6 +14,7 @@ interface AccountWithdrawalFormProps {
 }
 
 export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalFormProps) {
+  const { t, i18n } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,15 +46,15 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
     const newErrors: Record<string, string> = {};
 
     if (!formData.account_id || formData.account_id === 0) {
-      newErrors.account_id = 'Please select an account';
+      newErrors.account_id = t('validation.selectAccount');
     }
 
     if (!formData.amount || formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = t('validation.amountGreaterThanZero');
     }
 
     if (!formData.withdrawal_date) {
-      newErrors.withdrawal_date = 'Withdrawal date is required';
+      newErrors.withdrawal_date = t('validation.withdrawalDateRequired');
     }
 
     setErrors(newErrors);
@@ -71,7 +74,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
       onSuccess();
     } catch (error) {
       console.error('Error creating withdrawal:', error);
-      setErrors({ submit: 'Failed to create withdrawal. Please try again.' });
+      setErrors({ submit: t('messages.createWithdrawalFailed') });
     } finally {
       setSubmitting(false);
     }
@@ -93,10 +96,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const selectedAccount = accounts.find((acc) => acc.id === formData.account_id);
@@ -107,7 +107,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Add New Withdrawal
+            {t('accountWithdrawal.addNewWithdrawal')}
           </h3>
           <button
             type="button"
@@ -123,7 +123,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
           {/* Account Selection */}
           <div>
             <Label htmlFor="account_id" className="mb-2 block">
-              Account *
+              {t('account.account')} *
             </Label>
             {loadingAccounts ? (
               <div className="flex items-center justify-center p-4">
@@ -140,10 +140,10 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
                     : 'border-gray-300 dark:border-gray-600'
                 } dark:bg-gray-700 dark:text-white`}
               >
-                <option value={0}>Select an account</option>
+                <option value={0}>{t('account.selectAccount')}</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.name} - Balance: {formatCurrency(account.balance || 0)}
+                    {account.name} - {formatCurrency(account.balance || 0)}
                   </option>
                 ))}
               </select>
@@ -158,7 +158,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                  Current Balance:
+                  {t('account.currentBalance')}:
                 </span>
                 <span className={`text-lg font-bold ${
                   (selectedAccount.balance || 0) >= 0
@@ -174,7 +174,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
           {/* Amount */}
           <div>
             <Label htmlFor="amount" className="mb-2 block">
-              Amount *
+              {t('accountWithdrawal.amount')} *
             </Label>
             <TextInput
               id="amount"
@@ -194,7 +194,7 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
           {/* Withdrawal Date */}
           <div>
             <Label htmlFor="withdrawal_date" className="mb-2 block">
-              Withdrawal Date *
+              {t('accountWithdrawal.withdrawalDate')} *
             </Label>
             <TextInput
               id="withdrawal_date"
@@ -218,16 +218,16 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
           {/* Footer */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button color="gray" onClick={onClose} disabled={submitting}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting}>
               {submitting ? (
                 <>
                   <Spinner size="sm" className="mr-2" />
-                  Creating...
+                  {t('common.creating')}
                 </>
               ) : (
-                'Create Withdrawal'
+                t('accountWithdrawal.createWithdrawal')
               )}
             </Button>
           </div>

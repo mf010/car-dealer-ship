@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal, Button, Label, TextInput, Select } from "flowbite-react";
 import { HiPencil } from "react-icons/hi";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import { invoiceServices } from "../../services/invoiceServices";
 import { clientServices } from "../../services/clientServices";
 import { carServices } from "../../services/carServices";
@@ -24,6 +25,7 @@ export function InvoiceUpdate({
   onSuccess,
   invoice,
 }: InvoiceUpdateProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
@@ -91,31 +93,31 @@ export function InvoiceUpdate({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.client_id) {
-      newErrors.client_id = "Client is required";
+      newErrors.client_id = t('validation.clientRequired');
     }
 
     if (!formData.car_id) {
-      newErrors.car_id = "Car is required";
+      newErrors.car_id = t('validation.carRequired');
     }
 
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = "Amount must be greater than 0";
+      newErrors.amount = t('validation.amountGreaterThanZero');
     }
 
     if (parseFloat(formData.payed) < 0) {
-      newErrors.payed = "Paid amount cannot be negative";
+      newErrors.payed = t('validation.paidAmountNonNegative');
     }
 
     if (parseFloat(formData.payed) > parseFloat(formData.amount)) {
-      newErrors.payed = "Paid amount cannot exceed total amount";
+      newErrors.payed = t('validation.paidExceedsTotal');
     }
 
     if (parseFloat(formData.account_cut) < 0) {
-      newErrors.account_cut = "Account cut cannot be negative";
+      newErrors.account_cut = t('validation.accountCutNonNegative');
     }
 
     if (!formData.invoice_date) {
-      newErrors.invoice_date = "Invoice date is required";
+      newErrors.invoice_date = t('validation.invoiceDateRequired');
     }
 
     setErrors(newErrors);
@@ -155,10 +157,10 @@ export function InvoiceUpdate({
           alert(backendMessage);
           setErrors({ submit: backendMessage });
         } else {
-          setErrors({ submit: "Validation failed. Please check your inputs." });
+          setErrors({ submit: t('validation.validationFailed') });
         }
       } else {
-        setErrors({ submit: "Failed to update invoice. Please try again." });
+        setErrors({ submit: t('messages.updateFailed') });
       }
     } finally {
       setLoading(false);
@@ -173,14 +175,14 @@ export function InvoiceUpdate({
         <div className="flex items-center gap-2 mb-6">
           <HiPencil className="h-6 w-6 text-gray-600" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Update Invoice #{invoice.id}
+            {t('invoice.updateInvoiceId', { id: invoice.id })}
           </h3>
         </div>
 
         {loadingData ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-500">Loading data...</span>
+            <span className="ml-3 text-gray-500">{t('common.loadingData')}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -194,7 +196,7 @@ export function InvoiceUpdate({
             {/* Client Selection */}
             <div>
               <Label htmlFor="client_id" className="mb-2 block">
-                Client <span className="text-red-500">*</span>
+                {t('client.client')} <span className="text-red-500">*</span>
               </Label>
               <Select
                 id="client_id"
@@ -204,7 +206,7 @@ export function InvoiceUpdate({
                 color={errors.client_id ? "failure" : undefined}
                 required
               >
-                <option value="">Select a client</option>
+                <option value="">{t('client.selectClient')}</option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name}
@@ -219,7 +221,7 @@ export function InvoiceUpdate({
             {/* Car Selection */}
             <div>
               <Label htmlFor="car_id" className="mb-2 block">
-                Car <span className="text-red-500">*</span>
+                {t('car.car')} <span className="text-red-500">*</span>
               </Label>
               <Select
                 id="car_id"
@@ -229,7 +231,7 @@ export function InvoiceUpdate({
                 color={errors.car_id ? "failure" : undefined}
                 required
               >
-                <option value="">Select a car</option>
+                <option value="">{t('car.selectCar')}</option>
                 {cars.map((car) => (
                   <option key={car.id} value={car.id}>
                     {car.carModel?.make?.name} {car.carModel?.name} - #{car.id}
@@ -244,7 +246,7 @@ export function InvoiceUpdate({
             {/* Account Selection (Optional) */}
             <div>
               <Label htmlFor="account_id" className="mb-2 block">
-                Account (Optional)
+                {t('account.accountOptional')}
               </Label>
               <Select
                 id="account_id"
@@ -252,7 +254,7 @@ export function InvoiceUpdate({
                 value={formData.account_id}
                 onChange={handleChange}
               >
-                <option value="">No account</option>
+                <option value="">{t('account.noAccount')}</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name}
@@ -265,7 +267,7 @@ export function InvoiceUpdate({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="amount" className="mb-2 block">
-                  Total Amount <span className="text-red-500">*</span>
+                  {t('invoice.totalAmount')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="amount"
@@ -285,7 +287,7 @@ export function InvoiceUpdate({
 
               <div>
                 <Label htmlFor="payed" className="mb-2 block">
-                  Amount Paid (Read-only)
+                  {t('invoice.amountPaidReadOnly')}
                 </Label>
                 <TextInput
                   id="payed"
@@ -309,7 +311,7 @@ export function InvoiceUpdate({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="account_cut" className="mb-2 block">
-                  Account Cut
+                  {t('invoice.accountCut')}
                 </Label>
                 <TextInput
                   id="account_cut"
@@ -328,7 +330,7 @@ export function InvoiceUpdate({
 
               <div>
                 <Label htmlFor="invoice_date" className="mb-2 block">
-                  Invoice Date <span className="text-red-500">*</span>
+                  {t('invoice.invoiceDate')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="invoice_date"
@@ -348,10 +350,10 @@ export function InvoiceUpdate({
             {/* Buttons */}
             <div className="flex gap-3 pt-4">
               <Button onClick={handleSubmit} color="blue" disabled={loading || loadingData}>
-                {loading ? "Updating..." : "Update Invoice"}
+                {loading ? t('common.updating') : t('invoice.updateInvoice')}
               </Button>
               <Button color="gray" onClick={onClose} disabled={loading}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>

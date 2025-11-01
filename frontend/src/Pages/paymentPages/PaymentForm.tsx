@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Label, TextInput, Spinner } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import { paymentServices } from '../../services/paymentServices';
 import { invoiceServices } from '../../services/invoiceServices';
 import type { CreatePaymentDTO } from '../../models/Payment';
 import type { Invoice } from '../../models/Invoice';
+import { formatCurrency as formatCurrencyUtil } from '../../utils/formatters';
 
 interface PaymentFormProps {
   onClose: () => void;
@@ -12,6 +14,7 @@ interface PaymentFormProps {
 }
 
 export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
+  const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -49,11 +52,11 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
     const newErrors: Record<string, string> = {};
 
     if (!formData.invoice_id || formData.invoice_id === 0) {
-      newErrors.invoice_id = 'Please select an invoice';
+      newErrors.invoice_id = t('validation.selectInvoice');
     }
 
     if (!formData.amount || formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = t('validation.amountGreaterThanZero');
     }
 
     // Check if amount exceeds remaining balance
@@ -61,12 +64,12 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
     if (selectedInvoice) {
       const remainingBalance = (selectedInvoice.amount || 0) - (selectedInvoice.payed || 0);
       if (formData.amount > remainingBalance) {
-        newErrors.amount = `Amount cannot exceed remaining balance of ${formatCurrency(remainingBalance)}`;
+        newErrors.amount = t('validation.amountExceedsBalance', { balance: formatCurrency(remainingBalance) });
       }
     }
 
     if (!formData.payment_date) {
-      newErrors.payment_date = 'Payment date is required';
+      newErrors.payment_date = t('validation.paymentDateRequired');
     }
 
     setErrors(newErrors);
@@ -86,7 +89,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
       onSuccess();
     } catch (error) {
       console.error('Error creating payment:', error);
-      setErrors({ submit: 'Failed to create payment. Please try again.' });
+      setErrors({ submit: t('messages.createPaymentFailed') });
     } finally {
       setSubmitting(false);
     }
@@ -108,10 +111,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const selectedInvoice = invoices.find((inv) => inv.id === formData.invoice_id);
@@ -125,7 +125,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Add New Payment
+            {t('payment.addNewPayment')}
           </h3>
           <button
             type="button"
@@ -141,7 +141,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
           {/* Invoice Selection */}
           <div>
             <Label htmlFor="invoice_id" className="mb-2 block">
-              Invoice *
+              {t('invoice.invoice')} *
             </Label>
             {loadingInvoices ? (
               <div className="flex items-center justify-center p-4">
@@ -158,12 +158,16 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
                     : 'border-gray-300 dark:border-gray-600'
                 } dark:bg-gray-700 dark:text-white`}
               >
-                <option value={0}>Select an invoice</option>
+                <option value={0}>{t('invoice.selectInvoice')}</option>
                 {invoices.map((invoice) => {
                   const remaining = (invoice.amount || 0) - (invoice.payed || 0);
                   return (
                     <option key={invoice.id} value={invoice.id}>
-                      Invoice #{invoice.id} - {invoice.client?.name} - Balance: {formatCurrency(remaining)}
+                      {t('invoice.invoiceNumberClientBalance', { 
+                        number: invoice.id, 
+                        client: invoice.client?.name,
+                        balance: formatCurrency(remaining)
+                      })}
                     </option>
                   );
                 })}
@@ -179,7 +183,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                  Remaining Balance:
+                  {t('invoice.remainingBalance')}:
                 </span>
                 <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(remainingBalance)}
@@ -191,7 +195,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
           {/* Amount */}
           <div>
             <Label htmlFor="amount" className="mb-2 block">
-              Amount *
+              {t('payment.amount')} *
             </Label>
             <TextInput
               id="amount"
@@ -211,7 +215,7 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
           {/* Payment Date */}
           <div>
             <Label htmlFor="payment_date" className="mb-2 block">
-              Payment Date *
+              {t('payment.paymentDate')} *
             </Label>
             <TextInput
               id="payment_date"
@@ -235,16 +239,16 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
           {/* Footer */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button color="gray" onClick={onClose} disabled={submitting}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={submitting}>
               {submitting ? (
                 <>
                   <Spinner size="sm" className="mr-2" />
-                  Creating...
+                  {t('common.creating')}
                 </>
               ) : (
-                'Create Payment'
+                t('payment.createPayment')
               )}
             </Button>
           </div>

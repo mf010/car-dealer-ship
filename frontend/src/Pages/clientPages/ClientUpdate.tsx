@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Textarea, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { clientServices } from "../../services/clientServices";
 import type { Client, UpdateClientDTO } from "../../models/Client";
 
@@ -12,6 +13,7 @@ interface ClientUpdateProps {
 }
 
 export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdateProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateClientDTO>({
     name: "",
     phone: "",
@@ -48,11 +50,11 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
     // Name validation
     if (formData.name !== undefined) {
       if (!formData.name.trim()) {
-        newErrors.name = "Client name is required";
+        newErrors.name = t('validation.nameRequired');
       } else if (formData.name.trim().length < 2) {
-        newErrors.name = "Client name must be at least 2 characters";
+        newErrors.name = t('validation.nameMinLength');
       } else if (formData.name.trim().length > 100) {
-        newErrors.name = "Client name must not exceed 100 characters";
+        newErrors.name = t('validation.nameMaxLength');
       }
     }
 
@@ -60,23 +62,23 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
     if (formData.phone && formData.phone.trim()) {
       const phoneRegex = /^[\d\s\-\+\(\)]+$/;
       if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = "Please enter a valid phone number";
+        newErrors.phone = t('validation.invalidPhone');
       } else if (formData.phone.length < 7 || formData.phone.length > 20) {
-        newErrors.phone = "Phone number must be between 7 and 20 characters";
+        newErrors.phone = t('validation.phoneLength');
       }
     }
 
     // Personal ID validation (optional but must be valid if provided)
     if (formData.personal_id && formData.personal_id.trim()) {
       if (formData.personal_id.trim().length < 5 || formData.personal_id.trim().length > 50) {
-        newErrors.personal_id = "Personal ID must be between 5 and 50 characters";
+        newErrors.personal_id = t('validation.personalIdLength');
       }
     }
 
     // Balance validation
     if (formData.balance !== undefined && formData.balance !== null) {
       if (isNaN(formData.balance)) {
-        newErrors.balance = "Balance must be a valid number";
+        newErrors.balance = t('validation.invalidNumber');
       }
     }
 
@@ -108,7 +110,7 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
       };
 
       await clientServices.updateClient(client.id, submitData);
-      setSuccessMessage("Client updated successfully!");
+      setSuccessMessage(t('messages.updateSuccess'));
       
       setErrors({});
       
@@ -120,7 +122,7 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
       }, 1500);
     } catch (error) {
       console.error("Error updating client:", error);
-      setErrors({ name: "Failed to update client. Please try again." });
+      setErrors({ name: t('messages.updateFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -160,7 +162,7 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
     <Modal show={isOpen} onClose={handleClose} size="lg">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Edit Client
+          {t('client.editClient')}
         </h3>
 
         {successMessage && (
@@ -174,13 +176,13 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
           {/* Name Field */}
           <div>
             <Label htmlFor="edit-name" className="mb-2 block">
-              Client Name <span className="text-red-500 ml-1">*</span>
+              {t('client.name')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="edit-name"
               name="name"
               type="text"
-              placeholder="Enter client name"
+              placeholder={t('client.namePlaceholder')}
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
@@ -197,13 +199,13 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
           {/* Phone Field */}
           <div>
             <Label htmlFor="edit-phone" className="mb-2 block">
-              Phone Number
+              {t('client.phone')}
             </Label>
             <TextInput
               id="edit-phone"
               name="phone"
               type="tel"
-              placeholder="Enter phone number"
+              placeholder={t('client.phonePlaceholder')}
               value={formData.phone}
               onChange={handleChange}
               color={errors.phone ? "failure" : undefined}
@@ -219,13 +221,13 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
           {/* Personal ID Field */}
           <div>
             <Label htmlFor="edit-personal_id" className="mb-2 block">
-              Personal ID
+              {t('client.personalId')}
             </Label>
             <TextInput
               id="edit-personal_id"
               name="personal_id"
               type="text"
-              placeholder="Enter personal/national ID"
+              placeholder={t('client.personalIdPlaceholder')}
               value={formData.personal_id}
               onChange={handleChange}
               color={errors.personal_id ? "failure" : undefined}
@@ -241,12 +243,12 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
           {/* Address Field */}
           <div>
             <Label htmlFor="edit-address" className="mb-2 block">
-              Address
+              {t('client.address')}
             </Label>
             <Textarea
               id="edit-address"
               name="address"
-              placeholder="Enter client address"
+              placeholder={t('client.addressPlaceholder')}
               value={formData.address}
               onChange={handleChange}
               disabled={isSubmitting}
@@ -257,7 +259,7 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
           {/* Balance Field */}
           <div>
             <Label htmlFor="edit-balance" className="mb-2 block">
-              Balance
+              {t('client.balance')}
             </Label>
             <TextInput
               id="edit-balance"
@@ -276,7 +278,7 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
               </p>
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Current balance can be adjusted here
+              {t('client.balanceUpdateHint')}
             </p>
           </div>
 
@@ -284,7 +286,7 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={handleClose} disabled={isSubmitting}>
               <HiX className="mr-2 h-4 w-4" />
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -294,10 +296,10 @@ export function ClientUpdate({ isOpen, onClose, onSuccess, client }: ClientUpdat
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
+                  {t('common.updating')}
                 </>
               ) : (
-                "Update Client"
+                t('client.updateClient')
               )}
             </Button>
           </div>

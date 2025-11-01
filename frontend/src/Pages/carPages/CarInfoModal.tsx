@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Badge, Button } from "flowbite-react";
 import { HiX, HiCube, HiTag, HiCurrencyDollar, HiDocumentText, HiUser, HiPhone, HiLocationMarker, HiIdentification } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
+import { formatCurrency, formatDate } from "../../utils/formatters";
 import { invoiceServices } from "../../services/invoiceServices";
 import { carServices } from "../../services/carServices";
 import type { Car } from "../../models/Car";
@@ -16,6 +18,7 @@ interface CarInfoModalProps {
 
 export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loadingInvoice, setLoadingInvoice] = useState(false);
   const [fullCarData, setFullCarData] = useState<Car | null>(null);
@@ -104,22 +107,6 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   if (!car) return null;
 
   // Use fullCarData if available, otherwise fallback to car prop
@@ -133,7 +120,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-gray-500 dark:text-gray-400">
-              Loading car details...
+              {t('car.loadingDetails')}
             </span>
           </div>
         ) : (
@@ -147,7 +134,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                 </span>
               </div>
               <Badge color={displayCar.status === "sold" ? "failure" : "success"} size="lg">
-                {displayCar.status === "sold" ? "Sold" : "Available"}
+                {displayCar.status === "sold" ? t('car.sold') : t('car.available')}
               </Badge>
             </div>
 
@@ -156,31 +143,31 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
           <div>
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <HiTag className="h-5 w-5" />
-              Car Information
+              {t('car.carInformation')}
             </h4>
             <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Car ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.carId')}</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">
                   #{displayCar.id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Model ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.modelId')}</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">
                   {displayCar.car_model_id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Make (Manufacturer)</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.make')}</p>
                 <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {displayCar.carModel?.make?.name || "N/A"}
+                  {displayCar.carModel?.make?.name || t('common.notAvailable')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Car Model</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.carModel')}</p>
                 <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {displayCar.carModel?.name || "N/A"}
+                  {displayCar.carModel?.name || t('common.notAvailable')}
                 </p>
               </div>
             </div>
@@ -190,25 +177,25 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
           <div>
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <HiCurrencyDollar className="h-5 w-5" />
-              Financial Details
+              {t('car.financialDetails')}
             </h4>
             <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Price</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.purchasePrice')}</p>
                 <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(displayCar.purchase_price)}
+                  {formatCurrency(displayCar.purchase_price, i18n.language)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Expenses</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.totalExpenses')}</p>
                 <p className="text-base font-semibold text-orange-600 dark:text-orange-400">
-                  {formatCurrency(displayCar.total_expenses)}
+                  {formatCurrency(displayCar.total_expenses, i18n.language)}
                 </p>
               </div>
               <div className="col-span-2 pt-4 border-t border-gray-200 dark:border-gray-600">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Cost</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.totalCost')}</p>
                 <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  {formatCurrency(displayCar.purchase_price + displayCar.total_expenses)}
+                  {formatCurrency(displayCar.purchase_price + displayCar.total_expenses, i18n.language)}
                 </p>
               </div>
             </div>
@@ -221,7 +208,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                 <div className="flex justify-center items-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   <span className="ml-3 text-gray-500 dark:text-gray-400">
-                    Loading invoice details...
+                    {t('invoice.loadingDetails')}
                   </span>
                 </div>
               ) : invoice ? (
@@ -230,43 +217,43 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                       <HiDocumentText className="h-5 w-5" />
-                      Invoice Information
+                      {t('invoice.invoiceInformation')}
                     </h4>
                     <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Invoice ID</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.invoiceId')}</p>
                         <p className="text-base font-semibold text-gray-900 dark:text-white">
                           #{invoice.id}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Invoice Date</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.invoiceDate')}</p>
                         <p className="text-base font-semibold text-gray-900 dark:text-white">
-                          {formatDate(invoice.invoice_date)}
+                          {formatDate(invoice.invoice_date, i18n.language)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Total Amount</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.totalAmount')}</p>
                         <p className="text-base font-semibold text-green-600 dark:text-green-400">
-                          {formatCurrency(invoice.amount)}
+                          {formatCurrency(invoice.amount, i18n.language)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Paid Amount</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.paidAmount')}</p>
                         <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
-                          {formatCurrency(invoice.payed)}
+                          {formatCurrency(invoice.payed, i18n.language)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Remaining Balance</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.remainingBalance')}</p>
                         <p className="text-base font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(invoice.amount - invoice.payed)}
+                          {formatCurrency(invoice.amount - invoice.payed, i18n.language)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Account Cut</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.accountCut')}</p>
                         <p className="text-base font-semibold text-purple-600 dark:text-purple-400">
-                          {formatCurrency(invoice.account_cut)}
+                          {formatCurrency(invoice.account_cut, i18n.language)}
                         </p>
                       </div>
                     </div>
@@ -277,11 +264,11 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <HiUser className="h-5 w-5" />
-                        Customer Information
+                        {t('client.customerInformation')}
                       </h4>
                       <div className="grid grid-cols-2 gap-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Customer Name</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{t('client.customerName')}</p>
                           <p className="text-base font-semibold text-gray-900 dark:text-white">
                             {invoice.client.name}
                           </p>
@@ -290,7 +277,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                               <HiPhone className="h-4 w-4" />
-                              Phone
+                              {t('client.phone')}
                             </p>
                             <p className="text-base font-semibold text-gray-900 dark:text-white">
                               {invoice.client.phone}
@@ -301,7 +288,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                               <HiIdentification className="h-4 w-4" />
-                              Personal ID
+                              {t('client.personalId')}
                             </p>
                             <p className="text-base font-semibold text-gray-900 dark:text-white">
                               {invoice.client.personal_id}
@@ -312,7 +299,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                               <HiLocationMarker className="h-4 w-4" />
-                              Address
+                              {t('client.address')}
                             </p>
                             <p className="text-base font-semibold text-gray-900 dark:text-white">
                               {invoice.client.address}
@@ -320,13 +307,13 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                           </div>
                         )}
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Client Balance</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{t('client.clientBalance')}</p>
                           <p className={`text-base font-semibold ${
                             invoice.client.balance < 0 
                               ? 'text-red-600 dark:text-red-400' 
                               : 'text-green-600 dark:text-green-400'
                           }`}>
-                            {formatCurrency(invoice.client.balance)}
+                            {formatCurrency(invoice.client.balance, i18n.language)}
                           </p>
                         </div>
                       </div>
@@ -338,10 +325,10 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                          View Full Invoice Details
+                          {t('invoice.viewFullDetails')}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Access complete invoice information, payment history, and more
+                          {t('invoice.viewFullDetailsDescription')}
                         </p>
                       </div>
                       <Button
@@ -350,7 +337,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
                         size="sm"
                       >
                         <HiDocumentText className="mr-2 h-4 w-4" />
-                        View Invoice
+                        {t('invoice.viewInvoice')}
                       </Button>
                     </div>
                   </div>
@@ -358,7 +345,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
               ) : (
                 <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
                   <p className="text-sm text-yellow-800 dark:text-yellow-400">
-                    No invoice found for this car. This car is marked as sold but doesn't have an associated invoice.
+                    {t('invoice.noInvoiceFound')}
                   </p>
                 </div>
               )}
@@ -369,12 +356,12 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 dark:text-gray-400">
               <div>
-                <p className="font-medium">Created At</p>
-                <p>{formatDate(displayCar.created_at)}</p>
+                <p className="font-medium">{t('common.createdAt')}</p>
+                <p>{formatDate(displayCar.created_at, i18n.language)}</p>
               </div>
               <div>
-                <p className="font-medium">Updated At</p>
-                <p>{formatDate(displayCar.updated_at)}</p>
+                <p className="font-medium">{t('common.updatedAt')}</p>
+                <p>{formatDate(displayCar.updated_at, i18n.language)}</p>
               </div>
             </div>
           </div>
@@ -384,7 +371,7 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
         <div className="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
           <Button color="gray" onClick={onClose}>
             <HiX className="mr-2 h-5 w-5" />
-            Close
+            {t('common.close')}
           </Button>
         </div>
           </>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { accountServices } from "../../services/accountServices";
 import type { Account, UpdateAccountDTO } from "../../models/Account";
 
@@ -12,6 +13,7 @@ interface AccountUpdateProps {
 }
 
 export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUpdateProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateAccountDTO>({
     name: "",
     phone: "",
@@ -43,11 +45,11 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
     // Name validation
     if (formData.name !== undefined) {
       if (!formData.name.trim()) {
-        newErrors.name = "Account name is required";
+        newErrors.name = t('validation.nameRequired');
       } else if (formData.name.trim().length < 2) {
-        newErrors.name = "Account name must be at least 2 characters";
+        newErrors.name = t('validation.nameMinLength');
       } else if (formData.name.trim().length > 100) {
-        newErrors.name = "Account name must not exceed 100 characters";
+        newErrors.name = t('validation.nameMaxLength');
       }
     }
 
@@ -55,16 +57,16 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
     if (formData.phone && formData.phone.trim()) {
       const phoneRegex = /^[\d\s\-\+\(\)]+$/;
       if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = "Please enter a valid phone number";
+        newErrors.phone = t('validation.invalidPhone');
       } else if (formData.phone.length < 7 || formData.phone.length > 20) {
-        newErrors.phone = "Phone number must be between 7 and 20 characters";
+        newErrors.phone = t('validation.phoneLength');
       }
     }
 
     // Balance validation
     if (formData.balance !== undefined && formData.balance !== null) {
       if (isNaN(formData.balance)) {
-        newErrors.balance = "Balance must be a valid number";
+        newErrors.balance = t('validation.invalidNumber');
       }
     }
 
@@ -94,7 +96,7 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
       };
 
       await accountServices.updateAccount(account.id, submitData);
-      setSuccessMessage("Account updated successfully!");
+      setSuccessMessage(t('messages.updateSuccess'));
       
       setErrors({});
       
@@ -106,7 +108,7 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
       }, 1500);
     } catch (error) {
       console.error("Error updating account:", error);
-      setErrors({ name: "Failed to update account. Please try again." });
+      setErrors({ name: t('messages.updateFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +146,7 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
     <Modal show={isOpen} onClose={handleClose} size="md">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Edit Account
+          {t('account.editAccount')}
         </h3>
 
         {successMessage && (
@@ -158,13 +160,13 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
           {/* Name Field */}
           <div>
             <Label htmlFor="edit-name" className="mb-2 block">
-              Account Name <span className="text-red-500 ml-1">*</span>
+              {t('account.name')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="edit-name"
               name="name"
               type="text"
-              placeholder="Enter account holder name"
+              placeholder={t('account.enterName')}
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
@@ -181,13 +183,13 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
           {/* Phone Field */}
           <div>
             <Label htmlFor="edit-phone" className="mb-2 block">
-              Phone Number
+              {t('account.phone')}
             </Label>
             <TextInput
               id="edit-phone"
               name="phone"
               type="tel"
-              placeholder="Enter phone number"
+              placeholder={t('account.enterPhone')}
               value={formData.phone}
               onChange={handleChange}
               color={errors.phone ? "failure" : undefined}
@@ -203,7 +205,7 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
           {/* Balance Field */}
           <div>
             <Label htmlFor="edit-balance" className="mb-2 block">
-              Balance
+              {t('account.balance')}
             </Label>
             <TextInput
               id="edit-balance"
@@ -222,7 +224,7 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
               </p>
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Current balance can be adjusted here
+              {t('account.balanceUpdateHint')}
             </p>
           </div>
 
@@ -230,7 +232,7 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={handleClose} disabled={isSubmitting}>
               <HiX className="mr-2 h-4 w-4" />
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -240,10 +242,10 @@ export function AccountUpdate({ isOpen, onClose, onSuccess, account }: AccountUp
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
+                  {t('common.updating')}
                 </>
               ) : (
-                "Update Account"
+                t('account.updateAccount')
               )}
             </Button>
           </div>

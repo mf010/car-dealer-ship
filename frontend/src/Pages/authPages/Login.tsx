@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button, Label, TextInput, Checkbox } from "flowbite-react";
 import { HiMail, HiLockClosed, HiEye, HiEyeOff } from "react-icons/hi";
 import { authServices } from "../../services/authServices";
@@ -7,6 +8,7 @@ import type { LoginRequest } from "../../models/User";
 
 export function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -36,13 +38,13 @@ export function Login() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t('validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = t('validation.invalidEmail');
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t('validation.passwordRequired');
     }
 
     setErrors(newErrors);
@@ -67,9 +69,9 @@ export function Login() {
       console.error("Error logging in:", error);
       
       if (error.response?.status === 401) {
-        setErrors({ submit: "Invalid email or password" });
+        setErrors({ submit: t('auth.invalidCredentials') });
       } else {
-        setErrors({ submit: "Failed to login. Please try again." });
+        setErrors({ submit: t('auth.loginFailed') });
       }
     } finally {
       setLoading(false);
@@ -106,10 +108,10 @@ export function Login() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Welcome Back
+              {t('auth.welcomeBack')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Sign in to your account to continue
+              {t('auth.signInMessage')}
             </p>
           </div>
 
@@ -121,7 +123,7 @@ export function Login() {
                 htmlFor="email"
                 className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
               >
-                Email Address
+                {t('auth.email')}
               </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
@@ -152,7 +154,7 @@ export function Login() {
                 htmlFor="password"
                 className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
               >
-                Password
+                {t('auth.password')}
               </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
@@ -201,14 +203,14 @@ export function Login() {
                   htmlFor="remember"
                   className="ml-2 text-sm text-gray-600 dark:text-gray-400"
                 >
-                  Remember me
+                  {t('auth.rememberMe')}
                 </Label>
               </div>
               <a
                 href="#"
                 className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400"
               >
-                Forgot password?
+                {t('auth.forgotPassword')}
               </a>
             </div>
 
@@ -257,10 +259,10 @@ export function Login() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Signing in...
+                  {t('auth.signingIn')}
                 </>
               ) : (
-                "Sign in"
+                t('auth.signIn')
               )}
             </Button>
           </form>
@@ -268,12 +270,12 @@ export function Login() {
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{" "}
+              {t('auth.noAccount')}{" "}
               <a
                 href="#"
                 className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400"
               >
-                Contact administrator
+                {t('auth.contactAdmin')}
               </a>
             </p>
           </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, Button, Label, TextInput } from "flowbite-react";
 import { HiCog, HiLockClosed, HiLogout } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [passwordData, setPasswordData] = useState<ChangePasswordRequest>({
     current_password: "",
@@ -37,17 +39,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const newErrors: Record<string, string> = {};
 
     if (!passwordData.current_password) {
-      newErrors.current_password = "Current password is required";
+      newErrors.current_password = t('validation.currentPasswordRequired');
     }
 
     if (!passwordData.new_password) {
-      newErrors.new_password = "New password is required";
+      newErrors.new_password = t('validation.newPasswordRequired');
     } else if (passwordData.new_password.length < 6) {
-      newErrors.new_password = "Password must be at least 6 characters";
+      newErrors.new_password = t('validation.passwordMinLength');
     }
 
     if (passwordData.new_password !== passwordData.new_password_confirmation) {
-      newErrors.new_password_confirmation = "Passwords do not match";
+      newErrors.new_password_confirmation = t('validation.passwordsDoNotMatch');
     }
 
     setErrors(newErrors);
@@ -74,7 +76,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         new_password_confirmation: "",
       });
       setErrors({});
-      setSuccessMessage(response.message || "Password changed successfully!");
+      setSuccessMessage(response.message || t('messages.passwordChangeSuccess'));
       
       // Auto-hide success message after 3 seconds
       setTimeout(() => {
@@ -84,9 +86,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       console.error("Error changing password:", error);
       
       if (error.response?.status === 400) {
-        setErrors({ current_password: error.response?.data?.error || "Current password is incorrect" });
+        setErrors({ current_password: error.response?.data?.error || t('validation.currentPasswordIncorrect') });
       } else {
-        setErrors({ submit: "Failed to change password. Please try again." });
+        setErrors({ submit: t('messages.passwordChangeFailed') });
       }
     } finally {
       setLoading(false);
@@ -94,7 +96,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   };
 
   const handleLogout = async () => {
-    if (!window.confirm("Are you sure you want to logout?")) {
+    if (!window.confirm(t('settings.logoutConfirm'))) {
       return;
     }
 
@@ -131,7 +133,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <div className="flex items-center gap-2 mb-6">
           <HiCog className="h-6 w-6 text-gray-600" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Settings
+            {t('settings.title')}
           </h3>
         </div>
 
@@ -140,26 +142,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div>
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <HiCog className="h-5 w-5" />
-              Account Information
+              {t('settings.accountInfo')}
             </h4>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 dark:text-gray-400">Name:</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t('user.name')}:</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {currentUser?.name || "N/A"}
+                    {currentUser?.name || t('common.notAvailable')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 dark:text-gray-400">Email:</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t('user.email')}:</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {currentUser?.email || "N/A"}
+                    {currentUser?.email || t('common.notAvailable')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 dark:text-gray-400">Role:</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t('user.role')}:</span>
                   <span className="font-medium text-gray-900 dark:text-white uppercase">
-                    {currentUser?.role || "N/A"}
+                    {currentUser?.role || t('common.notAvailable')}
                   </span>
                 </div>
               </div>
@@ -170,13 +172,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div>
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <HiLockClosed className="h-5 w-5" />
-              Change Password
+              {t('settings.changePassword')}
             </h4>
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               {/* Current Password */}
               <div>
                 <Label htmlFor="current_password" className="mb-2 block">
-                  Current Password <span className="text-red-500">*</span>
+                  {t('settings.currentPassword')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="current_password"
@@ -185,7 +187,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={passwordData.current_password}
                   onChange={handlePasswordChange}
                   color={errors.current_password ? "failure" : undefined}
-                  placeholder="Enter current password"
+                  placeholder={t('settings.enterCurrentPassword')}
                 />
                 {errors.current_password && (
                   <p className="mt-1 text-sm text-red-600">
@@ -197,7 +199,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               {/* New Password */}
               <div>
                 <Label htmlFor="new_password" className="mb-2 block">
-                  New Password <span className="text-red-500">*</span>
+                  {t('settings.newPassword')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="new_password"
@@ -206,7 +208,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={passwordData.new_password}
                   onChange={handlePasswordChange}
                   color={errors.new_password ? "failure" : undefined}
-                  placeholder="Min 6 characters"
+                  placeholder={t('settings.minCharacters')}
                 />
                 {errors.new_password && (
                   <p className="mt-1 text-sm text-red-600">
@@ -218,7 +220,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               {/* Confirm New Password */}
               <div>
                 <Label htmlFor="new_password_confirmation" className="mb-2 block">
-                  Confirm New Password <span className="text-red-500">*</span>
+                  {t('settings.confirmNewPassword')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="new_password_confirmation"
@@ -227,7 +229,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   value={passwordData.new_password_confirmation}
                   onChange={handlePasswordChange}
                   color={errors.new_password_confirmation ? "failure" : undefined}
-                  placeholder="Re-enter new password"
+                  placeholder={t('settings.reEnterNewPassword')}
                 />
                 {errors.new_password_confirmation && (
                   <p className="mt-1 text-sm text-red-600">
@@ -253,7 +255,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               {/* Submit Button */}
               <Button type="submit" disabled={loading} className="w-full">
                 <HiLockClosed className="mr-2 h-5 w-5" />
-                {loading ? "Changing Password..." : "Change Password"}
+                {loading ? t('settings.changingPassword') : t('settings.changePassword')}
               </Button>
             </form>
           </div>
@@ -267,7 +269,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               className="w-full"
             >
               <HiLogout className="mr-2 h-5 w-5" />
-              {loading ? "Logging out..." : "Logout"}
+              {loading ? t('settings.loggingOut') : t('settings.logout')}
             </Button>
           </div>
         </div>
@@ -275,7 +277,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         {/* Close Button */}
         <div className="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
           <Button color="gray" onClick={handleClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>

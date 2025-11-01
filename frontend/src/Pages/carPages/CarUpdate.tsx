@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import ReactSelect from "react-select";
 import { carServices } from "../../services/carServices";
 import { carModelServices } from "../../services/carModelServices";
@@ -19,6 +20,7 @@ interface CarUpdateProps {
 }
 
 export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateCarDTO>({
     car_model_id: 0,
     purchase_price: 0,
@@ -66,7 +68,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
       setCarModelOptions(options);
     } catch (error) {
       console.error("Error fetching car models:", error);
-      setErrors({ car_model_id: "Failed to load car models" });
+      setErrors({ car_model_id: t('car.failedLoadModels') });
     } finally {
       setLoadingCarModels(false);
     }
@@ -78,13 +80,13 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
 
     if (formData.car_model_id !== undefined) {
       if (!formData.car_model_id || formData.car_model_id === 0) {
-        newErrors.car_model_id = "Car model is required";
+        newErrors.car_model_id = t('validation.carModelRequired');
       }
     }
 
     if (formData.purchase_price !== undefined) {
       if (formData.purchase_price < 0) {
-        newErrors.purchase_price = "Purchase price cannot be negative";
+        newErrors.purchase_price = t('validation.priceNonNegative');
       }
     }
 
@@ -107,7 +109,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
 
     try {
       await carServices.updateCar(car.id, formData);
-      setSuccessMessage("Car updated successfully!");
+      setSuccessMessage(t('messages.updateSuccess'));
       
       // Wait a moment to show success message, then close and refresh
       setTimeout(() => {
@@ -117,7 +119,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
       }, 1500);
     } catch (error) {
       console.error("Error updating car:", error);
-      setErrors({ car_model_id: "Failed to update car. Please try again." });
+      setErrors({ car_model_id: t('messages.updateFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -154,7 +156,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
     <Modal show={isOpen} onClose={handleClose} size="md">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Update Car
+          {t('car.updateCar')}
         </h3>
 
         {successMessage && (
@@ -168,7 +170,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
           {/* Car Model Selection */}
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="car_model_id">Car Model *</Label>
+              <Label htmlFor="car_model_id">{t('car.carModel')} *</Label>
             </div>
             <ReactSelect
               id="car_model_id"
@@ -188,7 +190,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
               isLoading={loadingCarModels}
               isDisabled={loadingCarModels}
               isClearable
-              placeholder={loadingCarModels ? "Loading car models..." : "Select a car model"}
+              placeholder={loadingCarModels ? t('common.loading') : t('car.selectCarModel')}
               className="react-select-container"
               classNamePrefix="react-select"
               styles={{
@@ -216,14 +218,14 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
           {/* Purchase Price */}
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="purchase_price">Purchase Price *</Label>
+              <Label htmlFor="purchase_price">{t('car.purchasePrice')} *</Label>
             </div>
             <TextInput
               id="purchase_price"
               name="purchase_price"
               type="number"
               step="0.01"
-              placeholder="Enter purchase price"
+              placeholder={t('car.enterPurchasePrice')}
               value={formData.purchase_price}
               onChange={handleChange}
               color={errors.purchase_price ? "failure" : "gray"}
@@ -238,7 +240,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
           {/* Status */}
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="status">Status (Read-only)</Label>
+              <Label htmlFor="status">{t('car.statusReadOnly')}</Label>
             </div>
             <select
               id="status"
@@ -248,8 +250,8 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
               disabled
               className="bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed dark:bg-gray-600 dark:border-gray-500 dark:text-gray-400"
             >
-              <option value="available">Available</option>
-              <option value="sold">Sold</option>
+              <option value="available">{t('car.available')}</option>
+              <option value="sold">{t('car.sold')}</option>
             </select>
           </div>
 
@@ -264,12 +266,12 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
+                  {t('common.updating')}
                 </>
               ) : (
                 <>
                   <HiCheck className="mr-2 h-5 w-5" />
-                  Update Car
+                  {t('car.updateCar')}
                 </>
               )}
             </Button>
@@ -280,7 +282,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
               disabled={isSubmitting}
             >
               <HiX className="mr-2 h-5 w-5" />
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

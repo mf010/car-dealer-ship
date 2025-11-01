@@ -1,6 +1,8 @@
 import { Modal, Badge, Button } from 'flowbite-react';
 import { HiX, HiUser, HiClock, HiCheckCircle } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import type { Payment } from '../../models/Payment';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from '../../utils/formatters';
 
 interface PaymentInfoModalProps {
   payment: Payment;
@@ -8,35 +10,24 @@ interface PaymentInfoModalProps {
 }
 
 export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
+  const { t, i18n } = useTranslation();
+  
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateTimeUtil(dateString, i18n.language);
   };
 
   const handleViewClient = () => {
     const clientId = payment.invoice?.client_id;
     console.log('Navigate to Client #', clientId);
-    alert(`Navigation to Client #${clientId} - Implementation pending`);
+    alert(t('messages.navigationPending', { type: 'Client', id: clientId }));
   };
 
   const invoice = payment.invoice;
@@ -50,10 +41,10 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Payment Details
+              {t('payment.paymentDetails')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Payment ID: #{payment.id}
+              {t('payment.paymentIdLabel', { id: payment.id })}
             </p>
           </div>
           <button
@@ -70,38 +61,38 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
           {/* Payment Details Section */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Payment Information
+              {t('payment.paymentInformation')}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Payment ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('payment.paymentId')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   #{payment.id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Invoice</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('invoice.invoice')}</p>
                 <p className="mt-1 text-base font-medium text-blue-600 dark:text-blue-400">
-                  Invoice #{payment.invoice_id}
+                  {t('invoice.invoiceNumber', { number: payment.invoice_id })}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Amount</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('payment.amount')}</p>
                 <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(payment.amount)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Payment Date</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('payment.paymentDate')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   {formatDate(payment.payment_date)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</p>
                 <div className="mt-1">
                   <Badge color="success" size="sm">
-                    Completed
+                    {t('payment.completed')}
                   </Badge>
                 </div>
               </div>
@@ -112,35 +103,35 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
           {invoice && (
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
               <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-4">
-                Invoice Information
+                {t('invoice.invoiceInformation')}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Invoice ID</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('invoice.invoiceId')}</p>
                   <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
                     #{invoice.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Invoice Date</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('invoice.invoiceDate')}</p>
                   <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
                     {formatDate(invoice.invoice_date)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Total Amount</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('invoice.totalAmount')}</p>
                   <p className="mt-1 text-lg font-bold text-blue-900 dark:text-blue-300">
                     {formatCurrency(invoice.amount)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Paid Amount</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('invoice.amountPaid')}</p>
                   <p className="mt-1 text-lg font-bold text-blue-900 dark:text-blue-300">
                     {formatCurrency(invoice.payed)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Remaining Balance</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('invoice.remainingBalance')}</p>
                   <p className={`mt-1 text-lg font-bold ${
                     remainingBalance > 0
                       ? 'text-red-600 dark:text-red-400'
@@ -151,7 +142,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
                 </div>
                 {invoice.car && (
                   <div>
-                    <p className="text-sm text-blue-700 dark:text-blue-400">Car</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-400">{t('car.car')}</p>
                     <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
                       {invoice.car.carModel?.make?.name} {invoice.car.carModel?.name}
                     </p>
@@ -166,7 +157,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold text-purple-900 dark:text-purple-300">
-                  Client Information
+                  {t('client.clientInformation')}
                 </h4>
                 <Button
                   size="sm"
@@ -175,36 +166,36 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
                   className="flex items-center gap-2"
                 >
                   <HiUser className="h-4 w-4" />
-                  View Client Details
+                  {t('client.viewClientDetails')}
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-purple-700 dark:text-purple-400">Client Name</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">{t('client.clientName')}</p>
                   <p className="mt-1 text-base font-medium text-purple-900 dark:text-purple-300">
                     {client.name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-purple-700 dark:text-purple-400">Phone</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">{t('client.phone')}</p>
                   <p className="mt-1 text-base font-medium text-purple-900 dark:text-purple-300">
-                    {client.phone || 'N/A'}
+                    {client.phone || t('common.notAvailable')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-purple-700 dark:text-purple-400">Personal ID</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">{t('client.personalId')}</p>
                   <p className="mt-1 text-base font-medium text-purple-900 dark:text-purple-300">
-                    {client.personal_id || 'N/A'}
+                    {client.personal_id || t('common.notAvailable')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-purple-700 dark:text-purple-400">Address</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">{t('client.address')}</p>
                   <p className="mt-1 text-base font-medium text-purple-900 dark:text-purple-300">
-                    {client.address || 'N/A'}
+                    {client.address || t('common.notAvailable')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-purple-700 dark:text-purple-400">Client Balance</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-400">{t('client.clientBalance')}</p>
                   <p className={`mt-1 text-lg font-bold ${
                     (client.balance || 0) >= 0
                       ? 'text-green-600 dark:text-green-400'
@@ -220,7 +211,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
           {/* Timeline Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Payment Timeline
+              {t('payment.paymentTimeline')}
             </h4>
             <div className="space-y-4">
               {/* Payment Received */}
@@ -232,7 +223,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    Payment Received
+                    {t('payment.paymentReceived')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(payment.payment_date)}
@@ -250,7 +241,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Payment Recorded
+                      {t('payment.paymentRecorded')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(payment.created_at)}
@@ -269,7 +260,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Last Updated
+                      {t('common.lastUpdated')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(payment.updated_at)}
@@ -284,7 +275,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
         {/* Footer */}
         <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
           <Button color="gray" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>

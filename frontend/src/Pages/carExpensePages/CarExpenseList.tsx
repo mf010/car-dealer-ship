@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button, Pagination, Badge, TextInput, Label } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiEye, HiSearch } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
 import { carExpenseServices } from "../../services/carExpensServices";
 import { carServices } from "../../services/carServices";
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from '../../utils/formatters';
 import type { CarExpense } from "../../models/CarExpens";
 import type { Car } from "../../models/Car";
 import { CarExpenseForm } from "./CarExpenseForm";
@@ -10,6 +12,7 @@ import { CarExpenseUpdate } from "./CarExpenseUpdate";
 import { CarExpenseInfoModal } from "./CarExpenseInfoModal";
 
 export function CarExpenseList() {
+  const { t, i18n } = useTranslation();
   const [expenses, setExpenses] = useState<CarExpense[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,7 +86,7 @@ export function CarExpenseList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this expense?")) {
+    if (window.confirm(t('messages.confirmDeleteExpense'))) {
       try {
         await carExpenseServices.deleteCarExpense(id);
         fetchExpenses();
@@ -112,19 +115,12 @@ export function CarExpenseList() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   // Get car display name
@@ -143,15 +139,15 @@ export function CarExpenseList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Car Expenses
+            {t('carExpense.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Track and manage vehicle-related expenses
+            {t('carExpense.manageDescription')}
           </p>
         </div>
         <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Expense
+          {t('carExpense.addExpense')}
         </Button>
       </div>
 
@@ -160,14 +156,14 @@ export function CarExpenseList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Car Filter */}
           <div>
-            <Label htmlFor="filterCar">Filter by Car</Label>
+            <Label htmlFor="filterCar">{t('car.filterByCar')}</Label>
             <select
               id="filterCar"
               value={filterCarId}
               onChange={(e) => setFilterCarId(e.target.value)}
               className="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             >
-              <option value="">All Cars</option>
+              <option value="">{t('car.allCars')}</option>
               {cars.map((car) => (
                 <option key={car.id} value={car.id}>
                   {car.carModel?.make?.name} {car.carModel?.name} (#{car.id})
@@ -178,7 +174,7 @@ export function CarExpenseList() {
 
           {/* Date Filter */}
           <div>
-            <Label htmlFor="filterDate">Expense Date</Label>
+            <Label htmlFor="filterDate">{t('carExpense.expenseDate')}</Label>
             <TextInput
               id="filterDate"
               type="date"
@@ -189,7 +185,7 @@ export function CarExpenseList() {
 
           {/* Min Amount Filter */}
           <div>
-            <Label htmlFor="filterMinAmount">Min Amount</Label>
+            <Label htmlFor="filterMinAmount">{t('financial.minAmount')}</Label>
             <TextInput
               id="filterMinAmount"
               type="number"
@@ -201,11 +197,11 @@ export function CarExpenseList() {
 
           {/* Max Amount Filter */}
           <div>
-            <Label htmlFor="filterMaxAmount">Max Amount</Label>
+            <Label htmlFor="filterMaxAmount">{t('financial.maxAmount')}</Label>
             <TextInput
               id="filterMaxAmount"
               type="number"
-              placeholder="Max amount"
+              placeholder={t('financial.maxAmount')}
               value={filterMaxAmount}
               onChange={(e) => setFilterMaxAmount(e.target.value)}
             />
@@ -213,11 +209,11 @@ export function CarExpenseList() {
 
           {/* Description Filter */}
           <div>
-            <Label htmlFor="filterDescription">Description</Label>
+            <Label htmlFor="filterDescription">{t('common.description')}</Label>
             <TextInput
               id="filterDescription"
               type="text"
-              placeholder="Search description"
+              placeholder={t('common.searchDescription')}
               icon={HiSearch}
               value={filterDescription}
               onChange={(e) => setFilterDescription(e.target.value)}
@@ -238,24 +234,24 @@ export function CarExpenseList() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading expenses...</p>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}...</p>
           </div>
         ) : expenses.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">No expenses found</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('carExpense.noExpensesFound')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Expense ID</th>
-                  <th scope="col" className="px-6 py-3">Car</th>
-                  <th scope="col" className="px-6 py-3">Description</th>
-                  <th scope="col" className="px-6 py-3">Amount</th>
-                  <th scope="col" className="px-6 py-3">Expense Date</th>
-                  <th scope="col" className="px-6 py-3">Status</th>
-                  <th scope="col" className="px-6 py-3">Actions</th>
+                  <th scope="col" className="px-6 py-3">{t('carExpense.expenseId')}</th>
+                  <th scope="col" className="px-6 py-3">{t('car.car')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.description')}</th>
+                  <th scope="col" className="px-6 py-3">{t('carExpense.amount')}</th>
+                  <th scope="col" className="px-6 py-3">{t('carExpense.expenseDate')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.status')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -274,7 +270,7 @@ export function CarExpenseList() {
                         </div>
                         {expense.car && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Car ID: #{expense.car_id}
+                            {t('car.carId')}: #{expense.car_id}
                           </div>
                         )}
                       </div>
@@ -292,7 +288,7 @@ export function CarExpenseList() {
                     </td>
                     <td className="px-6 py-4">
                       <Badge color="success" size="sm">
-                        Recorded
+                        {t('carExpense.recorded')}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
@@ -305,6 +301,7 @@ export function CarExpenseList() {
                           <HiEye className="h-4 w-4" />
                         </Button>
                         <Button
+                          hidden
                           size="xs"
                           color="gray"
                           onClick={() => handleEdit(expense)}

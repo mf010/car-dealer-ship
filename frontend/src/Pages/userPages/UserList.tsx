@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button, Badge, TextInput } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiSearch } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { userServices } from "../../services/userServices";
 import { UserForm } from "./UserForm";
 import { UserUpdate } from "./UserUpdate";
+import { formatDate } from "../../utils/formatters";
 import type { User } from "../../models/User";
 
 export function UserList() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,7 +34,7 @@ export function UserList() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) {
+    if (!window.confirm(t('user.deleteConfirm'))) {
       return;
     }
 
@@ -40,7 +43,7 @@ export function UserList() {
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user. Please try again.");
+      alert(t('messages.deleteFailed'));
     }
   };
 
@@ -55,23 +58,14 @@ export function UserList() {
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   return (
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          User Management
+          {t('user.management')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Manage system users and their roles
+          {t('user.manageDescription')}
         </p>
       </div>
 
@@ -80,14 +74,14 @@ export function UserList() {
         <div className="flex-1">
           <TextInput
             icon={HiSearch}
-            placeholder="Search by name, email, or role..."
+            placeholder={t('user.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <HiPlus className="mr-2 h-5 w-5" />
-          Add User
+          {t('user.addUser')}
         </Button>
       </div>
 
@@ -95,20 +89,20 @@ export function UserList() {
       {loading ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-500">Loading users...</span>
+          <span className="ml-3 text-gray-500">{t('common.loading')}</span>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <th scope="col" className="px-6 py-3">ID</th>
-                <th scope="col" className="px-6 py-3">Name</th>
-                <th scope="col" className="px-6 py-3">Email</th>
-                <th scope="col" className="px-6 py-3">Role</th>
-                <th scope="col" className="px-6 py-3">Email Verified</th>
-                <th scope="col" className="px-6 py-3">Created At</th>
-                <th scope="col" className="px-6 py-3">Actions</th>
+                <th scope="col" className="px-6 py-3">{t('common.id')}</th>
+                <th scope="col" className="px-6 py-3">{t('user.name')}</th>
+                <th scope="col" className="px-6 py-3">{t('user.email')}</th>
+                <th scope="col" className="px-6 py-3">{t('user.role')}</th>
+                <th scope="col" className="px-6 py-3">{t('user.emailVerified')}</th>
+                <th scope="col" className="px-6 py-3">{t('common.createdAt')}</th>
+                <th scope="col" className="px-6 py-3">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -116,7 +110,7 @@ export function UserList() {
                 <tr className="bg-white dark:bg-gray-800">
                   <td colSpan={7} className="px-6 py-8 text-center">
                     <p className="text-gray-500 dark:text-gray-400">
-                      {searchTerm ? "No users found matching your search." : "No users found."}
+                      {searchTerm ? t('user.noUsersFound') : t('user.noUsers')}
                     </p>
                   </td>
                 </tr>
@@ -133,14 +127,14 @@ export function UserList() {
                     <td className="px-6 py-4">{user.email}</td>
                     <td className="px-6 py-4">
                       <Badge color={user.role === 'admin' ? 'success' : 'info'}>
-                        {user.role.toUpperCase()}
+                        {user.role === 'admin' ? t('user.roles.admin') : t('user.roles.user')}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
                       {user.email_verified_at ? (
-                        <Badge color="success">Verified</Badge>
+                        <Badge color="success">{t('user.verified')}</Badge>
                       ) : (
-                        <Badge color="warning">Not Verified</Badge>
+                        <Badge color="warning">{t('user.notVerified')}</Badge>
                       )}
                     </td>
                     <td className="px-6 py-4">{formatDate(user.created_at)}</td>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Label, TextInput, Select } from "flowbite-react";
 import { HiPencil } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { userServices } from "../../services/userServices";
 import type { User, UpdateUserRequest } from "../../models/User";
 
@@ -12,6 +13,7 @@ interface UserUpdateProps {
 }
 
 export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -45,13 +47,13 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = t('validation.nameRequired');
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t('validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = t('validation.invalidEmail');
     }
 
     setErrors(newErrors);
@@ -86,7 +88,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
         const backendErrors = error.response?.data?.errors || {};
         setErrors(backendErrors);
       } else {
-        setErrors({ submit: "Failed to update user. Please try again." });
+        setErrors({ submit: t('messages.updateFailed') });
       }
     } finally {
       setLoading(false);
@@ -101,7 +103,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
         <div className="flex items-center gap-2 mb-6">
           <HiPencil className="h-6 w-6 text-gray-600" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Update User #{user.id}
+            {t('user.updateUser')} #{user.id}
           </h3>
         </div>
 
@@ -109,7 +111,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
           {/* Name */}
           <div>
             <Label htmlFor="name" className="mb-2 block">
-              Name <span className="text-red-500">*</span>
+              {t('user.name')} <span className="text-red-500">*</span>
             </Label>
             <TextInput
               id="name"
@@ -118,7 +120,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
-              placeholder="Enter user name"
+              placeholder={t('user.enterName')}
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -128,7 +130,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
           {/* Email */}
           <div>
             <Label htmlFor="email" className="mb-2 block">
-              Email <span className="text-red-500">*</span>
+              {t('user.email')} <span className="text-red-500">*</span>
             </Label>
             <TextInput
               id="email"
@@ -137,7 +139,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
               value={formData.email}
               onChange={handleChange}
               color={errors.email ? "failure" : undefined}
-              placeholder="user@example.com"
+              placeholder={t('user.emailPlaceholder')}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -147,7 +149,7 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
           {/* Role */}
           <div>
             <Label htmlFor="role" className="mb-2 block">
-              Role <span className="text-red-500">*</span>
+              {t('user.role')} <span className="text-red-500">*</span>
             </Label>
             <Select
               id="role"
@@ -155,8 +157,8 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
               value={formData.role}
               onChange={handleChange}
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="user">{t('user.roles.user')}</option>
+              <option value="admin">{t('user.roles.admin')}</option>
             </Select>
             {errors.role && (
               <p className="mt-1 text-sm text-red-600">{errors.role}</p>
@@ -173,10 +175,10 @@ export function UserUpdate({ isOpen, onClose, onSuccess, user }: UserUpdateProps
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? "Updating..." : "Update User"}
+              {loading ? t('common.updating') : t('common.update')}
             </Button>
             <Button color="gray" onClick={onClose} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal, Button, Label, TextInput, Select } from "flowbite-react";
 import { HiPlus } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { invoiceServices } from "../../services/invoiceServices";
 import { clientServices } from "../../services/clientServices";
 import { carServices } from "../../services/carServices";
@@ -16,6 +17,7 @@ interface InvoiceFormProps {
 }
 
 export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
@@ -103,35 +105,35 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.client_id) {
-      newErrors.client_id = "Client is required";
+      newErrors.client_id = t('validation.clientRequired');
     }
 
     if (!formData.car_id) {
-      newErrors.car_id = "Car is required";
+      newErrors.car_id = t('validation.carRequired');
     }
 
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = "Amount must be greater than 0";
+      newErrors.amount = t('validation.amountGreaterThanZero');
     }
 
     if (parseFloat(formData.payed) < 0) {
-      newErrors.payed = "Paid amount cannot be negative";
+      newErrors.payed = t('validation.paidAmountNonNegative');
     }
 
     if (parseFloat(formData.payed) > parseFloat(formData.amount)) {
-      newErrors.payed = "Amount paid cannot exceed total amount";
+      newErrors.payed = t('validation.paidExceedsTotal');
     }
 
     if (parseFloat(formData.account_cut) < 0) {
-      newErrors.account_cut = "Account cut cannot be negative";
+      newErrors.account_cut = t('validation.accountCutNonNegative');
     }
 
     if (parseFloat(formData.account_cut) > parseFloat(formData.amount)) {
-      newErrors.account_cut = "Account cut cannot exceed total amount";
+      newErrors.account_cut = t('validation.accountCutExceedsTotal');
     }
 
     if (!formData.invoice_date) {
-      newErrors.invoice_date = "Invoice date is required";
+      newErrors.invoice_date = t('validation.invoiceDateRequired');
     }
 
     setErrors(newErrors);
@@ -175,7 +177,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
       onClose();
     } catch (error) {
       console.error("Error creating invoice:", error);
-      setErrors({ submit: "Failed to create invoice. Please try again." });
+      setErrors({ submit: t('messages.createFailed') });
     } finally {
       setLoading(false);
     }
@@ -187,14 +189,14 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
         <div className="flex items-center gap-2 mb-6">
           <HiPlus className="h-6 w-6 text-blue-600" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Add New Invoice
+            {t('invoice.addInvoice')}
           </h3>
         </div>
 
         {loadingData ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-500">Loading data...</span>
+            <span className="ml-3 text-gray-500">{t('common.loadingData')}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -208,13 +210,13 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             {/* Client Selection - Searchable */}
             <div ref={clientDropdownRef}>
               <Label htmlFor="client_id" className="mb-2 block">
-                Client <span className="text-red-500">*</span>
+                {t('client.client')} <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <TextInput
                   id="client_search"
                   type="text"
-                  placeholder="Search client by name..."
+                  placeholder={t('client.searchByName')}
                   value={clientSearch}
                   onChange={(e) => {
                     setClientSearch(e.target.value);
@@ -251,7 +253,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                       client.name.toLowerCase().includes(clientSearch.toLowerCase())
                     ).length === 0 && (
                       <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                        No clients found
+                        {t('common.noClientsFound')}
                       </div>
                     )}
                   </div>
@@ -267,7 +269,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                   }}
                   className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
                 >
-                  Clear client selection
+                  {t('common.clearClientSelection')}
                 </button>
               )}
               {errors.client_id && (
@@ -278,7 +280,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             {/* Car Selection */}
             <div>
               <Label htmlFor="car_id" className="mb-2 block">
-                Car (Available) <span className="text-red-500">*</span>
+                {t('car.carAvailable')} <span className="text-red-500">*</span>
               </Label>
               <Select
                 id="car_id"
@@ -288,7 +290,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                 color={errors.car_id ? "failure" : undefined}
                 required
               >
-                <option value="">Select a car</option>
+                <option value="">{t('car.selectCar')}</option>
                 {cars.map((car) => (
                   <option key={car.id} value={car.id}>
                     {car.carModel?.make?.name} {car.carModel?.name} - #{car.id}
@@ -303,13 +305,13 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             {/* Account Selection - Searchable (Optional) */}
             <div ref={accountDropdownRef}>
               <Label htmlFor="account_id" className="mb-2 block">
-                Account (Optional)
+                {t('account.accountOptional')}
               </Label>
               <div className="relative">
                 <TextInput
                   id="account_search"
                   type="text"
-                  placeholder="Search account by name..."
+                  placeholder={t('account.searchByName')}
                   value={accountSearch}
                   onChange={(e) => {
                     setAccountSearch(e.target.value);
@@ -358,7 +360,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                   }}
                   className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
                 >
-                  Clear account selection
+                  {t('common.clearAccountSelection')}
                 </button>
               )}
             </div>
@@ -367,7 +369,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="amount" className="mb-2 block">
-                  Total Amount <span className="text-red-500">*</span>
+                  {t('invoice.totalAmount')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="amount"
@@ -387,7 +389,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
 
               <div>
                 <Label htmlFor="payed" className="mb-2 block">
-                  Amount Paid
+                  {t('invoice.amountPaid')}
                 </Label>
                 <TextInput
                   id="payed"
@@ -409,7 +411,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="account_cut" className="mb-2 block">
-                  Account Cut
+                  {t('invoice.accountCut')}
                 </Label>
                 <TextInput
                   id="account_cut"
@@ -428,7 +430,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
 
               <div>
                 <Label htmlFor="invoice_date" className="mb-2 block">
-                  Invoice Date <span className="text-red-500">*</span>
+                  {t('invoice.invoiceDate')} <span className="text-red-500">*</span>
                 </Label>
                 <TextInput
                   id="invoice_date"
@@ -448,10 +450,10 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             {/* Buttons */}
             <div className="flex gap-3 pt-4">
               <Button onClick={handleSubmit} color="blue" disabled={loading || loadingData}>
-                {loading ? "Creating..." : "Create Invoice"}
+                {loading ? t('common.creating') : t('invoice.createInvoice')}
               </Button>
               <Button color="gray" onClick={onClose} disabled={loading}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>

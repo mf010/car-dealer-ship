@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Label, TextInput, Textarea, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { clientServices } from "../../services/clientServices";
 import type { CreateClientDTO } from "../../models/Client";
 
@@ -11,6 +12,7 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateClientDTO>({
     name: "",
     phone: "",
@@ -33,34 +35,34 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
 
     // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = "Client name is required";
+      newErrors.name = t('validation.nameRequired');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Client name must be at least 2 characters";
+      newErrors.name = t('validation.nameMinLength');
     } else if (formData.name.trim().length > 100) {
-      newErrors.name = "Client name must not exceed 100 characters";
+      newErrors.name = t('validation.nameMaxLength');
     }
 
     // Phone validation (optional but must be valid if provided)
     if (formData.phone && formData.phone.trim()) {
       const phoneRegex = /^[\d\s\-\+\(\)]+$/;
       if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = "Please enter a valid phone number";
+        newErrors.phone = t('validation.invalidPhone');
       } else if (formData.phone.length < 7 || formData.phone.length > 20) {
-        newErrors.phone = "Phone number must be between 7 and 20 characters";
+        newErrors.phone = t('validation.phoneLength');
       }
     }
 
     // Personal ID validation (optional but must be valid if provided)
     if (formData.personal_id && formData.personal_id.trim()) {
       if (formData.personal_id.trim().length < 5 || formData.personal_id.trim().length > 50) {
-        newErrors.personal_id = "Personal ID must be between 5 and 50 characters";
+        newErrors.personal_id = t('validation.personalIdLength');
       }
     }
 
     // Balance validation
     if (formData.balance !== undefined && formData.balance !== null) {
       if (isNaN(formData.balance)) {
-        newErrors.balance = "Balance must be a valid number";
+        newErrors.balance = t('validation.invalidNumber');
       }
     }
 
@@ -90,7 +92,7 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
       };
 
       await clientServices.createClient(submitData);
-      setSuccessMessage("Client added successfully!");
+      setSuccessMessage(t('messages.createSuccess'));
       
       // Reset form
       setFormData({
@@ -110,7 +112,7 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
       }, 1500);
     } catch (error) {
       console.error("Error creating client:", error);
-      setErrors({ name: "Failed to create client. Please try again." });
+      setErrors({ name: t('messages.createFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -148,7 +150,7 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
     <Modal show={isOpen} onClose={handleClose} size="lg">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Add New Client
+          {t('client.addClient')}
         </h3>
 
         {successMessage && (
@@ -162,13 +164,13 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
           {/* Name Field */}
           <div>
             <Label htmlFor="name" className="mb-2 block">
-              Client Name <span className="text-red-500 ml-1">*</span>
+              {t('client.name')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="name"
               name="name"
               type="text"
-              placeholder="Enter client name"
+              placeholder={t('client.namePlaceholder')}
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
@@ -185,13 +187,13 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
           {/* Phone Field */}
           <div>
             <Label htmlFor="phone" className="mb-2 block">
-              Phone Number
+              {t('client.phone')}
             </Label>
             <TextInput
               id="phone"
               name="phone"
               type="tel"
-              placeholder="Enter phone number"
+              placeholder={t('client.phonePlaceholder')}
               value={formData.phone}
               onChange={handleChange}
               color={errors.phone ? "failure" : undefined}
@@ -207,13 +209,13 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
           {/* Personal ID Field */}
           <div>
             <Label htmlFor="personal_id" className="mb-2 block">
-              Personal ID
+              {t('client.personalId')}
             </Label>
             <TextInput
               id="personal_id"
               name="personal_id"
               type="text"
-              placeholder="Enter personal/national ID"
+              placeholder={t('client.personalIdPlaceholder')}
               value={formData.personal_id}
               onChange={handleChange}
               color={errors.personal_id ? "failure" : undefined}
@@ -229,12 +231,12 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
           {/* Address Field */}
           <div>
             <Label htmlFor="address" className="mb-2 block">
-              Address
+              {t('client.address')}
             </Label>
             <Textarea
               id="address"
               name="address"
-              placeholder="Enter client address"
+              placeholder={t('client.addressPlaceholder')}
               value={formData.address}
               onChange={handleChange}
               disabled={isSubmitting}
@@ -245,7 +247,7 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
           {/* Balance Field */}
           <div>
             <Label htmlFor="balance" className="mb-2 block">
-              Initial Balance
+              {t('client.initialBalance')}
             </Label>
             <TextInput
               id="balance"
@@ -264,7 +266,7 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
               </p>
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Enter negative value for debt
+              {t('client.balanceHint')}
             </p>
           </div>
 
@@ -272,7 +274,7 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={handleClose} disabled={isSubmitting}>
               <HiX className="mr-2 h-4 w-4" />
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -282,10 +284,10 @@ export function ClientForm({ isOpen, onClose, onSuccess }: ClientFormProps) {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Adding...
+                  {t('common.creating')}
                 </>
               ) : (
-                "Add Client"
+                t('client.addClient')
               )}
             </Button>
           </div>

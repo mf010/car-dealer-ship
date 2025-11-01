@@ -1,5 +1,7 @@
 import { Modal, Badge, Button } from 'flowbite-react';
 import { HiX, HiUser, HiClock, HiCheckCircle } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from '../../utils/formatters';
 import type { AccountWithdrawal } from '../../models/AccountWithdrawal';
 
 interface AccountWithdrawalInfoModalProps {
@@ -8,29 +10,18 @@ interface AccountWithdrawalInfoModalProps {
 }
 
 export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithdrawalInfoModalProps) {
+  const { t, i18n } = useTranslation();
+  
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateTimeUtil(dateString, i18n.language);
   };
 
   const handleViewAccount = () => {
@@ -47,10 +38,10 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Withdrawal Details
+              {t('accountWithdrawal.withdrawalDetails')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Withdrawal ID: #{withdrawal.id}
+              {t('accountWithdrawal.withdrawalIdLabel', { id: withdrawal.id })}
             </p>
           </div>
           <button
@@ -67,32 +58,32 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
           {/* Withdrawal Details Section */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Withdrawal Information
+              {t('accountWithdrawal.withdrawalInformation')}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Withdrawal ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('accountWithdrawal.withdrawalId')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   #{withdrawal.id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Amount</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('accountWithdrawal.amount')}</p>
                 <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(withdrawal.amount)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Withdrawal Date</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('accountWithdrawal.withdrawalDate')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   {formatDate(withdrawal.withdrawal_date)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</p>
                 <div className="mt-1">
                   <Badge color="success" size="sm">
-                    Completed
+                    {t('accountWithdrawal.completed')}
                   </Badge>
                 </div>
               </div>
@@ -104,7 +95,7 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-300">
-                  Account Information
+                  {t('account.accountInformation')}
                 </h4>
                 <Button
                   size="sm"
@@ -113,30 +104,30 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
                   className="flex items-center gap-2"
                 >
                   <HiUser className="h-4 w-4" />
-                  View Account Details
+                  {t('account.viewAccountDetails')}
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Account Name</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('account.accountName')}</p>
                   <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
                     {account.name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Phone</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('account.phone')}</p>
                   <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
-                    {account.phone || 'N/A'}
+                    {account.phone || t('common.notAvailable')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Account ID</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('account.accountId')}</p>
                   <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
                     #{account.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">Current Balance</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400">{t('account.currentBalance')}</p>
                   <p className={`mt-1 text-lg font-bold ${
                     (account.balance || 0) >= 0
                       ? 'text-green-600 dark:text-green-400'
@@ -152,7 +143,7 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
           {/* Timeline Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Withdrawal Timeline
+              {t('accountWithdrawal.withdrawalTimeline')}
             </h4>
             <div className="space-y-4">
               {/* Withdrawal Processed */}
@@ -164,7 +155,7 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    Withdrawal Processed
+                    {t('accountWithdrawal.withdrawalProcessed')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(withdrawal.withdrawal_date)}
@@ -182,7 +173,7 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Withdrawal Recorded
+                      {t('accountWithdrawal.withdrawalRecorded')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(withdrawal.created_at)}
@@ -201,7 +192,7 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Last Updated
+                      {t('common.lastUpdated')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(withdrawal.updated_at)}
@@ -216,7 +207,7 @@ export function AccountWithdrawalInfoModal({ withdrawal, onClose }: AccountWithd
         {/* Footer */}
         <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
           <Button color="gray" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>

@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Badge } from "flowbite-react";
 import { HiX, HiPlus } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
 import { paymentServices } from "../../services/paymentServices";
 import type { Invoice } from "../../models/Invoice";
 import type { Payment } from "../../models/Payment";
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from "../../utils/formatters";
 
 interface InvoiceInfoModalProps {
   isOpen: boolean;
@@ -18,6 +20,7 @@ export function InvoiceInfoModal({
   invoice,
   onInvoiceUpdate,
 }: InvoiceInfoModalProps) {
+  const { t, i18n } = useTranslation();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [addingPayment, setAddingPayment] = useState(false);
@@ -49,7 +52,7 @@ export function InvoiceInfoModal({
 
   const handleAddPayment = async () => {
     if (!invoice || !newPaymentAmount || parseFloat(newPaymentAmount) <= 0) {
-      alert("Please enter a valid payment amount");
+      alert(t('validation.validPaymentAmount'));
       return;
     }
 
@@ -57,7 +60,7 @@ export function InvoiceInfoModal({
     const remainingBalance = invoice.amount - invoice.payed;
 
     if (amount > remainingBalance) {
-      alert(`Payment amount cannot exceed remaining balance: $${remainingBalance.toFixed(2)}`);
+      alert(t('validation.paymentExceedsBalance', { balance: formatCurrencyUtil(remainingBalance, i18n.language) }));
       return;
     }
 
@@ -78,12 +81,12 @@ export function InvoiceInfoModal({
       onInvoiceUpdate();
     } catch (error) {
       console.error("Error adding payment:", error);
-      alert("Failed to add payment. Please try again.");
+      alert(t('messages.addPaymentFailed'));
     }
   };
 
   const handleDeletePayment = async (paymentId: number) => {
-    if (!window.confirm("Are you sure you want to delete this payment?")) {
+    if (!window.confirm(t('messages.confirmDeletePayment'))) {
       return;
     }
 
@@ -93,23 +96,16 @@ export function InvoiceInfoModal({
       onInvoiceUpdate();
     } catch (error) {
       console.error("Error deleting payment:", error);
-      alert("Failed to delete payment. Please try again.");
+      alert(t('messages.deletePaymentFailed'));
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   const isFullyPaid = (inv: Invoice) => {
@@ -126,26 +122,26 @@ export function InvoiceInfoModal({
     <Modal show={isOpen} onClose={onClose} size="3xl">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          Invoice Details - #{invoice.id}
+          {t('invoice.invoiceDetailsId', { id: invoice.id })}
         </h3>
 
         <div className="space-y-6">
           {/* Payment Status Badge */}
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Payment Status
+              {t('invoice.paymentStatus')}
             </h3>
             {isFullyPaid(invoice) ? (
               <Badge color="success" size="lg">
-                Fully Paid
+                {t('invoice.fullyPaid')}
               </Badge>
             ) : invoice.payed > 0 ? (
               <Badge color="warning" size="lg">
-                Partially Paid
+                {t('invoice.partiallyPaid')}
               </Badge>
             ) : (
               <Badge color="failure" size="lg">
-                Unpaid
+                {t('invoice.unpaid')}
               </Badge>
             )}
           </div>
@@ -153,14 +149,14 @@ export function InvoiceInfoModal({
           {/* Invoice Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Client</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('client.client')}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
-                {invoice.client?.name || "N/A"}
+                {invoice.client?.name || t('common.notAvailable')}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Car</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.car')}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {invoice.car?.carModel?.make?.name} {invoice.car?.carModel?.name}
               </p>
@@ -168,16 +164,16 @@ export function InvoiceInfoModal({
 
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Account
+                {t('account.account')}
               </p>
               <p className="font-semibold text-gray-900 dark:text-white">
-                {invoice.account?.name || "No account"}
+                {invoice.account?.name || t('account.noAccount')}
               </p>
             </div>
 
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Invoice Date
+                {t('invoice.invoiceDate')}
               </p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {formatDate(invoice.invoice_date)}
@@ -186,7 +182,7 @@ export function InvoiceInfoModal({
 
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Total Amount
+                {t('invoice.totalAmount')}
               </p>
               <p className="font-semibold text-green-600 dark:text-green-400 text-lg">
                 {formatCurrency(invoice.amount)}
@@ -195,7 +191,7 @@ export function InvoiceInfoModal({
 
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Amount Paid
+                {t('invoice.amountPaid')}
               </p>
               <p className="font-semibold text-blue-600 dark:text-blue-400 text-lg">
                 {formatCurrency(invoice.payed)}
@@ -204,7 +200,7 @@ export function InvoiceInfoModal({
 
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Remaining Balance
+                {t('invoice.remainingBalance')}
               </p>
               <p className="font-semibold text-orange-600 dark:text-orange-400 text-lg">
                 {formatCurrency(getRemainingBalance(invoice))}
@@ -213,7 +209,7 @@ export function InvoiceInfoModal({
 
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Account Cut
+                {t('invoice.accountCut')}
               </p>
               <p className="font-semibold text-gray-900 dark:text-white">
                 {formatCurrency(invoice.account_cut)}
@@ -225,7 +221,7 @@ export function InvoiceInfoModal({
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Payment History
+                {t('payment.paymentHistory')}
               </h3>
               {!isFullyPaid(invoice) && (
                 <Button
@@ -236,12 +232,12 @@ export function InvoiceInfoModal({
                   {addingPayment ? (
                     <>
                       <HiX className="mr-2 h-4 w-4" />
-                      Cancel
+                      {t('common.cancel')}
                     </>
                   ) : (
                     <>
                       <HiPlus className="mr-2 h-4 w-4" />
-                      Add Payment
+                      {t('payment.addPayment')}
                     </>
                   )}
                 </Button>
@@ -254,7 +250,7 @@ export function InvoiceInfoModal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Payment Amount
+                      {t('payment.paymentAmount')}
                     </label>
                     <input
                       type="number"
@@ -265,12 +261,12 @@ export function InvoiceInfoModal({
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600"
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      Max: {formatCurrency(getRemainingBalance(invoice))}
+                      {t('payment.maxAmount')}: {formatCurrency(getRemainingBalance(invoice))}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Payment Date
+                      {t('payment.paymentDate')}
                     </label>
                     <input
                       type="date"
@@ -281,7 +277,7 @@ export function InvoiceInfoModal({
                   </div>
                 </div>
                 <Button size="sm" color="blue" onClick={handleAddPayment}>
-                  Submit Payment
+                  {t('payment.submitPayment')}
                 </Button>
               </div>
             )}
@@ -293,17 +289,17 @@ export function InvoiceInfoModal({
               </div>
             ) : payments.length === 0 ? (
               <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                No payments recorded yet
+                {t('payment.noPaymentsRecorded')}
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                   <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                      <th className="px-4 py-3">Payment #</th>
-                      <th className="px-4 py-3">Amount</th>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Actions</th>
+                      <th className="px-4 py-3">{t('payment.paymentNumber')}</th>
+                      <th className="px-4 py-3">{t('payment.amount')}</th>
+                      <th className="px-4 py-3">{t('payment.date')}</th>
+                      <th className="px-4 py-3">{t('common.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -327,7 +323,7 @@ export function InvoiceInfoModal({
                             color="failure"
                             onClick={() => handleDeletePayment(payment.id)}
                           >
-                            Delete
+                            {t('common.delete')}
                           </Button>
                         </td>
                       </tr>
@@ -335,7 +331,7 @@ export function InvoiceInfoModal({
                   </tbody>
                   <tfoot className="font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">
                     <tr>
-                      <td className="px-4 py-3">Total Paid</td>
+                      <td className="px-4 py-3">{t('payment.totalPaid')}</td>
                       <td className="px-4 py-3 text-blue-600 dark:text-blue-400">
                         {formatCurrency(invoice.payed)}
                       </td>
@@ -350,7 +346,7 @@ export function InvoiceInfoModal({
 
         <div className="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <Button color="gray" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>
