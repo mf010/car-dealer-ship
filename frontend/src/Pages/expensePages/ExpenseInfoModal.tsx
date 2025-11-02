@@ -1,5 +1,7 @@
 import { Modal, Badge, Button } from 'flowbite-react';
 import { HiX, HiClock, HiCheckCircle } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from '../../utils/formatters';
 import type { DealerShipExpense } from '../../models/DealerShipExpenses';
 
 interface ExpenseInfoModalProps {
@@ -8,29 +10,18 @@ interface ExpenseInfoModalProps {
 }
 
 export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
+  const { t, i18n } = useTranslation();
+  
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateTimeUtil(dateString, i18n.language);
   };
 
   return (
@@ -40,10 +31,10 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Expense Details
+              {t('expense.expenseDetails')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Expense ID: #{expense.id}
+              {t('expense.expenseId')}: #{expense.id}
             </p>
           </div>
           <button
@@ -60,37 +51,37 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
           {/* Expense Details Section */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Expense Information
+              {t('expense.expenseInformation')}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Expense ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('expense.expenseId')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   #{expense.id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Amount</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('expense.amount')}</p>
                 <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(expense.amount)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Expense Date</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('expense.expenseDate')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   {formatDate(expense.expense_date)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</p>
                 <div className="mt-1">
                   <Badge color="info" size="sm">
-                    Recorded
+                    {t('expense.recorded')}
                   </Badge>
                 </div>
               </div>
               <div className="col-span-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Description</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.description')}</p>
                 <p className="mt-1 text-base text-gray-900 dark:text-white whitespace-pre-wrap">
                   {expense.description}
                 </p>
@@ -101,7 +92,7 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
           {/* Timeline Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Expense Timeline
+              {t('expense.expenseTimeline')}
             </h4>
             <div className="space-y-4">
               {/* Expense Incurred */}
@@ -113,7 +104,7 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    Expense Incurred
+                    {t('expense.expenseIncurred')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(expense.expense_date)}
@@ -131,7 +122,7 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Expense Recorded in System
+                      {t('expense.expenseRecorded')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(expense.created_at)}
@@ -150,7 +141,7 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Last Updated
+                      {t('common.lastUpdated')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(expense.updated_at)}
@@ -165,7 +156,7 @@ export function ExpenseInfoModal({ expense, onClose }: ExpenseInfoModalProps) {
         {/* Footer */}
         <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
           <Button color="gray" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button, Label, TextInput, Textarea } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import { dealerShipExpenseServices } from '../../services/dealerShipExpensServices';
 import type { DealerShipExpense, UpdateDealerShipExpenseDTO } from '../../models/DealerShipExpenses';
 
@@ -11,6 +12,7 @@ interface ExpenseUpdateProps {
 }
 
 export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateDealerShipExpenseDTO>({
     description: expense.description,
     amount: expense.amount,
@@ -24,15 +26,15 @@ export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProp
     
     // Validation
     if (!formData.amount || formData.amount <= 0) {
-      setError('Please enter a valid amount');
+      setError(t('validation.amountGreaterThanZero'));
       return;
     }
     if (!formData.description?.trim()) {
-      setError('Please enter a description');
+      setError(t('validation.descriptionRequired'));
       return;
     }
     if (!formData.expense_date) {
-      setError('Please select an expense date');
+      setError(t('validation.expenseDateRequired'));
       return;
     }
 
@@ -56,10 +58,10 @@ export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProp
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Edit General Expense
+              {t('expense.updateExpense')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Expense ID: #{expense.id}
+              {t('expense.expenseId')}: #{expense.id}
             </p>
           </div>
           <button
@@ -83,14 +85,14 @@ export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProp
             {/* Amount */}
             <div>
               <Label htmlFor="amount">
-                Amount <span className="text-red-500">*</span>
+                {t('expense.amount')} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="amount"
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Enter expense amount"
+                placeholder={t('expense.enterAmount')}
                 value={formData.amount || ''}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
                 required
@@ -100,7 +102,7 @@ export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProp
             {/* Expense Date */}
             <div>
               <Label htmlFor="expense_date">
-                Expense Date <span className="text-red-500">*</span>
+                {t('expense.expenseDate')} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="expense_date"
@@ -114,18 +116,18 @@ export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProp
             {/* Description */}
             <div>
               <Label htmlFor="description">
-                Description <span className="text-red-500">*</span>
+                {t('common.description')} <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="description"
-                placeholder="Enter expense description (e.g., Office supplies, Utilities, Rent, Marketing)"
+                placeholder={t('expense.enterDescription')}
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Provide details about the general business expense
+                {t('expense.descriptionHelp')}
               </p>
             </div>
           </div>
@@ -133,10 +135,10 @@ export function ExpenseUpdate({ expense, onClose, onSuccess }: ExpenseUpdateProp
           {/* Footer */}
           <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
             <Button color="gray" onClick={onClose} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Expense'}
+              {loading ? t('common.updating') : t('expense.updateExpense')}
             </Button>
           </div>
         </form>

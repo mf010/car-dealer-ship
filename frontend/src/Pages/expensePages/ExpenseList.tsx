@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, Pagination, Badge, TextInput, Label, Card } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiEye, HiSearch } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from '../../utils/formatters';
 import { dealerShipExpenseServices } from "../../services/dealerShipExpensServices";
 import type { DealerShipExpense } from "../../models/DealerShipExpenses";
 import { ExpenseForm } from "./ExpenseForm";
@@ -14,6 +16,7 @@ interface MonthlyExpenseData {
 }
 
 export function ExpenseList() {
+  const { t, i18n } = useTranslation();
   const [expenses, setExpenses] = useState<DealerShipExpense[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -121,7 +124,7 @@ export function ExpenseList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this expense?")) {
+    if (window.confirm(t('messages.confirmDeleteExpense'))) {
       try {
         await dealerShipExpenseServices.deleteDealerShipExpense(id);
         fetchExpenses();
@@ -150,19 +153,12 @@ export function ExpenseList() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   // Calculate max value for graph scaling
@@ -174,15 +170,15 @@ export function ExpenseList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            General Expenses
+            {t('expense.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Track and manage dealership operational expenses
+            {t('expense.manageDescription')}
           </p>
         </div>
         <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Expense
+          {t('expense.addExpense')}
         </Button>
       </div>
 
@@ -191,10 +187,10 @@ export function ExpenseList() {
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Monthly Expenses Overview
+              {t('expense.monthlyExpensesOverview')}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Expense trends over the last 12 months
+              {t('expense.expenseTrends')}
             </p>
           </div>
           
@@ -227,7 +223,7 @@ export function ExpenseList() {
                         {formatCurrency(data.total)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {data.count} expense{data.count !== 1 ? 's' : ''}
+                        {data.count} {data.count !== 1 ? t('expense.expenses') : t('expense.expense')}
                       </div>
                     </div>
                   </div>
@@ -240,7 +236,7 @@ export function ExpenseList() {
           <div className="mt-6 pt-4 border-t border-gray-300 dark:border-gray-600">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Total for Displayed Period:
+                {t('expense.totalForDisplayedPeriod')}
               </span>
               <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                 {formatCurrency(monthlyData.reduce((sum, d) => sum + d.total, 0))}
@@ -255,7 +251,7 @@ export function ExpenseList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Date Filter */}
           <div>
-            <Label htmlFor="filterDate">Expense Date</Label>
+            <Label htmlFor="filterDate">{t('expense.expenseDate')}</Label>
             <TextInput
               id="filterDate"
               type="date"
@@ -266,11 +262,11 @@ export function ExpenseList() {
 
           {/* Amount From Filter */}
           <div>
-            <Label htmlFor="filterAmountFrom">Amount From</Label>
+            <Label htmlFor="filterAmountFrom">{t('financial.amountFrom')}</Label>
             <TextInput
               id="filterAmountFrom"
               type="number"
-              placeholder="Min amount"
+              placeholder={t('financial.minAmount')}
               value={filterAmountFrom}
               onChange={(e) => setFilterAmountFrom(e.target.value)}
             />
@@ -278,11 +274,11 @@ export function ExpenseList() {
 
           {/* Amount To Filter */}
           <div>
-            <Label htmlFor="filterAmountTo">Amount To</Label>
+            <Label htmlFor="filterAmountTo">{t('financial.amountTo')}</Label>
             <TextInput
               id="filterAmountTo"
               type="number"
-              placeholder="Max amount"
+              placeholder={t('financial.maxAmount')}
               value={filterAmountTo}
               onChange={(e) => setFilterAmountTo(e.target.value)}
             />
@@ -290,11 +286,11 @@ export function ExpenseList() {
 
           {/* Description Filter */}
           <div>
-            <Label htmlFor="filterDescription">Description</Label>
+            <Label htmlFor="filterDescription">{t('common.description')}</Label>
             <TextInput
               id="filterDescription"
               type="text"
-              placeholder="Search description"
+              placeholder={t('common.searchDescription')}
               icon={HiSearch}
               value={filterDescription}
               onChange={(e) => setFilterDescription(e.target.value)}
@@ -315,23 +311,23 @@ export function ExpenseList() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading expenses...</p>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}...</p>
           </div>
         ) : expenses.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">No expenses found</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('expense.noExpensesFound')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Expense ID</th>
-                  <th scope="col" className="px-6 py-3">Description</th>
-                  <th scope="col" className="px-6 py-3">Amount</th>
-                  <th scope="col" className="px-6 py-3">Expense Date</th>
-                  <th scope="col" className="px-6 py-3">Status</th>
-                  <th scope="col" className="px-6 py-3">Actions</th>
+                  <th scope="col" className="px-6 py-3">{t('expense.expenseId')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.description')}</th>
+                  <th scope="col" className="px-6 py-3">{t('expense.amount')}</th>
+                  <th scope="col" className="px-6 py-3">{t('expense.expenseDate')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.status')}</th>
+                  <th scope="col" className="px-6 py-3">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -356,7 +352,7 @@ export function ExpenseList() {
                     </td>
                     <td className="px-6 py-4">
                       <Badge color="info" size="sm">
-                        Recorded
+                        {t('expense.recorded')}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">

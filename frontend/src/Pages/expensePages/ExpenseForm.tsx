@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button, Label, TextInput, Textarea } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 import { dealerShipExpenseServices } from '../../services/dealerShipExpensServices';
 import type { CreateDealerShipExpenseDTO } from '../../models/DealerShipExpenses';
 
@@ -10,6 +11,7 @@ interface ExpenseFormProps {
 }
 
 export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateDealerShipExpenseDTO>({
     description: '',
     amount: 0,
@@ -23,15 +25,15 @@ export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
     
     // Validation
     if (!formData.amount || formData.amount <= 0) {
-      setError('Please enter a valid amount');
+      setError(t('validation.amountGreaterThanZero'));
       return;
     }
     if (!formData.description.trim()) {
-      setError('Please enter a description');
+      setError(t('validation.descriptionRequired'));
       return;
     }
     if (!formData.expense_date) {
-      setError('Please select an expense date');
+      setError(t('validation.expenseDateRequired'));
       return;
     }
 
@@ -54,7 +56,7 @@ export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Add General Expense
+            {t('expense.addExpense')}
           </h3>
           <button
             type="button"
@@ -77,14 +79,14 @@ export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
             {/* Amount */}
             <div>
               <Label htmlFor="amount">
-                Amount <span className="text-red-500">*</span>
+                {t('expense.amount')} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="amount"
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Enter expense amount"
+                placeholder={t('expense.enterAmount')}
                 value={formData.amount || ''}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
                 required
@@ -94,7 +96,7 @@ export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
             {/* Expense Date */}
             <div>
               <Label htmlFor="expense_date">
-                Expense Date <span className="text-red-500">*</span>
+                {t('expense.expenseDate')} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="expense_date"
@@ -108,18 +110,18 @@ export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
             {/* Description */}
             <div>
               <Label htmlFor="description">
-                Description <span className="text-red-500">*</span>
+                {t('common.description')} <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="description"
-                placeholder="Enter expense description (e.g., Office supplies, Utilities, Rent, Marketing)"
+                placeholder={t('expense.enterDescription')}
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Provide details about the general business expense
+                {t('expense.descriptionHelp')}
               </p>
             </div>
           </div>
@@ -127,10 +129,10 @@ export function ExpenseForm({ onClose, onSuccess }: ExpenseFormProps) {
           {/* Footer */}
           <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
             <Button color="gray" onClick={onClose} disabled={loading}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Adding...' : 'Add Expense'}
+              {loading ? t('common.adding') : t('expense.addExpense')}
             </Button>
           </div>
         </form>

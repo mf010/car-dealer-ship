@@ -1,5 +1,7 @@
 import { Modal, Badge, Button } from 'flowbite-react';
 import { HiX, HiCube, HiClock, HiCheckCircle } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from '../../utils/formatters';
 import type { CarExpense } from '../../models/CarExpens';
 
 interface CarExpenseInfoModalProps {
@@ -8,29 +10,18 @@ interface CarExpenseInfoModalProps {
 }
 
 export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalProps) {
+  const { t, i18n } = useTranslation();
+  
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateTimeUtil(dateString, i18n.language);
   };
 
   const handleViewCar = () => {
@@ -47,10 +38,10 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Expense Details
+              {t('carExpense.expenseDetails')}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Expense ID: #{expense.id}
+              {t('carExpense.expenseId')}: #{expense.id}
             </p>
           </div>
           <button
@@ -67,37 +58,37 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
           {/* Expense Details Section */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Expense Information
+              {t('carExpense.expenseInformation')}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Expense ID</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('carExpense.expenseId')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   #{expense.id}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Amount</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('carExpense.amount')}</p>
                 <p className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(expense.amount)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Expense Date</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('carExpense.expenseDate')}</p>
                 <p className="mt-1 text-base font-medium text-gray-900 dark:text-white">
                   {formatDate(expense.expense_date)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</p>
                 <div className="mt-1">
                   <Badge color="success" size="sm">
-                    Recorded
+                    {t('carExpense.recorded')}
                   </Badge>
                 </div>
               </div>
               <div className="col-span-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Description</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.description')}</p>
                 <p className="mt-1 text-base text-gray-900 dark:text-white">
                   {expense.description}
                 </p>
@@ -105,12 +96,13 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
             </div>
           </div>
 
-          {/* Car Information Section */}
+                    {/* Car Information Section */}
           {car && (
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+            <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-6 border border-green-200 dark:border-green-800">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-green-900 dark:text-green-300">
-                  Car Information
+                <h4 className="text-lg font-semibold text-green-900 dark:text-green-300 flex items-center gap-2">
+                  <HiCube className="w-5 h-5" />
+                  {t('car.carInformation')}
                 </h4>
                 <Button
                   size="sm"
@@ -118,43 +110,43 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
                   onClick={handleViewCar}
                   className="flex items-center gap-2"
                 >
-                  <HiCube className="h-4 w-4" />
-                  View Car Details
+                  <HiCube className="w-4 h-4" />
+                  {t('car.viewCarDetails')}
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-400">Car ID</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">{t('car.carId')}</p>
                   <p className="mt-1 text-base font-medium text-green-900 dark:text-green-300">
                     #{car.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-400">Make</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">{t('car.make')}</p>
                   <p className="mt-1 text-base font-medium text-green-900 dark:text-green-300">
                     {car.carModel?.make?.name || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-400">Model</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">{t('car.model')}</p>
                   <p className="mt-1 text-base font-medium text-green-900 dark:text-green-300">
                     {car.carModel?.name || 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-400">Status</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">{t('common.status')}</p>
                   <p className="mt-1 text-base font-medium text-green-900 dark:text-green-300 capitalize">
                     {car.status}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-400">Purchase Price</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">{t('car.purchasePrice')}</p>
                   <p className="mt-1 text-base font-bold text-green-900 dark:text-green-300">
                     {formatCurrency(car.purchase_price)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-400">Total Expenses</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">{t('carExpense.totalExpenses')}</p>
                   <p className={`mt-1 text-base font-bold ${
                     car.total_expenses > 0
                       ? 'text-orange-600 dark:text-orange-400'
@@ -170,7 +162,7 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
           {/* Timeline Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Expense Timeline
+              {t('carExpense.expenseTimeline')}
             </h4>
             <div className="space-y-4">
               {/* Expense Incurred */}
@@ -182,7 +174,7 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    Expense Incurred
+                    {t('carExpense.expenseIncurred')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(expense.expense_date)}
@@ -200,7 +192,7 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Expense Recorded in System
+                      {t('carExpense.expenseRecorded')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(expense.created_at)}
@@ -219,7 +211,7 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Last Updated
+                      {t('common.lastUpdated')}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDateTime(expense.updated_at)}
@@ -234,7 +226,7 @@ export function CarExpenseInfoModal({ expense, onClose }: CarExpenseInfoModalPro
         {/* Footer */}
         <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
           <Button color="gray" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>
