@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Modal, Select } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
 import { carModelServices } from "../../services/carModelServices";
 import { makeServices } from "../../services/makeServices";
 import type { CarModel, UpdateCarModelDTO } from "../../models/CarModel";
@@ -14,6 +15,7 @@ interface CarModelUpdateProps {
 }
 
 export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarModelUpdateProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateCarModelDTO>({
     name: "",
     make_id: 0,
@@ -48,7 +50,7 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
       setMakes(response.data);
     } catch (error) {
       console.error("Error fetching makes:", error);
-      setErrors({ make_id: "Failed to load makes" });
+      setErrors({ make_id: t('car.failedLoadMakes') });
     } finally {
       setLoadingMakes(false);
     }
@@ -60,16 +62,16 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
 
     if (formData.name !== undefined) {
       if (!formData.name.trim()) {
-        newErrors.name = "Model name is required";
+        newErrors.name = t('validation.carModelNameRequired');
       } else if (formData.name.trim().length < 2) {
-        newErrors.name = "Model name must be at least 2 characters";
+        newErrors.name = t('validation.carModelNameMinLength');
       } else if (formData.name.trim().length > 50) {
-        newErrors.name = "Model name must not exceed 50 characters";
+        newErrors.name = t('validation.carModelNameMaxLength');
       }
     }
 
     if (formData.make_id !== undefined && (!formData.make_id || formData.make_id === 0)) {
-      newErrors.make_id = "Please select a make";
+      newErrors.make_id = t('validation.selectMake');
     }
 
     setErrors(newErrors);
@@ -91,7 +93,7 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
 
     try {
       await carModelServices.updateCarModel(carModel.id, formData);
-      setSuccessMessage("Car model updated successfully!");
+      setSuccessMessage(t('messages.carModelUpdatedSuccess'));
       
       setErrors({});
       
@@ -103,7 +105,7 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
       }, 1500);
     } catch (error) {
       console.error("Error updating car model:", error);
-      setErrors({ name: "Failed to update car model. Please try again." });
+      setErrors({ name: t('messages.failedUpdateCarModel') });
     } finally {
       setIsSubmitting(false);
     }
@@ -137,7 +139,7 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
     <Modal show={isOpen} onClose={handleClose} size="md">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Edit Car Model
+          {t('carModel.updateModel')}
         </h3>
 
         {successMessage && (
@@ -150,7 +152,7 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="edit-make_id" className="mb-2 block">
-              Make <span className="text-red-500 ml-1">*</span>
+              {t('make.makeName')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <Select
               id="edit-make_id"
@@ -158,10 +160,10 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
               value={formData.make_id}
               onChange={handleChange}
               color={errors.make_id ? "failure" : undefined}
-              disabled={isSubmitting || loadingMakes}
+              disabled={true}
             >
               <option value={0}>
-                {loadingMakes ? "Loading makes..." : "Select a make"}
+                {loadingMakes ? t('car.loadingMakes') : t('carModel.selectMake')}
               </option>
               {makes.map((make) => (
                 <option key={make.id} value={make.id}>
@@ -178,13 +180,13 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
 
           <div>
             <Label htmlFor="edit-name" className="mb-2 block">
-              Model Name <span className="text-red-500 ml-1">*</span>
+              {t('carModel.modelName')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="edit-name"
               name="name"
               type="text"
-              placeholder="Enter model name (e.g., Camry, 3 Series)"
+              placeholder={t('carModel.enterModelName')}
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
@@ -201,7 +203,7 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={handleClose} disabled={isSubmitting}>
               <HiX className="mr-2 h-4 w-4" />
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -211,10 +213,10 @@ export function CarModelUpdate({ isOpen, onClose, onSuccess, carModel }: CarMode
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
+                  {t('common.updating')}...
                 </>
               ) : (
-                "Update Car Model"
+                t('carModel.updateModel')
               )}
             </Button>
           </div>

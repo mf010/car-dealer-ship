@@ -13,8 +13,15 @@ class CarExpenseController extends Controller
     {
         $query = CarExpense::with(['car.carModel.make']);
         
+        // Support both filters[field] and direct field parameters
         if ($request->has('filters')) {
             $query->filter($request->filters);
+        } else {
+            // Support direct query parameters like ?car_id=5&description=test
+            $directFilters = $request->except(['page', 'per_page']);
+            if (!empty($directFilters)) {
+                $query->filter($directFilters);
+            }
         }
         
         return response()->json($query->paginate(10));

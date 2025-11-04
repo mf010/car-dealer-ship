@@ -37,6 +37,30 @@
   text-align: left;
 }
 
+/* Force Western/Latin numerals (0-9) globally - no Arabic-Indic numerals (٠-٩) */
+* {
+  font-variant-numeric: lining-nums;
+}
+
+/* Ensure all elements use Western numerals */
+html {
+  font-feature-settings: normal;
+}
+
+/* Force Latin numerals in all languages including Arabic */
+body,
+input,
+textarea,
+select,
+button,
+[lang="ar"],
+[dir="rtl"] {
+  font-variant-numeric: lining-nums;
+  -moz-font-feature-settings: "lnum" 1;
+  -webkit-font-feature-settings: "lnum" 1;
+  font-feature-settings: "lnum" 1;
+}
+
 /* RTL Text Alignment Utilities */
 [dir="rtl"] .text-left {
   text-align: right;

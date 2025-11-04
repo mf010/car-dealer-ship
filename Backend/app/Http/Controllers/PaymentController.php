@@ -97,6 +97,8 @@ class PaymentController extends Controller
         app(InvoiceController::class)->RemovePaymentFromInvoice($invoice_id, new Request([
             'amount' => $amount
         ]));
+        
+        // add the 
 
         return response()->json(null, 204);
     }

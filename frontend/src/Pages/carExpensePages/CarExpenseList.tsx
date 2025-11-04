@@ -3,10 +3,8 @@ import { Button, Pagination, Badge, TextInput, Label } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiEye, HiSearch } from "react-icons/hi";
 import { useTranslation } from 'react-i18next';
 import { carExpenseServices } from "../../services/carExpensServices";
-import { carServices } from "../../services/carServices";
 import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from '../../utils/formatters';
 import type { CarExpense } from "../../models/CarExpens";
-import type { Car } from "../../models/Car";
 import { CarExpenseForm } from "./CarExpenseForm";
 import { CarExpenseUpdate } from "./CarExpenseUpdate";
 import { CarExpenseInfoModal } from "./CarExpenseInfoModal";
@@ -14,7 +12,6 @@ import { CarExpenseInfoModal } from "./CarExpenseInfoModal";
 export function CarExpenseList() {
   const { t, i18n } = useTranslation();
   const [expenses, setExpenses] = useState<CarExpense[]>([]);
-  const [cars, setCars] = useState<Car[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -23,25 +20,15 @@ export function CarExpenseList() {
   // Filter states
   const [filterCarId, setFilterCarId] = useState<string>("");
   const [filterDate, setFilterDate] = useState<string>("");
-  const [filterMinAmount, setFilterMinAmount] = useState<string>("");
-  const [filterMaxAmount, setFilterMaxAmount] = useState<string>("");
+  const [filterAmountFrom, setFilterAmountFrom] = useState<string>("");
+  const [filterAmountTo, setFilterAmountTo] = useState<string>("");
   const [filterDescription, setFilterDescription] = useState<string>("");
-  
+
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<CarExpense | null>(null);
-
-  // Fetch cars for dropdown
-  const fetchCars = async () => {
-    try {
-      const response = await carServices.getAllCars(1, undefined);
-      setCars(response.data);
-    } catch (err) {
-      console.error("Error fetching cars:", err);
-    }
-  };
 
   // Fetch expenses from API
   const fetchExpenses = async () => {
@@ -52,8 +39,8 @@ export function CarExpenseList() {
       
       if (filterCarId) filters.car_id = parseInt(filterCarId);
       if (filterDate) filters.expense_date = filterDate;
-      if (filterMinAmount) filters.min_amount = parseFloat(filterMinAmount);
-      if (filterMaxAmount) filters.max_amount = parseFloat(filterMaxAmount);
+      if (filterAmountFrom) filters.amount_from = parseFloat(filterAmountFrom);
+      if (filterAmountTo) filters.amount_to = parseFloat(filterAmountTo);
       if (filterDescription) filters.description = filterDescription;
       
       const response = await carExpenseServices.getAllCarExpenses(
@@ -73,16 +60,11 @@ export function CarExpenseList() {
     }
   };
 
-  // Fetch cars on mount
-  useEffect(() => {
-    fetchCars();
-  }, []);
-
   // Fetch expenses when page or filters change
   useEffect(() => {
     fetchExpenses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filterCarId, filterDate, filterMinAmount, filterMaxAmount, filterDescription]);
+  }, [currentPage, filterCarId, filterDate, filterAmountFrom, filterAmountTo, filterDescription]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -156,20 +138,15 @@ export function CarExpenseList() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Car Filter */}
           <div>
-            <Label htmlFor="filterCar">{t('car.filterByCar')}</Label>
-            <select
+            <Label htmlFor="filterCar">{t('car.carId')}</Label>
+            <TextInput
               id="filterCar"
+              type="number"
+              placeholder={t('car.carId')}
+              icon={HiSearch}
               value={filterCarId}
               onChange={(e) => setFilterCarId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-            >
-              <option value="">{t('car.allCars')}</option>
-              {cars.map((car) => (
-                <option key={car.id} value={car.id}>
-                  {car.carModel?.make?.name} {car.carModel?.name} (#{car.id})
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           {/* Date Filter */}
@@ -185,25 +162,25 @@ export function CarExpenseList() {
 
           {/* Min Amount Filter */}
           <div>
-            <Label htmlFor="filterMinAmount">{t('financial.minAmount')}</Label>
+            <Label htmlFor="filterAmountFrom">{t('financial.amountFrom')}</Label>
             <TextInput
-              id="filterMinAmount"
+              id="filterAmountFrom"
               type="number"
-              placeholder="Min amount"
-              value={filterMinAmount}
-              onChange={(e) => setFilterMinAmount(e.target.value)}
+              placeholder={t('financial.amountFrom')}
+              value={filterAmountFrom}
+              onChange={(e) => setFilterAmountFrom(e.target.value)}
             />
           </div>
 
           {/* Max Amount Filter */}
           <div>
-            <Label htmlFor="filterMaxAmount">{t('financial.maxAmount')}</Label>
+            <Label htmlFor="filterAmountTo">{t('financial.amountTo')}</Label>
             <TextInput
-              id="filterMaxAmount"
+              id="filterAmountTo"
               type="number"
-              placeholder={t('financial.maxAmount')}
-              value={filterMaxAmount}
-              onChange={(e) => setFilterMaxAmount(e.target.value)}
+              placeholder={t('financial.amountTo')}
+              value={filterAmountTo}
+              onChange={(e) => setFilterAmountTo(e.target.value)}
             />
           </div>
 

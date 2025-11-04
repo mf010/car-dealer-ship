@@ -32,7 +32,7 @@ export interface CarExpenseFilters {
   car_id?: number;
   description?: string;
   expense_date?: string;
-  min_amount?: number;
-  max_amount?: number;
+  amount_from?: number;
+  amount_to?: number;
   // Add any other filter parameters you need
 }

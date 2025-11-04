@@ -229,6 +229,7 @@ export function InvoiceUpdate({
                 value={formData.car_id}
                 onChange={handleChange}
                 color={errors.car_id ? "failure" : undefined}
+                disabled
                 required
               >
                 <option value="">{t('car.selectCar')}</option>

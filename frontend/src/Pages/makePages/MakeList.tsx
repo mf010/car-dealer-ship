@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button, TextInput, Pagination } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiSearch } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
 import { makeServices } from "../../services/makeServices";
 import type { Make } from "../../models/Make";
 import { MakeForm } from "./MakeForm";
 import { MakeUpdate } from "./MakeUpdate";
 
 export function MakeList() {
+  const { t } = useTranslation();
   const [makes, setMakes] = useState<Make[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -30,7 +32,7 @@ export function MakeList() {
       setTotalPages(response.last_page);
     } catch (err) {
       console.error("Error fetching makes:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch makes. Please check if the API server is running.";
+      const errorMessage = err instanceof Error ? err.message : t('messages.failedLoadMakes');
       setError(errorMessage);
       // Set empty array on error to show "No makes found" instead of blank page
       setMakes([]);
@@ -48,7 +50,7 @@ export function MakeList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this make?")) {
+    if (window.confirm(t('messages.confirmDeleteMake'))) {
       try {
         await makeServices.deleteMake(id);
         fetchMakes(); // Refresh the list
@@ -80,22 +82,22 @@ export function MakeList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Car Makes
+            {t('make.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage vehicle manufacturers and brands
+            {t('make.manageDescription')}
           </p>
         </div>
         <Button onClick={handleAddMake} color="blue" size="md">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Make
+          {t('make.addMake')}
         </Button>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-          <span className="font-medium">Error!</span> {error}
+          <span className="font-medium">{t('common.error')}!</span> {error}
         </div>
       )}
 
@@ -103,7 +105,7 @@ export function MakeList() {
       <div className="max-w-md">
         <TextInput
           icon={HiSearch}
-          placeholder="Search by name..."
+          placeholder={t('make.searchPlaceholder')}
           value={searchName}
           onChange={(e) => {
             setSearchName(e.target.value);
@@ -119,13 +121,13 @@ export function MakeList() {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" className="px-6 py-3">
-                ID
+                {t('common.id')}
               </th>
               <th scope="col" className="px-6 py-3">
-                Name
+                {t('make.makeName')}
               </th>
               <th scope="col" className="px-6 py-3">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common.actions')}</span>
               </th>
             </tr>
           </thead>
@@ -136,7 +138,7 @@ export function MakeList() {
                   <div className="flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     <span className="ml-3 text-gray-500 dark:text-gray-400">
-                      Loading...
+                      {t('common.loading')}...
                     </span>
                   </div>
                 </td>
@@ -145,7 +147,7 @@ export function MakeList() {
               <tr className="bg-white dark:bg-gray-800">
                 <td colSpan={3} className="px-6 py-8 text-center">
                   <p className="text-gray-500 dark:text-gray-400">
-                    No makes found
+                    {t('make.noMakesFound')}
                   </p>
                 </td>
               </tr>

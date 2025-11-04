@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Modal, Button, Badge } from "flowbite-react";
-import { HiX, HiPlus } from "react-icons/hi";
+import { HiX, HiPlus, HiPrinter } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { paymentServices } from "../../services/paymentServices";
 import type { Invoice } from "../../models/Invoice";
 import type { Payment } from "../../models/Payment";
 import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from "../../utils/formatters";
+import { PrintableInvoice } from "../../components/PrintableInvoice";
 
 interface InvoiceInfoModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export function InvoiceInfoModal({
   const [newPaymentDate, setNewPaymentDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && invoice) {
@@ -100,6 +102,10 @@ export function InvoiceInfoModal({
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const formatCurrency = (amount: number) => {
     return formatCurrencyUtil(amount, i18n.language);
   };
@@ -120,10 +126,20 @@ export function InvoiceInfoModal({
 
   return (
     <Modal show={isOpen} onClose={onClose} size="3xl">
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          {t('invoice.invoiceDetailsId', { id: invoice.id })}
-        </h3>
+      <div className="p-6 print:hidden">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {t('invoice.invoiceDetailsId', { id: invoice.id })}
+          </h3>
+          <Button
+            size="sm"
+            color="blue"
+            onClick={handlePrint}
+          >
+            <HiPrinter className="mr-2 h-4 w-4" />
+            {t('common.print')}
+          </Button>
+        </div>
 
         <div className="space-y-6">
           {/* Payment Status Badge */}
@@ -162,7 +178,7 @@ export function InvoiceInfoModal({
               </p>
             </div>
 
-            <div>
+            <div className="print:hidden">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t('account.account')}
               </p>
@@ -207,7 +223,7 @@ export function InvoiceInfoModal({
               </p>
             </div>
 
-            <div>
+            <div className="print:hidden">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t('invoice.accountCut')}
               </p>
@@ -350,6 +366,9 @@ export function InvoiceInfoModal({
           </Button>
         </div>
       </div>
+
+      {/* Hidden Printable Invoice */}
+      <PrintableInvoice ref={printRef} invoice={invoice} payments={payments} />
     </Modal>
   );
 }

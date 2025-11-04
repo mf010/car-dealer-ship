@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button, Badge, Pagination, Spinner } from 'flowbite-react';
-import { HiPlus, HiEye, HiPencil, HiTrash, HiFilter } from 'react-icons/hi';
+import { HiPlus, HiEye, HiTrash, HiFilter } from 'react-icons/hi';
 import { useTranslation } from 'react-i18next';
 import { paymentServices } from '../../services/paymentServices';
-import { invoiceServices } from '../../services/invoiceServices';
 import type { Payment, PaymentFilters } from '../../models/Payment';
-import type { Invoice } from '../../models/Invoice';
 import { PaymentForm } from './PaymentForm';
 import { PaymentUpdate } from './PaymentUpdate';
 import { PaymentInfoModal } from './PaymentInfoModal';
@@ -14,7 +12,6 @@ import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } fr
 export function PaymentList() {
   const { t, i18n } = useTranslation();
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -27,7 +24,6 @@ export function PaymentList() {
 
   useEffect(() => {
     fetchPayments();
-    fetchInvoices();
   }, [currentPage, filters]);
 
   const fetchPayments = async () => {
@@ -40,15 +36,6 @@ export function PaymentList() {
       console.error('Error fetching payments:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchInvoices = async () => {
-    try {
-      const response = await invoiceServices.getAllInvoices(1, {});
-      setInvoices(response.data);
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
     }
   };
 
@@ -66,11 +53,6 @@ export function PaymentList() {
   const handleView = (payment: Payment) => {
     setSelectedPayment(payment);
     setShowInfoModal(true);
-  };
-
-  const handleEdit = (payment: Payment) => {
-    setSelectedPayment(payment);
-    setShowUpdateModal(true);
   };
 
   const handleFilterChange = (key: keyof PaymentFilters, value: any) => {
@@ -132,22 +114,17 @@ export function PaymentList() {
             {/* Invoice Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('invoice.invoice')}
+                {t('invoice.invoiceNumber')}
               </label>
-              <select
+              <input
+                type="text"
+                placeholder={t('payment.enterInvoiceNumber')}
                 value={filters.invoice_id || ''}
                 onChange={(e) =>
                   handleFilterChange('invoice_id', e.target.value ? Number(e.target.value) : undefined)
                 }
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">{t('invoice.allInvoices')}</option>
-                {invoices.map((invoice) => (
-                  <option key={invoice.id} value={invoice.id}>
-                    {t('invoice.invoiceNumberClient', { number: invoice.id, client: invoice.client?.name })}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             {/* Payment Date Filter */}
@@ -171,9 +148,9 @@ export function PaymentList() {
               <input
                 type="number"
                 placeholder="0.00"
-                value={filters.min_amount || ''}
+                value={filters.amount_from || ''}
                 onChange={(e) =>
-                  handleFilterChange('min_amount', e.target.value ? Number(e.target.value) : undefined)
+                  handleFilterChange('amount_from', e.target.value ? Number(e.target.value) : undefined)
                 }
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
@@ -187,9 +164,9 @@ export function PaymentList() {
               <input
                 type="number"
                 placeholder="0.00"
-                value={filters.max_amount || ''}
+                value={filters.amount_to || ''}
                 onChange={(e) =>
-                  handleFilterChange('max_amount', e.target.value ? Number(e.target.value) : undefined)
+                  handleFilterChange('amount_to', e.target.value ? Number(e.target.value) : undefined)
                 }
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
@@ -241,7 +218,7 @@ export function PaymentList() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-medium text-blue-600 dark:text-blue-400">
-                        {t('invoice.invoiceNumber', { number: payment.invoice_id })}
+                        #{payment.invoice_id}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -275,15 +252,6 @@ export function PaymentList() {
                         >
                           <HiEye className="h-4 w-4" />
                           {t('common.view')}
-                        </Button>
-                        <Button
-                          size="xs"
-                          color="gray"
-                          onClick={() => handleEdit(payment)}
-                          className="flex items-center gap-1"
-                        >
-                          <HiPencil className="h-4 w-4" />
-                          {t('common.edit')}
                         </Button>
                         <Button
                           size="xs"

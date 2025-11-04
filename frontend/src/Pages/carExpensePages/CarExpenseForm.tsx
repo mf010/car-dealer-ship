@@ -24,20 +24,50 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [carIdInput, setCarIdInput] = useState<string>('');
 
-  // Fetch cars
+  // Fetch car details when carIdInput changes
   useEffect(() => {
-    const fetchCars = async () => {
+    const fetchCarDetails = async () => {
+      if (!carIdInput || carIdInput === '0') {
+        setCars([]);
+        return;
+      }
+
+      const carId = parseInt(carIdInput);
+      if (isNaN(carId)) {
+        setCars([]);
+        return;
+      }
+
       try {
-        const response = await carServices.getAllCars(1, undefined);
-        setCars(response.data);
+        const car = await carServices.getCarById(carId);
+        setCars([car]);
+        setFormData(prev => ({ ...prev, car_id: carId }));
       } catch (err) {
-        console.error('Error fetching cars:', err);
-        setError(t('messages.loadingError'));
+        console.error('Error fetching car:', err);
+        setCars([]);
+        setFormData(prev => ({ ...prev, car_id: 0 }));
       }
     };
-    fetchCars();
-  }, []);
+    
+    fetchCarDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carIdInput]);
+
+  // Remove the original fetchCars useEffect
+  // useEffect(() => {
+  //   const fetchCars = async () => {
+  //     try {
+  //       const response = await carServices.getAllCars(1, undefined);
+  //       setCars(response.data);
+  //     } catch (err) {
+  //       console.error('Error fetching cars:', err);
+  //       setError(t('messages.loadingError'));
+  //     }
+  //   };
+  //   fetchCars();
+  // }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,22 +138,16 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
             {/* Car Selection */}
             <div>
               <Label htmlFor="car_id">
-                {t('car.car')} <span className="text-red-500">*</span>
+                {t('car.carId')} <span className="text-red-500">*</span>
               </Label>
-              <select
+              <TextInput
                 id="car_id"
-                value={formData.car_id}
-                onChange={(e) => setFormData({ ...formData, car_id: parseInt(e.target.value) })}
-                className="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                type="number"
+                placeholder={t('car.enterCarId')}
+                value={carIdInput}
+                onChange={(e) => setCarIdInput(e.target.value)}
                 required
-              >
-                <option value="0">{t('car.selectCar')}</option>
-                {cars.map((car) => (
-                  <option key={car.id} value={car.id}>
-                    {car.carModel?.make?.name} {car.carModel?.name} (#{car.id})
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             {/* Car Info Display */}

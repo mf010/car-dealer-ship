@@ -36,7 +36,7 @@ export function ClientList() {
       setTotalPages(response.last_page);
     } catch (err) {
       console.error("Error fetching clients:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch clients. Please check if the API server is running.";
+      const errorMessage = err instanceof Error ? err.message : t('messages.failedLoadClients');
       setError(errorMessage);
       setClients([]);
       setTotalPages(1);
@@ -118,9 +118,12 @@ export function ClientList() {
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 max-w-md">
+          <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            {t('client.clientSearch')}
+          </label>
           <TextInput
             icon={HiSearch}
-            placeholder={t('client.searchPlaceholder')}
+            placeholder={t('client.searchClientByName')}
             value={searchName}
             onChange={(e) => {
               setSearchName(e.target.value);

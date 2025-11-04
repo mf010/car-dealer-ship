@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, Badge } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiX, HiCash, HiUser, HiPhone, HiLocationMarker, HiCreditCard } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
+import { formatCurrency as formatCurrencyUtil, formatDate as formatDateUtil } from '../../utils/formatters';
 import type { Client } from "../../models/Client";
 import type { Payment } from "../../models/Payment";
 import { paymentServices } from "../../services/paymentServices";
@@ -15,6 +17,7 @@ interface AccountInfoModalProps {
 }
 
 export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: AccountInfoModalProps) {
+  const { t, i18n } = useTranslation();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
@@ -48,7 +51,7 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
   };
 
   const handleDeletePayment = async (paymentId: number) => {
-    if (window.confirm("Are you sure you want to delete this payment?")) {
+    if (window.confirm(t('messages.confirmDeletePayment'))) {
       try {
         await paymentServices.deletePayment(paymentId);
         fetchPayments();
@@ -70,18 +73,11 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return formatCurrencyUtil(amount, i18n.language);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, i18n.language);
   };
 
   if (!client) return null;
@@ -94,11 +90,11 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
           <div className="flex justify-between items-start mb-6">
             <div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Account Information
+                {t('client.accountInformation')}
               </h3>
               <div className="flex items-center gap-2">
                 <Badge color={client.balance < 0 ? "failure" : "success"} size="lg">
-                  Balance: {formatCurrency(client.balance)}
+                  {t('client.balance')}: {formatCurrency(client.balance)}
                 </Badge>
               </div>
             </div>
@@ -113,7 +109,7 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
               <div className="flex items-center gap-3">
                 <HiUser className="h-5 w-5 text-gray-400" />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Name</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('client.name')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{client.name}</p>
                 </div>
               </div>
@@ -122,7 +118,7 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
                 <div className="flex items-center gap-3">
                   <HiPhone className="h-5 w-5 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('client.phone')}</p>
                     <p className="font-medium text-gray-900 dark:text-white">{client.phone}</p>
                   </div>
                 </div>
@@ -132,7 +128,7 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
                 <div className="flex items-center gap-3">
                   <HiCreditCard className="h-5 w-5 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Personal ID</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('client.personalId')}</p>
                     <p className="font-medium text-gray-900 dark:text-white">{client.personal_id}</p>
                   </div>
                 </div>
@@ -142,7 +138,7 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
                 <div className="flex items-center gap-3">
                   <HiLocationMarker className="h-5 w-5 text-gray-400" />
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Address</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('client.address')}</p>
                     <p className="font-medium text-gray-900 dark:text-white">{client.address}</p>
                   </div>
                 </div>
@@ -155,11 +151,11 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <HiCash className="h-5 w-5" />
-                Payment History
+                {t('payment.paymentHistory')}
               </h4>
               <Button size="sm" color="blue" onClick={() => setIsAddPaymentOpen(true)}>
                 <HiPlus className="mr-2 h-4 w-4" />
-                Add Payment
+                {t('payment.addPayment')}
               </Button>
             </div>
 
@@ -167,23 +163,23 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
             {loadingPayments ? (
               <div className="flex justify-center items-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-500 dark:text-gray-400">Loading payments...</span>
+                <span className="ml-3 text-gray-500 dark:text-gray-400">{t('common.loading')}...</span>
               </div>
             ) : payments.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <p className="text-gray-500 dark:text-gray-400">No payments found</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('payment.noPaymentsFound')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto shadow-md sm:rounded-lg">
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                   <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                      <th scope="col" className="px-6 py-3">ID</th>
-                      <th scope="col" className="px-6 py-3">Invoice</th>
-                      <th scope="col" className="px-6 py-3">Amount</th>
-                      <th scope="col" className="px-6 py-3">Date</th>
+                      <th scope="col" className="px-6 py-3">{t('common.id')}</th>
+                      <th scope="col" className="px-6 py-3">{t('invoice.invoice')}</th>
+                      <th scope="col" className="px-6 py-3">{t('payment.amount')}</th>
+                      <th scope="col" className="px-6 py-3">{t('common.date')}</th>
                       <th scope="col" className="px-6 py-3">
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">{t('common.actions')}</span>
                       </th>
                     </tr>
                   </thead>
@@ -193,7 +189,9 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                           #{payment.id}
                         </td>
-                        <td className="px-6 py-4">Invoice #{payment.invoice_id}</td>
+                        <td className="px-6 py-4">
+                          {t('invoice.invoice')} #{payment.invoice_id}
+                        </td>
                         <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
                           {formatCurrency(payment.amount)}
                         </td>
@@ -227,7 +225,7 @@ export function AccountInfoModal({ isOpen, onClose, client, onClientUpdate }: Ac
           {/* Footer */}
           <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={onClose}>
-              Close
+              {t('common.close')}
             </Button>
           </div>
         </div>

@@ -28,7 +28,7 @@ export interface UpdatePaymentDTO {
 export interface PaymentFilters {
   invoice_id?: number;
   payment_date?: string;
-  min_amount?: number;
-  max_amount?: number;
+  amount_from?: number;
+  amount_to?: number;
   // Add any other filter parameters you need
 }

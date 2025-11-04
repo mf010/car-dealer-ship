@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button, TextInput, Pagination } from "flowbite-react";
 import { HiPlus, HiPencil, HiTrash, HiSearch } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
 import { carModelServices } from "../../services/carModelServices";
 import type { CarModel } from "../../models/CarModel";
 import { CarModelForm } from "./CarModelForm";
 import { CarModelUpdate } from "./CarModelUpdate";
 
 export function CarModelList() {
+  const { t } = useTranslation();
   const [carModels, setCarModels] = useState<CarModel[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -30,7 +32,7 @@ export function CarModelList() {
       setTotalPages(response.last_page);
     } catch (err) {
       console.error("Error fetching car models:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch car models. Please check if the API server is running.";
+      const errorMessage = err instanceof Error ? err.message : t('messages.failedLoadCarModels');
       setError(errorMessage);
       // Set empty array on error to show "No car models found" instead of blank page
       setCarModels([]);
@@ -48,7 +50,7 @@ export function CarModelList() {
 
   // Handle delete
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this car model?")) {
+    if (window.confirm(t('messages.confirmDeleteCarModel'))) {
       try {
         await carModelServices.deleteCarModel(id);
         fetchCarModels(); // Refresh the list
@@ -80,22 +82,22 @@ export function CarModelList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Car Models
+            {t('carModel.management')}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage vehicle models for each manufacturer
+            {t('carModel.manageDescription')}
           </p>
         </div>
         <Button onClick={handleAddCarModel} color="blue" size="md">
           <HiPlus className="mr-2 h-5 w-5" />
-          Add Car Model
+          {t('carModel.addModel')}
         </Button>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-          <span className="font-medium">Error!</span> {error}
+          <span className="font-medium">{t('common.error')}!</span> {error}
         </div>
       )}
 
@@ -103,7 +105,7 @@ export function CarModelList() {
       <div className="max-w-md">
         <TextInput
           icon={HiSearch}
-          placeholder="Search by name..."
+          placeholder={t('carModel.searchPlaceholder')}
           value={searchName}
           onChange={(e) => {
             setSearchName(e.target.value);
@@ -119,16 +121,16 @@ export function CarModelList() {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" className="px-6 py-3">
-                ID
+                {t('common.id')}
               </th>
               <th scope="col" className="px-6 py-3">
-                Model Name
+                {t('carModel.modelName')}
               </th>
               <th scope="col" className="px-6 py-3">
-                Make
+                {t('make.makeName')}
               </th>
               <th scope="col" className="px-6 py-3">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common.actions')}</span>
               </th>
             </tr>
           </thead>
@@ -139,7 +141,7 @@ export function CarModelList() {
                   <div className="flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     <span className="ml-3 text-gray-500 dark:text-gray-400">
-                      Loading...
+                      {t('common.loading')}...
                     </span>
                   </div>
                 </td>
@@ -148,7 +150,7 @@ export function CarModelList() {
               <tr className="bg-white dark:bg-gray-800">
                 <td colSpan={4} className="px-6 py-8 text-center">
                   <p className="text-gray-500 dark:text-gray-400">
-                    No car models found
+                    {t('carModel.noModelsFound')}
                   </p>
                 </td>
               </tr>
@@ -165,7 +167,7 @@ export function CarModelList() {
                     {carModel.name}
                   </td>
                   <td className="px-6 py-4 text-gray-900 dark:text-white">
-                    {carModel.make?.name || `Make ID: ${carModel.make_id}`}
+                    {carModel.make?.name || `${t('make.makeName')} ID: ${carModel.make_id}`}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex gap-2 justify-end">

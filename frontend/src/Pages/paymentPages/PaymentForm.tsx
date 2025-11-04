@@ -16,9 +16,10 @@ interface PaymentFormProps {
 export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
   const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loadingInvoices, setLoadingInvoices] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [invoiceNumber, setInvoiceNumber] = useState<string>('');
+  const [validatingInvoice, setValidatingInvoice] = useState(false);
 
   const [formData, setFormData] = useState<CreatePaymentDTO>({
     invoice_id: 0,
@@ -31,7 +32,6 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
   }, []);
 
   const fetchInvoices = async () => {
-    setLoadingInvoices(true);
     try {
       const response = await invoiceServices.getAllInvoices(1, {});
       // Filter invoices that have remaining balance
@@ -43,8 +43,94 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
       setInvoices(unpaidInvoices);
     } catch (error) {
       console.error('Error fetching invoices:', error);
+    }
+  };
+
+  const validateInvoiceNumber = async (invoiceNum: string) => {
+    if (!invoiceNum || invoiceNum.trim() === '') {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.invoice_id;
+        return newErrors;
+      });
+      setFormData((prev) => ({ ...prev, invoice_id: 0 }));
+      return;
+    }
+
+    setValidatingInvoice(true);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.invoice_id;
+      return newErrors;
+    });
+
+    try {
+      const invoiceId = parseInt(invoiceNum);
+      if (isNaN(invoiceId)) {
+        setErrors((prev) => ({
+          ...prev,
+          invoice_id: t('validation.invalidInvoiceNumber'),
+        }));
+        setFormData((prev) => ({ ...prev, invoice_id: 0 }));
+        return;
+      }
+
+      // Check if invoice exists in the fetched invoices
+      const invoice = invoices.find((inv) => inv.id === invoiceId);
+      
+      if (!invoice) {
+        // Try to fetch the specific invoice
+        try {
+          const fetchedInvoice = await invoiceServices.getInvoiceById(invoiceId);
+          
+          // Check if invoice is fully paid
+          const totalAmount = fetchedInvoice.amount || 0;
+          const paidAmount = fetchedInvoice.payed || 0;
+          const remaining = totalAmount - paidAmount;
+          
+          if (remaining <= 0) {
+            setErrors((prev) => ({
+              ...prev,
+              invoice_id: t('validation.invoiceFullyPaid'),
+            }));
+            setFormData((prev) => ({ ...prev, invoice_id: 0 }));
+          } else {
+            // Invoice exists and has remaining balance
+            setFormData((prev) => ({ ...prev, invoice_id: invoiceId }));
+            // Add to invoices list if not already there
+            if (!invoices.find((inv) => inv.id === invoiceId)) {
+              setInvoices((prev) => [...prev, fetchedInvoice]);
+            }
+          }
+        } catch (error) {
+          setErrors((prev) => ({
+            ...prev,
+            invoice_id: t('validation.invoiceNotFound'),
+          }));
+          setFormData((prev) => ({ ...prev, invoice_id: 0 }));
+        }
+      } else {
+        // Invoice found in the list
+        const remaining = (invoice.amount || 0) - (invoice.payed || 0);
+        if (remaining <= 0) {
+          setErrors((prev) => ({
+            ...prev,
+            invoice_id: t('validation.invoiceFullyPaid'),
+          }));
+          setFormData((prev) => ({ ...prev, invoice_id: 0 }));
+        } else {
+          setFormData((prev) => ({ ...prev, invoice_id: invoiceId }));
+        }
+      }
+    } catch (error) {
+      console.error('Error validating invoice:', error);
+      setErrors((prev) => ({
+        ...prev,
+        invoice_id: t('validation.errorValidatingInvoice'),
+      }));
+      setFormData((prev) => ({ ...prev, invoice_id: 0 }));
     } finally {
-      setLoadingInvoices(false);
+      setValidatingInvoice(false);
     }
   };
 
@@ -114,11 +200,6 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
     return formatCurrencyUtil(amount, i18n.language);
   };
 
-  const selectedInvoice = invoices.find((inv) => inv.id === formData.invoice_id);
-  const remainingBalance = selectedInvoice
-    ? (selectedInvoice.amount || 0) - (selectedInvoice.payed || 0)
-    : 0;
-
   return (
     <Modal show onClose={onClose} size="lg">
       <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -138,59 +219,59 @@ export function PaymentForm({ onClose, onSuccess }: PaymentFormProps) {
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Invoice Selection */}
+          {/* Invoice Number Input */}
           <div>
-            <Label htmlFor="invoice_id" className="mb-2 block">
-              {t('invoice.invoice')} *
+            <Label htmlFor="invoice_number" className="mb-2 block">
+              {t('payment.invoiceNumber')} *
             </Label>
-            {loadingInvoices ? (
-              <div className="flex items-center justify-center p-4">
-                <Spinner size="md" />
-              </div>
-            ) : (
-              <select
-                id="invoice_id"
-                value={formData.invoice_id}
-                onChange={(e) => handleInputChange('invoice_id', Number(e.target.value))}
-                className={`w-full rounded-lg border ${
-                  errors.invoice_id
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 dark:border-gray-600'
-                } dark:bg-gray-700 dark:text-white`}
-              >
-                <option value={0}>{t('invoice.selectInvoice')}</option>
-                {invoices.map((invoice) => {
-                  const remaining = (invoice.amount || 0) - (invoice.payed || 0);
-                  return (
-                    <option key={invoice.id} value={invoice.id}>
-                      {t('invoice.invoiceNumberClientBalance', { 
-                        number: invoice.id, 
-                        client: invoice.client?.name,
-                        balance: formatCurrency(remaining)
-                      })}
-                    </option>
-                  );
-                })}
-              </select>
-            )}
+            <div className="relative">
+              <TextInput
+                id="invoice_number"
+                type="text"
+                placeholder={t('payment.enterInvoiceNumber')}
+                value={invoiceNumber}
+                onChange={(e) => {
+                  setInvoiceNumber(e.target.value);
+                  validateInvoiceNumber(e.target.value);
+                }}
+                color={errors.invoice_id ? 'failure' : 'gray'}
+                disabled={submitting}
+                icon={validatingInvoice ? () => <Spinner size="sm" /> : undefined}
+              />
+            </div>
             {errors.invoice_id && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.invoice_id}</p>
             )}
-          </div>
-
-          {/* Remaining Balance Display */}
-          {selectedInvoice && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                  {t('invoice.remainingBalance')}:
-                </span>
-                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(remainingBalance)}
-                </span>
+            {formData.invoice_id > 0 && !errors.invoice_id && (
+              <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium">{t('validation.invoiceValid')}</span>
+                </div>
+                {invoices.find((inv) => inv.id === formData.invoice_id) && (
+                  <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                    <p>
+                      {t('common.client')}:{' '}
+                      <span className="font-semibold">
+                        {invoices.find((inv) => inv.id === formData.invoice_id)?.client?.name}
+                      </span>
+                    </p>
+                    <p>
+                      {t('invoice.remainingBalance')}:{' '}
+                      <span className="font-semibold">
+                        {formatCurrency(
+                          (invoices.find((inv) => inv.id === formData.invoice_id)?.amount || 0) -
+                          (invoices.find((inv) => inv.id === formData.invoice_id)?.payed || 0)
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Amount */}
           <div>

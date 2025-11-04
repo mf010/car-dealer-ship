@@ -198,12 +198,12 @@ export function InvoiceList() {
             {/* Client Filter - Searchable */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Client (Search)
+                {t('client.clientSearch')}
               </label>
               <div className="relative">
                 <TextInput
                   type="text"
-                  placeholder="Search client by name..."
+                  placeholder={t('client.searchClientByName')}
                   value={clientSearch}
                   onChange={(e) => setClientSearch(e.target.value)}
                   sizing="sm"

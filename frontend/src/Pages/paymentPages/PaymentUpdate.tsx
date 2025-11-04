@@ -17,7 +17,6 @@ interface PaymentUpdateProps {
 export function PaymentUpdate({ payment, onClose, onSuccess }: PaymentUpdateProps) {
   const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loadingInvoices, setLoadingInvoices] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -32,14 +31,11 @@ export function PaymentUpdate({ payment, onClose, onSuccess }: PaymentUpdateProp
   }, []);
 
   const fetchInvoices = async () => {
-    setLoadingInvoices(true);
     try {
       const response = await invoiceServices.getAllInvoices(1, {});
       setInvoices(response.data);
     } catch (error) {
       console.error('Error fetching invoices:', error);
-    } finally {
-      setLoadingInvoices(false);
     }
   };
 
@@ -122,7 +118,7 @@ export function PaymentUpdate({ payment, onClose, onSuccess }: PaymentUpdateProp
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t('payment.editPaymentId', { id: payment.id })}
+            {t('payment.updatePayment')}
           </h3>
           <button
             type="button"
@@ -135,59 +131,43 @@ export function PaymentUpdate({ payment, onClose, onSuccess }: PaymentUpdateProp
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Invoice Selection */}
-          <div>
-            <Label htmlFor="invoice_id" className="mb-2 block">
-              {t('invoice.invoice')} *
-            </Label>
-            {loadingInvoices ? (
-              <div className="flex items-center justify-center p-4">
-                <Spinner size="md" />
+          {/* Invoice Information (Read-only) */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('invoice.invoiceNumber')}:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  #{payment.invoice_id}
+                </span>
               </div>
-            ) : (
-              <select
-                id="invoice_id"
-                value={formData.invoice_id}
-                onChange={(e) => handleInputChange('invoice_id', Number(e.target.value))}
-                className={`w-full rounded-lg border ${
-                  errors.invoice_id
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 dark:border-gray-600'
-                } dark:bg-gray-700 dark:text-white`}
-              >
-                <option value={0}>{t('invoice.selectInvoice')}</option>
-                {invoices.map((invoice) => {
-                  const paidExcludingThis = invoice.id === payment.invoice_id 
-                    ? (invoice.payed || 0) - payment.amount 
-                    : (invoice.payed || 0);
-                  const remaining = (invoice.amount || 0) - paidExcludingThis;
-                  return (
-                    <option key={invoice.id} value={invoice.id}>
-                      {t('invoice.invoiceNumberClientBalance', { 
-                        number: invoice.id, 
-                        client: invoice.client?.name,
-                        balance: formatCurrency(remaining)
-                      })}
-                    </option>
-                  );
-                })}
-              </select>
-            )}
-            {errors.invoice_id && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.invoice_id}</p>
-            )}
+              {selectedInvoice && selectedInvoice.client && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('common.client')}:
+                  </span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {selectedInvoice.client.name}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Remaining Balance Display */}
+          {/* Remaining Balance Display - Prominent */}
           {selectedInvoice && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                  {t('invoice.remainingBalance')}:
-                </span>
-                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+            <div className="p-5 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg border-2 border-blue-300 dark:border-blue-600 shadow-sm">
+              <div className="text-center">
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">
+                  {t('invoice.remainingBalance')}
+                </p>
+                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
                   {formatCurrency(remainingBalance)}
-                </span>
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                  {t('payment.maxPaymentAmount')}
+                </p>
               </div>
             </div>
           )}

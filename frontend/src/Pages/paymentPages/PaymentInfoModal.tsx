@@ -144,7 +144,7 @@ export function PaymentInfoModal({ payment, onClose }: PaymentInfoModalProps) {
                   <div>
                     <p className="text-sm text-blue-700 dark:text-blue-400">{t('car.car')}</p>
                     <p className="mt-1 text-base font-medium text-blue-900 dark:text-blue-300">
-                      {invoice.car.carModel?.make?.name} {invoice.car.carModel?.name}
+                      #{invoice.car.id} - {invoice.car.carModel?.make?.name} {invoice.car.carModel?.name}
                     </p>
                   </div>
                 )}

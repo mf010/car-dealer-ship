@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from 'react-i18next';
 import { makeServices } from "../../services/makeServices";
 import type { Make, UpdateMakeDTO } from "../../models/Make";
 
@@ -12,6 +13,7 @@ interface MakeUpdateProps {
 }
 
 export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateMakeDTO>({
     name: "",
   });
@@ -31,11 +33,11 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
     const newErrors: { name?: string } = {};
 
     if (!formData.name?.trim()) {
-      newErrors.name = "Make name is required";
+      newErrors.name = t('validation.makeNameRequired');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Make name must be at least 2 characters";
+      newErrors.name = t('validation.makeNameMinLength');
     } else if (formData.name.trim().length > 50) {
-      newErrors.name = "Make name must not exceed 50 characters";
+      newErrors.name = t('validation.makeNameMaxLength');
     }
 
     setErrors(newErrors);
@@ -57,7 +59,7 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
 
     try {
       await makeServices.updateMake(make.id, formData);
-      setSuccessMessage("Make updated successfully!");
+      setSuccessMessage(t('messages.makeUpdatedSuccess'));
       
       setErrors({});
       
@@ -69,7 +71,7 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
       }, 1500);
     } catch (error) {
       console.error("Error updating make:", error);
-      setErrors({ name: "Failed to update make. Please try again." });
+      setErrors({ name: t('messages.failedUpdateMake') });
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +100,7 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
     <Modal show={isOpen} onClose={handleClose} size="md">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Edit Make
+          {t('make.updateMake')}
         </h3>
 
         {successMessage && (
@@ -111,13 +113,13 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="edit-name" className="mb-2 block">
-              Make Name <span className="text-red-500 ml-1">*</span>
+              {t('make.makeName')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="edit-name"
               name="name"
               type="text"
-              placeholder="Enter make name (e.g., Toyota, BMW)"
+              placeholder={t('make.enterMakeName')}
               value={formData.name}
               onChange={handleChange}
               color={errors.name ? "failure" : undefined}
@@ -134,7 +136,7 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={handleClose} disabled={isSubmitting}>
               <HiX className="mr-2 h-4 w-4" />
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -144,10 +146,10 @@ export function MakeUpdate({ isOpen, onClose, onSuccess, make }: MakeUpdateProps
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
+                  {t('common.updating')}...
                 </>
               ) : (
-                "Update Make"
+                t('make.updateMake')
               )}
             </Button>
           </div>

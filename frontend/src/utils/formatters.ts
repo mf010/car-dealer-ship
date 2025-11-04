@@ -93,10 +93,11 @@ export const formatDate = (dateString?: string, locale?: string): string => {
 
 /**
  * Convert Arabic-Indic numerals to Western numerals
+ * This ensures all numbers displayed use Western digits (0-9) instead of Arabic-Indic (٠-٩)
  * @param str - String containing Arabic-Indic numerals
  * @returns String with Western numerals
  */
-const convertToWesternNumerals = (str: string): string => {
+export const convertToWesternNumerals = (str: string): string => {
   const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
   const westernNumerals = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
   

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Select, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "../../utils/formatters";
 import { paymentServices } from "../../services/paymentServices";
 import { invoiceServices } from "../../services/invoiceServices";
 import type { Payment, UpdatePaymentDTO } from "../../models/Payment";
@@ -14,6 +16,7 @@ interface PaymentUpdateProps {
 }
 
 export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUpdateProps) {
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState<UpdatePaymentDTO>({
     invoice_id: 0,
     amount: 0,
@@ -55,7 +58,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
       setInvoices(response.data);
     } catch (error) {
       console.error("Error fetching invoices:", error);
-      setErrors({ invoice_id: "Failed to load invoices" });
+      setErrors({ invoice_id: t('messages.failedLoadInvoices') });
     } finally {
       setLoadingInvoices(false);
     }
@@ -66,19 +69,19 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
     const newErrors: typeof errors = {};
 
     if (formData.invoice_id !== undefined && (!formData.invoice_id || formData.invoice_id === 0)) {
-      newErrors.invoice_id = "Please select an invoice";
+      newErrors.invoice_id = t('validation.selectInvoice');
     }
 
     if (formData.amount !== undefined) {
       if (formData.amount <= 0) {
-        newErrors.amount = "Amount must be greater than 0";
+        newErrors.amount = t('validation.amountGreaterThanZero');
       } else if (isNaN(formData.amount)) {
-        newErrors.amount = "Amount must be a valid number";
+        newErrors.amount = t('validation.invalidNumber');
       }
     }
 
     if (formData.payment_date !== undefined && !formData.payment_date) {
-      newErrors.payment_date = "Payment date is required";
+      newErrors.payment_date = t('validation.paymentDateRequired');
     }
 
     setErrors(newErrors);
@@ -100,7 +103,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
 
     try {
       await paymentServices.updatePayment(payment.id, formData);
-      setSuccessMessage("Payment updated successfully!");
+      setSuccessMessage(t('messages.paymentUpdatedSuccess'));
       
       setErrors({});
       
@@ -112,7 +115,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
       }, 1500);
     } catch (error) {
       console.error("Error updating payment:", error);
-      setErrors({ amount: "Failed to update payment. Please try again." });
+      setErrors({ amount: t('messages.failedUpdatePayment') });
     } finally {
       setIsSubmitting(false);
     }
@@ -150,7 +153,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
     <Modal show={isOpen} onClose={handleClose} size="md">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Edit Payment
+          {t('payment.editPayment')}
         </h3>
 
         {successMessage && (
@@ -164,7 +167,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
           {/* Invoice Selection */}
           <div>
             <Label htmlFor="edit-invoice_id" className="mb-2 block">
-              Invoice <span className="text-red-500 ml-1">*</span>
+              {t('invoice.invoice')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <Select
               id="edit-invoice_id"
@@ -175,11 +178,11 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
               disabled={isSubmitting || loadingInvoices}
             >
               <option value={0}>
-                {loadingInvoices ? "Loading invoices..." : "Select an invoice"}
+                {loadingInvoices ? t('common.loading') + '...' : t('invoice.selectInvoice')}
               </option>
               {invoices.map((invoice) => (
                 <option key={invoice.id} value={invoice.id}>
-                  Invoice #{invoice.id} - {invoice.client?.name} - ${invoice.amount}
+                  {t('invoice.invoice')} #{invoice.id} - {invoice.client?.name} - {formatCurrency(invoice.amount, i18n.language)}
                 </option>
               ))}
             </Select>
@@ -193,7 +196,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
           {/* Amount Field */}
           <div>
             <Label htmlFor="edit-amount" className="mb-2 block">
-              Amount <span className="text-red-500 ml-1">*</span>
+              {t('payment.amount')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="edit-amount"
@@ -201,7 +204,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
               type="number"
               step="0.01"
               min="0.01"
-              placeholder="Enter payment amount"
+              placeholder={t('payment.enterPaymentAmount')}
               value={formData.amount}
               onChange={handleChange}
               color={errors.amount ? "failure" : undefined}
@@ -218,7 +221,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
           {/* Payment Date Field */}
           <div>
             <Label htmlFor="edit-payment_date" className="mb-2 block">
-              Payment Date <span className="text-red-500 ml-1">*</span>
+              {t('payment.paymentDate')} <span className="text-red-500 ml-1">*</span>
             </Label>
             <TextInput
               id="edit-payment_date"
@@ -240,7 +243,7 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <Button color="gray" onClick={handleClose} disabled={isSubmitting}>
               <HiX className="mr-2 h-4 w-4" />
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -250,10 +253,10 @@ export function PaymentUpdate({ isOpen, onClose, onSuccess, payment }: PaymentUp
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
+                  {t('common.updating')}...
                 </>
               ) : (
-                "Update Payment"
+                t('payment.updatePayment')
               )}
             </Button>
           </div>

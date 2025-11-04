@@ -183,12 +183,6 @@ class InvoiceController extends Controller
             $payment->delete();
         }
         
-        // Add payed amount back to client balance (if any amount was paid)
-        if ($invoice->payed > 0) {
-            app(ClientController::class)->AddToClient($invoice->client_id, new Request([
-                'amount' => $invoice->payed
-            ]));
-        }
         
         // Subtract account cut from account balance (if there's an account linked)
         if ($invoice->account_id) {
@@ -203,6 +197,11 @@ class InvoiceController extends Controller
                 'amount' => $invoice->amount - $invoice->payed
             ]));
         }
+
+        // Change car status back to available
+        app(CarController::class)->setCarStatus($invoice->car_id, new Request([
+            'status' => 'Available'
+        ]));
         
         $invoice->delete();
 
