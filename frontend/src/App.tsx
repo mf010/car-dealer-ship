@@ -24,44 +24,44 @@ function App() {
       <Routes>
         {/* Default route - redirect to dashboard if authenticated, otherwise to login */}
         <Route 
-          path="/" 
+          path="/rakan-bayan/" 
           element={
             authServices.isAuthenticated() 
-              ? <Navigate to="/dashboard" replace /> 
-              : <Navigate to="/login" replace />
+              ? <Navigate to="/rakan-bayan/dashboard" replace /> 
+              : <Navigate to="/rakan-bayan/login" replace />
           } 
         />
         
         {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/rakan-bayan/login" element={<Login />} />
         
         {/* Protected Routes */}
         <Route
-          path="/"
+          path="/rakan-bayan/"
           element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }
         >
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="cars" element={<CarList />}/>
-          <Route path="invoices" element={<InvoiceList />} />
-          <Route path="payments" element={<PaymentList />} />
-          <Route path="account-withdrawals" element={<AccountWithdrawalList />} />
-          <Route path="car-expenses" element={<CarExpenseList />} />
-          <Route path="employees" element={<AccountList />} />
-          <Route path="accounts" element={<AccountList />} />
-          <Route path="clients" element={<ClientList />} />
-          <Route path="users" element={<UserList />} />
-          <Route path="expenses" element={<ExpenseList />} />
-          <Route path="make" element={<MakeList />} />
-          <Route path="car-models" element={<CarModelList />} />
-          <Route path="about" element={<div>About</div>} />
+          <Route path="/rakan-bayan/dashboard" element={<Dashboard />} />
+          <Route path="/rakan-bayan/cars" element={<CarList />}/>
+          <Route path="/rakan-bayan/invoices" element={<InvoiceList />} />
+          <Route path="/rakan-bayan/payments" element={<PaymentList />} />
+          <Route path="/rakan-bayan/account-withdrawals" element={<AccountWithdrawalList />} />
+          <Route path="/rakan-bayan/car-expenses" element={<CarExpenseList />} />
+          <Route path="/rakan-bayan/employees" element={<AccountList />} />
+          <Route path="/rakan-bayan/accounts" element={<AccountList />} />
+          <Route path="/rakan-bayan/clients" element={<ClientList />} />
+          <Route path="/rakan-bayan/users" element={<UserList />} />
+          <Route path="/rakan-bayan/expenses" element={<ExpenseList />} />
+          <Route path="/rakan-bayan/make" element={<MakeList />} />
+          <Route path="/rakan-bayan/car-models" element={<CarModelList />} />
+          <Route path="/rakan-bayan/about" element={<div>About</div>} />
         </Route>
         
         {/* Catch all - redirect to login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/rakan-bayan/login" replace />} />
       </Routes>
     </>
   )
