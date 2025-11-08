@@ -82,5 +82,56 @@ export const carServices = {
   removeExpenseFromCar: async (id: number, data: ExpenseUpdateDTO): Promise<Car> => {
     const response = await api.post<Car>(`${BASE_URL}/${id}/remove-expense`, data);
     return response.data;
+  },
+
+  // Report: Cars not sold before a starting date
+  reportCarsNotSoldBeforeStartDate: async (startingDate: string): Promise<{
+    starting_date: string;
+    total_cars: number;
+    cars: Array<{
+      id: number;
+      make: string | null;
+      model: string | null;
+      status: string;
+      purchase_price: number;
+      total_expenses: number;
+      created_at: string;
+      sold_after_starting_date: boolean;
+      sold_date: string | null;
+    }>;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('starting_date', startingDate);
+    
+    const response = await api.get(`/api/reports/cars-not-sold-before-date?${params.toString()}`);
+    return response.data;
+  },
+
+  // Report: Cars sold between dates
+  reportCarsSoldBetweenDates: async (startingDate: string, endingDate: string): Promise<{
+    starting_date: string;
+    ending_date: string;
+    total_cars: number;
+    cars: Array<{
+      id: number;
+      make: string | null;
+      model: string | null;
+      status: string;
+      purchase_price: number;
+      total_expenses: number;
+      created_at: string;
+      sold_date: string;
+      invoice_id: number;
+      invoice_amount: number;
+      client_id: number;
+      total_invoices_in_range: number;
+    }>;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('starting_date', startingDate);
+    params.append('ending_date', endingDate);
+    
+    const response = await api.get(`/api/reports/cars-sold-between-dates?${params.toString()}`);
+    return response.data;
   }
 };

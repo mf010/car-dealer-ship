@@ -178,11 +178,13 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::with('payments')->findOrFail($id);
         
-        // Delete all linked payments first
-        foreach ($invoice->payments as $payment) {
-            $payment->delete();
+        // Check if invoice has any linked payments
+        if ($invoice->payments()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete invoice',
+                'message' => 'This invoice is linked to one or more payments. Please remove the payments before deleting the invoice.'
+            ], 422);
         }
-        
         
         // Subtract account cut from account balance (if there's an account linked)
         if ($invoice->account_id) {

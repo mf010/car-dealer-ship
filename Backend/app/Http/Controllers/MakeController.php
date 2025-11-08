@@ -50,7 +50,16 @@ class MakeController extends Controller
     // Delete a make
     public function destroy($id)
     {
-        $make = Make::findOrFail($id);
+        $make = Make::with('carModels')->findOrFail($id);
+        
+        // Check if make has any linked car models
+        if ($make->carModels()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete make',
+                'message' => 'This make is linked to one or more car models. Please remove or reassign the car models before deleting the make.'
+            ], 422);
+        }
+        
         $make->delete();
 
         return response()->json(null, 204);

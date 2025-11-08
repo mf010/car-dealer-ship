@@ -2,6 +2,7 @@ import { Routes , Route, Navigate } from 'react-router-dom'
 import './App.css'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { Dashboard } from './components/Dashboard'
 import { MakeList } from './Pages/makePages/MakeList'
 import { CarModelList } from './Pages/carModelPages/CarModelList'
 import { ClientList } from './Pages/clientPages/ClientList'
@@ -43,7 +44,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="dashboard" element={<div>Dashboard</div>} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="cars" element={<CarList />}/>
           <Route path="invoices" element={<InvoiceList />} />
           <Route path="payments" element={<PaymentList />} />

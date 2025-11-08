@@ -123,4 +123,5 @@ class PaymentController extends Controller
 
         return response()->json($payment->load(['invoice.client', 'invoice.car']));
     }
+
 }

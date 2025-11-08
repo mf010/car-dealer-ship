@@ -53,7 +53,16 @@ class CarModelController extends Controller
     // Delete a car model
     public function destroy($id)
     {
-        $carModel = CarModel::findOrFail($id);
+        $carModel = CarModel::with('cars')->findOrFail($id);
+        
+        // Check if car model has any linked cars
+        if ($carModel->cars()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete car model',
+                'message' => 'This car model is linked to one or more cars. Please remove or reassign the cars before deleting the car model.'
+            ], 422);
+        }
+        
         $carModel->delete();
 
         return response()->json(null, 204);

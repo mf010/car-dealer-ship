@@ -59,7 +59,24 @@ class ClientController extends Controller
     // Delete a client
     public function destroy($id)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::with(['invoices', 'payments'])->findOrFail($id);
+        
+        // Check if client has any linked invoices
+        if ($client->invoices()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete client',
+                'message' => 'This client is linked to one or more invoices. Please remove or reassign the invoices before deleting the client.'
+            ], 422);
+        }
+        
+        // Check if client has any linked payments (through invoices)
+        if ($client->payments()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete client',
+                'message' => 'This client is linked to one or more payments. Please remove the payments before deleting the client.'
+            ], 422);
+        }
+        
         $client->delete();
 
         return response()->json(null, 204);
