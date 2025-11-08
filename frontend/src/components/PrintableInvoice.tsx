@@ -14,19 +14,16 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
     const formatCurrencyAr = (amount: number) => formatCurrency(amount, 'ar');
     const formatDateAr = (dateString: string) => formatDate(dateString, 'ar');
 
-    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+    const totalPaid = invoice.payed || payments.reduce((sum, payment) => sum + payment.amount, 0);
     const remainingBalance = invoice.amount - totalPaid;
 
-    // Debug: Log the invoice data
-    console.log('Invoice data:', invoice);
-    console.log('Car data:', invoice.car);
-    console.log('Car Model:', invoice.car?.carModel);
-    console.log('Make:', invoice.car?.carModel?.make);
-
-    // Try to access nested data in case the property names are different
+    // Extract car make and model - handle both camelCase and snake_case
     const carData: any = invoice.car;
-    const makeName = invoice.car?.carModel?.make?.name || carData?.car_model?.make?.name || 'غير متوفر';
-    const modelName = invoice.car?.carModel?.name || carData?.car_model?.name || 'غير متوفر';
+    const carModelData: any = carData?.carModel || carData?.car_model;
+    const makeData: any = carModelData?.make;
+    
+    const makeName = makeData?.name || 'غير متوفر';
+    const modelName = carModelData?.name || 'غير متوفر';
 
     return (
       <div ref={ref} className="hidden print:block" dir="rtl">
@@ -212,6 +209,18 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
             <div className="detail-row">
               <span className="detail-label">تاريخ الفاتورة:</span>
               <span className="detail-value">{formatDateAr(invoice.invoice_date)}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">مبلغ الفاتورة:</span>
+              <span className="detail-value" style={{ fontWeight: 'bold', color: '#059669' }}>{formatCurrencyAr(invoice.amount)}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">المبلغ المدفوع:</span>
+              <span className="detail-value" style={{ fontWeight: 'bold', color: '#2563eb' }}>{formatCurrencyAr(totalPaid)}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">المبلغ المتبقي:</span>
+              <span className="detail-value" style={{ fontWeight: 'bold', color: remainingBalance > 0 ? '#dc2626' : '#059669' }}>{formatCurrencyAr(remainingBalance)}</span>
             </div>
           </div>
 
