@@ -38,10 +38,9 @@ export const formatCurrency = (amount: number, locale?: string): string => {
  * Format number with locale awareness
  * NOTE: Always uses Western digits (123456789) as requested
  * @param number - The number to format
- * @param locale - Optional locale override
  * @returns Formatted number string
  */
-export const formatNumber = (number: number, locale?: string): string => {
+export const formatNumber = (number: number): string => {
   try {
     // Always use 'en-US' to keep Western digits
     const formatter = new Intl.NumberFormat('en-US', {
