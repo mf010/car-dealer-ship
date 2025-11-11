@@ -1,7 +1,7 @@
 import api from '../helper/api';
 import type { Make, CreateMakeDTO, UpdateMakeDTO, PaginatedResponse, MakeFilters } from '../models/Make';
 
-const BASE_URL = '/api/makes'; // Adjust this based on your API base URL
+const BASE_URL = '/makes'; // Adjust this based on your API base URL
 
 export const makeServices = {
   // Get all makes with pagination and filtering

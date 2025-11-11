@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Modal, Button, Badge } from "flowbite-react";
 import { HiX, HiPlus, HiPrinter } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
@@ -59,7 +59,7 @@ export function InvoiceInfoModal({
     }
 
     const amount = parseFloat(newPaymentAmount);
-    const remainingBalance = invoice.amount - invoice.payed;
+    const remainingBalance = getRemainingBalance(invoice);
 
     if (amount > remainingBalance) {
       alert(t('validation.paymentExceedsBalance', { balance: formatCurrencyUtil(remainingBalance, i18n.language) }));
@@ -114,18 +114,49 @@ export function InvoiceInfoModal({
     return formatDateUtil(dateString, i18n.language);
   };
 
+  // Calculate total paid from actual payments - memoized to avoid re-calculation
+  const totalPaid = useMemo(() => {
+    if (!payments || payments.length === 0) return 0;
+    // Convert to number to avoid string concatenation
+    const total = payments.reduce((sum, payment) => sum + parseFloat(String(payment.amount || 0)), 0);
+    return total;
+  }, [payments]);
+
   const isFullyPaid = (inv: Invoice) => {
-    return inv.payed >= inv.amount;
+    const remaining = inv.amount - totalPaid;
+    // Consider fully paid if remaining is less than 0.01 (1 cent)
+    return remaining <= 0.01;
   };
 
   const getRemainingBalance = (inv: Invoice) => {
-    return inv.amount - inv.payed;
+    const remaining = inv.amount - totalPaid;
+    // Return 0 if remaining is very small (less than 1 cent)
+    return remaining < 0.01 ? 0 : remaining;
   };
 
   if (!invoice) return null;
 
   return (
     <Modal show={isOpen} onClose={onClose} size="3xl">
+      <style>
+        {`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .print-container,
+            .print-container * {
+              visibility: visible;
+            }
+            .print-container {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+            }
+          }
+        `}
+      </style>
       <div className="p-6 print:hidden">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -151,7 +182,7 @@ export function InvoiceInfoModal({
               <Badge color="success" size="lg">
                 {t('invoice.fullyPaid')}
               </Badge>
-            ) : invoice.payed > 0 ? (
+            ) : totalPaid > 0 ? (
               <Badge color="warning" size="lg">
                 {t('invoice.partiallyPaid')}
               </Badge>
@@ -210,7 +241,7 @@ export function InvoiceInfoModal({
                 {t('invoice.amountPaid')}
               </p>
               <p className="font-semibold text-blue-600 dark:text-blue-400 text-lg">
-                {formatCurrency(invoice.payed)}
+                {formatCurrency(totalPaid)}
               </p>
             </div>
 
@@ -349,7 +380,7 @@ export function InvoiceInfoModal({
                     <tr>
                       <td className="px-4 py-3">{t('payment.totalPaid')}</td>
                       <td className="px-4 py-3 text-blue-600 dark:text-blue-400">
-                        {formatCurrency(invoice.payed)}
+                        {formatCurrency(totalPaid)}
                       </td>
                       <td className="px-4 py-3" colSpan={2}></td>
                     </tr>

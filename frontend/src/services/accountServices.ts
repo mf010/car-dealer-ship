@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { Account, CreateAccountDTO, UpdateAccountDTO, AccountFilters, BalanceUpdateDTO } from '../models/Account';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/accounts'; // Adjust this based on your API base URL
+const BASE_URL = '/accounts'; // Adjust this based on your API base URL
 
 export const accountServices = {
   // Get all accounts with pagination and filtering

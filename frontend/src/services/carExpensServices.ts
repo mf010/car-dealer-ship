@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { CarExpense, CreateCarExpenseDTO, UpdateCarExpenseDTO, CarExpenseFilters } from '../models/CarExpens';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/car-expenses'; // Adjust this based on your API base URL
+const BASE_URL = '/car-expenses'; // Adjust this based on your API base URL
 
 export const carExpenseServices = {
   // Get all car expenses with pagination and filtering

@@ -19,20 +19,21 @@ class DatabaseSeeder extends Seeder
         
         \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
     
-    \DB::table('logs')->truncate();  
-    \DB::table('requests')->truncate();
-    \DB::table('categories')->truncate();    
-    \DB::table('types')->truncate();
-    \DB::table('users')->truncate();
-        // Add other truncates as needed
+        // تفريغ جدول المستخدمين فقط
+        \DB::table('users')->truncate();
+        
         \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        
+        // إنشاء مستخدم افتراضي
+        User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'), // كلمة المرور: password123
         ]);
-    $this->call(TypeSeeder::class);   
-    $this->call(CategorySeeder::class);
-    $this->call(RequestSeeder::class);
-    $this->call(LogSeeder::class);
+        
+        // $this->call(TypeSeeder::class);   
+        // $this->call(CategorySeeder::class);
+        // $this->call(RequestSeeder::class);
+        // $this->call(LogSeeder::class);
     }
 }

@@ -3,7 +3,7 @@ import type { Invoice, CreateInvoiceDTO, UpdateInvoiceDTO, InvoiceFilters,
   PaymentUpdateDTO, PaymentAdjustDTO, AccountUpdateDTO, AccountCutUpdateDTO } from '../models/Invoice';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/invoices'; // Adjust this based on your API base URL
+const BASE_URL = '/invoices'; // Adjust this based on your API base URL
 
 export const invoiceServices = {
   // Get all invoices with pagination and filtering

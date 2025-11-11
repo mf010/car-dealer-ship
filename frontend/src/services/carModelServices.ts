@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { CarModel, CreateCarModelDTO, UpdateCarModelDTO, CarModelFilters } from '../models/CarModel';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/car-models'; // Adjust this based on your API base URL
+const BASE_URL = '/car-models'; // Adjust this based on your API base URL
 
 export const carModelServices = {
   // Get all car models with pagination and filtering

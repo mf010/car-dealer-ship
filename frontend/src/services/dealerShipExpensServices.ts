@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { DealerShipExpense, CreateDealerShipExpenseDTO, UpdateDealerShipExpenseDTO, DealerShipExpenseFilters } from '../models/DealerShipExpenses';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/dealership-expenses'; // Adjust this based on your API base URL
+const BASE_URL = '/dealership-expenses'; // Adjust this based on your API base URL
 
 export const dealerShipExpenseServices = {
   // Get all dealership expenses with pagination and filtering

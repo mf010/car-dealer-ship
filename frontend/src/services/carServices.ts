@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { Car, CreateCarDTO, UpdateCarDTO, CarFilters, ExpenseUpdateDTO } from '../models/Car';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/cars'; // Adjust this based on your API base URL
+const BASE_URL = '/cars'; // Adjust this based on your API base URL
 
 export const carServices = {
   // Get all cars with pagination and filtering
@@ -103,7 +103,7 @@ export const carServices = {
     const params = new URLSearchParams();
     params.append('starting_date', startingDate);
     
-    const response = await api.get(`/api/reports/cars-not-sold-before-date?${params.toString()}`);
+    const response = await api.get(`/reports/cars-not-sold-before-date?${params.toString()}`);
     return response.data;
   },
 
@@ -131,7 +131,7 @@ export const carServices = {
     params.append('starting_date', startingDate);
     params.append('ending_date', endingDate);
     
-    const response = await api.get(`/api/reports/cars-sold-between-dates?${params.toString()}`);
+    const response = await api.get(`/reports/cars-sold-between-dates?${params.toString()}`);
     return response.data;
   }
 };

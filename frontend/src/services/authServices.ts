@@ -13,7 +13,7 @@ const USER_KEY = 'auth_user';
 export const authServices = {
   // Login
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('api/login', credentials);
+    const response = await api.post<AuthResponse>('login', credentials);
     
     // Store token and user in localStorage
     if (response.data.token) {
@@ -26,7 +26,7 @@ export const authServices = {
 
   // Register
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('api/register', data);
+    const response = await api.post<AuthResponse>('register', data);
     
     // Store token and user in localStorage
     if (response.data.token) {
@@ -39,7 +39,7 @@ export const authServices = {
 
   // Get current authenticated user
   me: async (): Promise<User> => {
-    const response = await api.get<User>('api/me');
+    const response = await api.get<User>('me');
     
     // Update user in localStorage
     localStorage.setItem(USER_KEY, JSON.stringify(response.data));
@@ -60,7 +60,7 @@ export const authServices = {
 
   // Refresh token
   refresh: async (): Promise<string> => {
-    const response = await api.post<{ token: string }>('api/refresh');
+    const response = await api.post<{ token: string }>('refresh');
     
     if (response.data.token) {
       localStorage.setItem(TOKEN_KEY, response.data.token);
@@ -71,7 +71,7 @@ export const authServices = {
 
   // Change password
   changePassword: async (data: ChangePasswordRequest): Promise<{ message: string }> => {
-    const response = await api.post<{ message: string }>('api/change-password', data);
+    const response = await api.post<{ message: string }>('change-password', data);
     return response.data;
   },
 

@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { AccountWithdrawal, CreateAccountWithdrawalDTO, UpdateAccountWithdrawalDTO, AccountWithdrawalFilters } from '../models/AccountWithdrawal';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/account-withdrawals'; // Adjust this based on your API base URL
+const BASE_URL = '/account-withdrawals'; // Adjust this based on your API base URL
 
 export const accountWithdrawalServices = {
   // Get all account withdrawals with pagination and filtering

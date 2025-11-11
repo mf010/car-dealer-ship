@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { Payment, CreatePaymentDTO, UpdatePaymentDTO, PaymentFilters } from '../models/Payment';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/payments'; // Adjust this based on your API base URL
+const BASE_URL = '/payments'; // Adjust this based on your API base URL
 
 export const paymentServices = {
   // Get all payments with pagination and filtering

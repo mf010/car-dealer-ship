@@ -2,7 +2,7 @@ import api from '../helper/api';
 import type { Client, CreateClientDTO, UpdateClientDTO, ClientFilters, BalanceUpdateDTO } from '../models/Client';
 import type { PaginatedResponse } from '../models/Make';
 
-const BASE_URL = '/api/clients'; // Adjust this based on your API base URL
+const BASE_URL = '/clients'; // Adjust this based on your API base URL
 
 export const clientServices = {
   // Get all clients with pagination and filtering

@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!isAuthenticated) {
     // Redirect to login if not authenticated
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/rakan-bayan/login" replace />;
   }
 
   return <>{children}</>;
