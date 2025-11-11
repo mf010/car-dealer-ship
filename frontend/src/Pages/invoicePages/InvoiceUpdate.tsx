@@ -171,6 +171,7 @@ export function InvoiceUpdate({
 
   return (
     <Modal show={isOpen} onClose={onClose} size="xl">
+      <div className="max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <HiPencil className="h-6 w-6 text-gray-600" />
@@ -268,7 +269,7 @@ export function InvoiceUpdate({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="amount" className="mb-2 block">
-                  {t('invoice.totalAmount')} <span className="text-red-500">*</span>
+                  {t('invoice.totalAmount')}
                 </Label>
                 <TextInput
                   id="amount"
@@ -277,9 +278,10 @@ export function InvoiceUpdate({
                   step="0.01"
                   value={formData.amount}
                   onChange={handleChange}
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
                   color={errors.amount ? "failure" : undefined}
                   placeholder="0.00"
-                  required
                 />
                 {errors.amount && (
                   <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
@@ -359,6 +361,7 @@ export function InvoiceUpdate({
             </div>
           </form>
         )}
+      </div>
       </div>
     </Modal>
   );

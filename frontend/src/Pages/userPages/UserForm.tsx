@@ -108,6 +108,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
 
   return (
     <Modal show={isOpen} onClose={handleClose} size="md">
+      <div className="max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <HiUserAdd className="h-6 w-6 text-gray-600" />
@@ -212,6 +213,7 @@ export function UserForm({ isOpen, onClose, onSuccess }: UserFormProps) {
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </Modal>
   );

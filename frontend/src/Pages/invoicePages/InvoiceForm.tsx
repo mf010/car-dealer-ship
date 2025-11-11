@@ -185,6 +185,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
 
   return (
     <Modal show={isOpen} onClose={onClose} size="xl">
+      <div className="max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <HiPlus className="h-6 w-6 text-blue-600" />
@@ -458,6 +459,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
             </div>
           </form>
         )}
+      </div>
       </div>
     </Modal>
   );

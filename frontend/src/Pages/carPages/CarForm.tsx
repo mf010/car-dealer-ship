@@ -136,6 +136,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
 
   return (
     <Modal show={isOpen} onClose={handleClose} size="md">
+      <div className="max-h-[85vh] overflow-y-auto">
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
           {t('car.addCar')}
@@ -267,6 +268,7 @@ export function CarForm({ isOpen, onClose, onSuccess }: CarFormProps) {
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </Modal>
   );

@@ -157,6 +157,7 @@ export function InvoiceInfoModal({
           }
         `}
       </style>
+      <div className="max-h-[85vh] overflow-y-auto">
       <div className="p-6 print:hidden">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -396,6 +397,7 @@ export function InvoiceInfoModal({
             {t('common.close')}
           </Button>
         </div>
+      </div>
       </div>
 
       {/* Hidden Printable Invoice */}
