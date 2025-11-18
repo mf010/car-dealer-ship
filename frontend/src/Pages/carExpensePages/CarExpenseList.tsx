@@ -18,7 +18,7 @@ export function CarExpenseList() {
   const [error, setError] = useState<string | null>(null);
   
   // Filter states
-  const [filterCarId, setFilterCarId] = useState<string>("");
+  const [filterCarName, setFilterCarName] = useState<string>("");
   const [filterDate, setFilterDate] = useState<string>("");
   const [filterAmountFrom, setFilterAmountFrom] = useState<string>("");
   const [filterAmountTo, setFilterAmountTo] = useState<string>("");
@@ -37,7 +37,7 @@ export function CarExpenseList() {
     try {
       const filters: any = {};
       
-      if (filterCarId) filters.car_id = parseInt(filterCarId);
+      if (filterCarName) filters.car_id = parseInt(filterCarName) || undefined;
       if (filterDate) filters.expense_date = filterDate;
       if (filterAmountFrom) filters.amount_from = parseFloat(filterAmountFrom);
       if (filterAmountTo) filters.amount_to = parseFloat(filterAmountTo);
@@ -64,7 +64,7 @@ export function CarExpenseList() {
   useEffect(() => {
     fetchExpenses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filterCarId, filterDate, filterAmountFrom, filterAmountTo, filterDescription]);
+  }, [currentPage, filterCarName, filterDate, filterAmountFrom, filterAmountTo, filterDescription]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -136,16 +136,16 @@ export function CarExpenseList() {
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Car Filter */}
+          {/* Car Name Filter */}
           <div>
-            <Label htmlFor="filterCar">{t('car.carId')}</Label>
+            <Label htmlFor="filterCar">{t('car.carName')}</Label>
             <TextInput
               id="filterCar"
-              type="number"
-              placeholder={t('car.carId')}
+              type="text"
+              placeholder={t('car.enterCarId')}
               icon={HiSearch}
-              value={filterCarId}
-              onChange={(e) => setFilterCarId(e.target.value)}
+              value={filterCarName}
+              onChange={(e) => setFilterCarName(e.target.value)}
             />
           </div>
 

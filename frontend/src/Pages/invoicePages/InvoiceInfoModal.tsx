@@ -134,6 +134,16 @@ export function InvoiceInfoModal({
     return remaining < 0.01 ? 0 : remaining;
   };
 
+  // Calculate net profit: Invoice amount - (car purchase price + total expenses + account cut)
+  const calculateNetProfit = (inv: Invoice) => {
+    if (!inv.car) return 0;
+    const purchasePrice = inv.car.purchase_price || 0;
+    const totalExpenses = inv.car.total_expenses || 0;
+    const accountCut = inv.account_cut || 0;
+    const netProfit = inv.amount - purchasePrice - totalExpenses - accountCut;
+    return netProfit;
+  };
+
   if (!invoice) return null;
 
   return (
@@ -206,8 +216,14 @@ export function InvoiceInfoModal({
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.car')}</p>
               <p className="font-semibold text-gray-900 dark:text-white">
-                {invoice.car?.carModel?.make?.name} {invoice.car?.carModel?.name}
+                {invoice.car?.name && `${invoice.car.name} - `}
+                {(invoice.car?.carModel || invoice.car?.car_model)?.make?.name} {(invoice.car?.carModel || invoice.car?.car_model)?.name}
               </p>
+              {invoice.car?.id && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {t('car.carId')}: #{invoice.car.id}
+                </p>
+              )}
             </div>
 
             <div className="print:hidden">
@@ -234,6 +250,19 @@ export function InvoiceInfoModal({
               </p>
               <p className="font-semibold text-green-600 dark:text-green-400 text-lg">
                 {formatCurrency(invoice.amount)}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('common.netProfit')}
+              </p>
+              <p className={`font-semibold text-lg ${
+                calculateNetProfit(invoice) >= 0 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                {formatCurrency(calculateNetProfit(invoice))}
               </p>
             </div>
 

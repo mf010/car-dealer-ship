@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Modal, Button, Label, TextInput, Select } from "flowbite-react";
+import { Modal, Button, Label, TextInput } from "flowbite-react";
 import { HiPlus } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { invoiceServices } from "../../services/invoiceServices";
@@ -17,7 +17,7 @@ interface InvoiceFormProps {
 }
 
 export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
@@ -26,12 +26,16 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
 
   // Searchable select states
   const [clientSearch, setClientSearch] = useState("");
+  const [carSearch, setCarSearch] = useState("");
   const [accountSearch, setAccountSearch] = useState("");
   const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [showCarDropdown, setShowCarDropdown] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   
   // Refs for click outside detection
   const clientDropdownRef = useRef<HTMLDivElement>(null);
+  const carDropdownRef = useRef<HTMLDivElement>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
@@ -58,6 +62,9 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
     const handleClickOutside = (event: MouseEvent) => {
       if (clientDropdownRef.current && !clientDropdownRef.current.contains(event.target as Node)) {
         setShowClientDropdown(false);
+      }
+      if (carDropdownRef.current && !carDropdownRef.current.contains(event.target as Node)) {
+        setShowCarDropdown(false);
       }
       if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
         setShowAccountDropdown(false);
@@ -99,6 +106,18 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
+  };
+
+  // Calculate net profit
+  const calculateNetProfit = (): number => {
+    if (!selectedCar || !formData.amount) return 0;
+    
+    const invoiceAmount = parseFloat(formData.amount) || 0;
+    const purchasePrice = parseFloat(String(selectedCar.purchase_price)) || 0;
+    const totalExpenses = parseFloat(String(selectedCar.total_expenses)) || 0;
+    const accountCut = parseFloat(formData.account_cut) || 0;
+    
+    return invoiceAmount - purchasePrice - totalExpenses - accountCut;
   };
 
   const validate = (): boolean => {
@@ -171,7 +190,9 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
         invoice_date: new Date().toISOString().split('T')[0],
       });
       setClientSearch("");
+      setCarSearch("");
       setAccountSearch("");
+      setSelectedCar(null);
       setErrors({});
       onSuccess();
       onClose();
@@ -278,28 +299,136 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
               )}
             </div>
 
-            {/* Car Selection */}
-            <div>
+            {/* Car Selection - Searchable */}
+            <div ref={carDropdownRef}>
               <Label htmlFor="car_id" className="mb-2 block">
                 {t('car.carAvailable')} <span className="text-red-500">*</span>
               </Label>
-              <Select
-                id="car_id"
-                name="car_id"
-                value={formData.car_id}
-                onChange={handleChange}
-                color={errors.car_id ? "failure" : undefined}
-                required
-              >
-                <option value="">{t('car.selectCar')}</option>
-                {cars.map((car) => (
-                  <option key={car.id} value={car.id}>
-                    {car.carModel?.make?.name} {car.carModel?.name} - #{car.id}
-                  </option>
-                ))}
-              </Select>
+              <div className="relative">
+                <TextInput
+                  id="car_search"
+                  type="text"
+                  placeholder={t('car.searchByName')}
+                  value={carSearch}
+                  onChange={(e) => {
+                    setCarSearch(e.target.value);
+                    setShowCarDropdown(true);
+                  }}
+                  onFocus={() => setShowCarDropdown(true)}
+                  color={errors.car_id ? "failure" : undefined}
+                />
+                {showCarDropdown && carSearch && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {cars
+                      .filter(car => {
+                        const searchLower = carSearch.toLowerCase();
+                        const carName = car.name?.toLowerCase() || '';
+                        const carModelData = car.carModel || car.car_model;
+                        const makeName = carModelData?.make?.name?.toLowerCase() || '';
+                        const modelName = carModelData?.name?.toLowerCase() || '';
+                        const carId = car.id.toString();
+                        
+                        return carName.includes(searchLower) ||
+                               makeName.includes(searchLower) ||
+                               modelName.includes(searchLower) ||
+                               carId.includes(searchLower);
+                      })
+                      .slice(0, 10)
+                      .map((car) => {
+                        const carModelData = car.carModel || car.car_model;
+                        return (
+                        <button
+                          key={car.id}
+                          type="button"
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, car_id: car.id.toString() }));
+                            setCarSearch(car.name || `${carModelData?.make?.name} ${carModelData?.name}`);
+                            setSelectedCar(car);
+                            setShowCarDropdown(false);
+                            if (errors.car_id) {
+                              setErrors(prev => ({ ...prev, car_id: "" }));
+                            }
+                          }}
+                        >
+                          <div className="font-medium">
+                            {car.name || `${carModelData?.make?.name} ${carModelData?.name}`}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            ID: #{car.id} • {carModelData?.make?.name} {carModelData?.name}
+                          </div>
+                        </button>
+                        );
+                      })}
+                    {cars.filter(car => {
+                      const searchLower = carSearch.toLowerCase();
+                      const carName = car.name?.toLowerCase() || '';
+                      const carModelData = car.carModel || car.car_model;
+                      const makeName = carModelData?.make?.name?.toLowerCase() || '';
+                      const modelName = carModelData?.name?.toLowerCase() || '';
+                      const carId = car.id.toString();
+                      
+                      return carName.includes(searchLower) ||
+                             makeName.includes(searchLower) ||
+                             modelName.includes(searchLower) ||
+                             carId.includes(searchLower);
+                    }).length === 0 && (
+                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                        {t('car.noCarsFound')}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {formData.car_id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, car_id: "" }));
+                    setCarSearch("");
+                    setSelectedCar(null);
+                    setShowCarDropdown(false);
+                  }}
+                  className="mt-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400"
+                >
+                  {t('common.clearSelection')}
+                </button>
+              )}
               {errors.car_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.car_id}</p>
+              )}
+              
+              {/* Selected Car Info Display */}
+              {selectedCar && (
+                <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                    {t('car.carInformation')}
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">{t('car.carId')}:</span>
+                      <span className="ml-1 font-medium text-gray-900 dark:text-white">#{selectedCar.id}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">{t('car.make')}:</span>
+                      <span className="ml-1 font-medium text-gray-900 dark:text-white">
+                        {(selectedCar.carModel || selectedCar.car_model)?.make?.name || t('common.notAvailable')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">{t('car.model')}:</span>
+                      <span className="ml-1 font-medium text-gray-900 dark:text-white">
+                        {(selectedCar.carModel || selectedCar.car_model)?.name || t('common.notAvailable')}
+                      </span>
+                    </div>
+                    {selectedCar.name && (
+                      <div className="col-span-3">
+                        <span className="text-gray-600 dark:text-gray-400">{t('car.carName')}:</span>
+                        <span className="ml-1 font-medium text-gray-900 dark:text-white">{selectedCar.name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -385,6 +514,26 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                 />
                 {errors.amount && (
                   <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
+                )}
+                
+                {/* Net Profit Display */}
+                {selectedCar && formData.amount && parseFloat(formData.amount) > 0 && (
+                  <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">{t('common.netProfit')}:</span>
+                      <span className={`font-semibold ${
+                        calculateNetProfit() >= 0 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {new Intl.NumberFormat(i18n.language === 'ar' ? 'ar-LY' : 'en-US', {
+                          style: 'currency',
+                          currency: 'LYD',
+                          minimumFractionDigits: 2
+                        }).format(calculateNetProfit())}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
 

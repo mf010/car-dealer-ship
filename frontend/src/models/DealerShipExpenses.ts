@@ -23,6 +23,8 @@ export interface UpdateDealerShipExpenseDTO {
 export interface DealerShipExpenseFilters {
   description?: string;
   expense_date?: string;
+  date_from?: string;
+  date_to?: string;
   amount_from?: number;
   amount_to?: number;
   // Add any other filter parameters you need

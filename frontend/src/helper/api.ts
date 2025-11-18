@@ -7,7 +7,7 @@ const config: AxiosRequestConfig = {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  timeout: 5000,
+  timeout: 30000, // 30 seconds timeout
 };
 
 const api = axios.create(config);

@@ -13,6 +13,7 @@ class Car extends Model
     use HasFactory, SoftDeletes, Filterable;
 
     protected $fillable = [
+        'name',
         'car_model_id',
         'account_id',//dealer
         'status',

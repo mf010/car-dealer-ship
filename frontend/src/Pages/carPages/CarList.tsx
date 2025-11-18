@@ -30,7 +30,7 @@ export function CarList() {
   const [clients, setClients] = useState<Client[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [filterMakeId, setFilterMakeId] = useState<string>("");
-  const [filterCarId, setFilterCarId] = useState<string>("");
+  const [filterCarName, setFilterCarName] = useState<string>("");
   const [filterClientId, setFilterClientId] = useState<string>("");
   const [filterAccountId, setFilterAccountId] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
@@ -105,10 +105,12 @@ export function CarList() {
         );
       }
       
-      // Apply car ID filter (client-side)
-      if (filterCarId) {
-        const carId = parseInt(filterCarId);
-        normalizedCars = normalizedCars.filter((car: any) => car.id === carId);
+      // Apply car name filter (client-side)
+      if (filterCarName) {
+        const searchLower = filterCarName.toLowerCase();
+        normalizedCars = normalizedCars.filter((car: any) => 
+          car.name?.toLowerCase().includes(searchLower)
+        );
       }
 
       // Apply client/account filters (need to fetch invoices)
@@ -150,7 +152,7 @@ export function CarList() {
   useEffect(() => {
     fetchCars();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchStatus, filterMakeId, filterCarId, filterClientId, filterAccountId]);
+  }, [currentPage, searchStatus, filterMakeId, filterCarName, filterClientId, filterAccountId]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -204,7 +206,7 @@ export function CarList() {
   // Clear all filters
   const clearFilters = () => {
     setFilterMakeId("");
-    setFilterCarId("");
+    setFilterCarName("");
     setFilterClientId("");
     setFilterAccountId("");
     setSearchStatus("");
@@ -212,7 +214,7 @@ export function CarList() {
   };
 
   // Check if any filters are active
-  const hasActiveFilters = filterMakeId || filterCarId || filterClientId || filterAccountId || searchStatus;
+  const hasActiveFilters = filterMakeId || filterCarName || filterClientId || filterAccountId || searchStatus;
 
   return (
     <div className="space-y-6">
@@ -322,18 +324,18 @@ export function CarList() {
               </Select>
             </div>
 
-            {/* Car ID Filter */}
+            {/* Car Name Filter */}
             <div>
-              <Label htmlFor="filterCarId" className="mb-2">
+              <Label htmlFor="filterCarName" className="mb-2">
                 {t('car.filterByCarId')}
               </Label>
               <TextInput
-                id="filterCarId"
-                type="number"
+                id="filterCarName"
+                type="text"
                 placeholder={t('car.enterCarId')}
-                value={filterCarId}
+                value={filterCarName}
                 onChange={(e) => {
-                  setFilterCarId(e.target.value);
+                  setFilterCarName(e.target.value);
                   setCurrentPage(1);
                 }}
               />
@@ -402,11 +404,11 @@ export function CarList() {
                 </button>
               </Badge>
             )}
-            {filterCarId && (
+            {filterCarName && (
               <Badge color="info" size="sm">
-                {t('car.carId')}: {filterCarId}
+                {t('car.carName')}: {filterCarName}
                 <button
-                  onClick={() => setFilterCarId("")}
+                  onClick={() => setFilterCarName("")}
                   className="ml-2 hover:text-red-500"
                 >
                   ×
@@ -473,11 +475,18 @@ export function CarList() {
                 <div className="space-y-4">
                   {/* Header with Model and Status Badge */}
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      <HiCube className="h-5 w-5 text-gray-400" />
-                      <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        {car.carModel?.make?.name} {car.carModel?.name}
-                      </h5>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <HiCube className="h-5 w-5 text-gray-400" />
+                        <h5 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                          {car.name || `${car.carModel?.make?.name} ${car.carModel?.name}`}
+                        </h5>
+                      </div>
+                      {car.name && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 ml-7">
+                          {car.carModel?.make?.name} {car.carModel?.name}
+                        </p>
+                      )}
                     </div>
                     <Badge color={car.status === "sold" ? "failure" : "success"} size="sm">
                       {car.status === "sold" ? t('car.sold') : t('car.available')}

@@ -31,6 +31,7 @@ class CarController extends Controller
     public function store(CarRequest $request)
     {
         $car = Car::create([
+            'name' => $request->name,
             'car_model_id' => $request->car_model_id,
             'status' => $request->status ?? 'available',
             'purchase_price' => $request->purchase_price,
@@ -51,6 +52,7 @@ class CarController extends Controller
     {
         $car = Car::findOrFail($id);
         $car->update([
+            'name' => $request->name,
             'car_model_id' => $request->car_model_id,
             'status' => $request->status ?? $car->status,
             'purchase_price' => $request->purchase_price,

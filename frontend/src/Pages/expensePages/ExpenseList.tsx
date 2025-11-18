@@ -24,7 +24,8 @@ export function ExpenseList() {
   const [error, setError] = useState<string | null>(null);
   
   // Filter states
-  const [filterDate, setFilterDate] = useState<string>("");
+  const [filterDateFrom, setFilterDateFrom] = useState<string>("");
+  const [filterDateTo, setFilterDateTo] = useState<string>("");
   const [filterAmountFrom, setFilterAmountFrom] = useState<string>("");
   const [filterAmountTo, setFilterAmountTo] = useState<string>("");
   const [filterDescription, setFilterDescription] = useState<string>("");
@@ -45,7 +46,8 @@ export function ExpenseList() {
     try {
       const filters: any = {};
       
-      if (filterDate) filters.expense_date = filterDate;
+      if (filterDateFrom) filters.date_from = filterDateFrom;
+      if (filterDateTo) filters.date_to = filterDateTo;
       if (filterAmountFrom) filters.amount_from = parseFloat(filterAmountFrom);
       if (filterAmountTo) filters.amount_to = parseFloat(filterAmountTo);
       if (filterDescription) filters.description = filterDescription;
@@ -120,7 +122,7 @@ export function ExpenseList() {
   useEffect(() => {
     fetchExpenses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filterDate, filterAmountFrom, filterAmountTo, filterDescription]);
+  }, [currentPage, filterDateFrom, filterDateTo, filterAmountFrom, filterAmountTo, filterDescription]);
 
   // Handle delete
   const handleDelete = async (id: number) => {
@@ -249,14 +251,25 @@ export function ExpenseList() {
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Date Filter */}
+          {/* Date From Filter */}
           <div>
-            <Label htmlFor="filterDate">{t('expense.expenseDate')}</Label>
+            <Label htmlFor="filterDateFrom">{t('common.dateFrom')}</Label>
             <TextInput
-              id="filterDate"
+              id="filterDateFrom"
               type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
+              value={filterDateFrom}
+              onChange={(e) => setFilterDateFrom(e.target.value)}
+            />
+          </div>
+
+          {/* Date To Filter */}
+          <div>
+            <Label htmlFor="filterDateTo">{t('common.dateTo')}</Label>
+            <TextInput
+              id="filterDateTo"
+              type="date"
+              value={filterDateTo}
+              onChange={(e) => setFilterDateTo(e.target.value)}
             />
           </div>
 

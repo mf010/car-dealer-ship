@@ -22,6 +22,7 @@ interface CarUpdateProps {
 export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<UpdateCarDTO>({
+    name: "",
     car_model_id: 0,
     purchase_price: 0,
     status: "available",
@@ -29,7 +30,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
   const [carModelOptions, setCarModelOptions] = useState<SelectOption[]>([]);
   const [selectedCarModel, setSelectedCarModel] = useState<SelectOption | null>(null);
   const [loadingCarModels, setLoadingCarModels] = useState(false);
-  const [errors, setErrors] = useState<{ car_model_id?: string; purchase_price?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; car_model_id?: string; purchase_price?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -44,6 +45,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
   useEffect(() => {
     if (car && carModelOptions.length > 0) {
       setFormData({
+        name: car.name || "",
         car_model_id: car.car_model_id,
         purchase_price: car.purchase_price,
         status: car.status,
@@ -76,7 +78,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
 
   // Validate form
   const validateForm = (): boolean => {
-    const newErrors: { car_model_id?: string; purchase_price?: string } = {};
+    const newErrors: { name?: string; car_model_id?: string; purchase_price?: string } = {};
 
     if (formData.car_model_id !== undefined) {
       if (!formData.car_model_id || formData.car_model_id === 0) {
@@ -143,7 +145,7 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
 
   // Handle modal close
   const handleClose = () => {
-    setFormData({ car_model_id: 0, purchase_price: 0, status: "available" });
+    setFormData({ name: "", car_model_id: 0, purchase_price: 0, status: "available" });
     setSelectedCarModel(null);
     setErrors({});
     setSuccessMessage(null);
@@ -168,6 +170,27 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Car Name */}
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="name">{t('car.carName')}</Label>
+            </div>
+            <TextInput
+              id="name"
+              name="name"
+              type="text"
+              placeholder={t('car.enterCarName')}
+              value={formData.name}
+              onChange={handleChange}
+              color={errors.name ? "failure" : "gray"}
+            />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.name}
+              </p>
+            )}
+          </div>
+
           {/* Car Model Selection */}
           <div>
             <div className="mb-2 block">

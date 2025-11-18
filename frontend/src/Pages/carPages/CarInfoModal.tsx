@@ -127,11 +127,18 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
           <>
             {/* Header */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <HiCube className="h-6 w-6 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
-                  {displayCar.carModel?.make?.name} {displayCar.carModel?.name}
-                </span>
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <HiCube className="h-6 w-6 text-blue-600" />
+                  <span className="text-xl font-bold text-gray-900 dark:text-white">
+                    {displayCar.name || `${displayCar.carModel?.make?.name} ${displayCar.carModel?.name}`}
+                  </span>
+                </div>
+                {displayCar.name && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 ml-9">
+                    {displayCar.carModel?.make?.name} {displayCar.carModel?.name}
+                  </p>
+                )}
               </div>
               <Badge color={displayCar.status === "sold" ? "failure" : "success"} size="lg">
                 {displayCar.status === "sold" ? t('car.sold') : t('car.available')}
@@ -146,6 +153,14 @@ export function CarInfoModal({ isOpen, onClose, car }: CarInfoModalProps) {
               {t('car.carInformation')}
             </h4>
             <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              {displayCar.name && (
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.carName')}</p>
+                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {displayCar.name}
+                  </p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('car.carId')}</p>
                 <p className="text-base font-semibold text-gray-900 dark:text-white">

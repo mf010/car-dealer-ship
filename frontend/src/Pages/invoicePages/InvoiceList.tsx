@@ -24,7 +24,7 @@ export function InvoiceList() {
   const [filters, setFilters] = useState<InvoiceFilters>({});
   const [clients, setClients] = useState<Client[]>([]);
   const [clientSearch, setClientSearch] = useState("");
-  const [carIdSearch, setCarIdSearch] = useState("");
+  const [carNameSearch, setCarNameSearch] = useState("");
   
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -131,7 +131,7 @@ export function InvoiceList() {
   const clearFilters = () => {
     setFilters({});
     setClientSearch("");
-    setCarIdSearch("");
+    setCarNameSearch("");
     setCurrentPage(1);
   };
 
@@ -250,18 +250,18 @@ export function InvoiceList() {
               )}
             </div>
 
-            {/* Car Filter - TextBox for Car ID */}
+            {/* Car Name Search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('car.carId')}
+                {t('car.carName')}
               </label>
               <TextInput
-                type="number"
+                type="text"
                 placeholder={t('car.enterCarId')}
-                value={carIdSearch}
+                value={carNameSearch}
                 onChange={(e) => {
-                  setCarIdSearch(e.target.value);
-                  handleFilterChange('car_id', e.target.value ? parseInt(e.target.value) : undefined);
+                  setCarNameSearch(e.target.value);
+                  handleFilterChange('car_id', e.target.value ? parseInt(e.target.value) || undefined : undefined);
                 }}
                 sizing="sm"
               />

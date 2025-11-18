@@ -17,4 +17,12 @@ class DealerShipExpense extends Model
         'amount',
         'expense_date',
     ];
+
+    /**
+     * Get the date field name for date range filtering
+     */
+    protected function getDateFieldName()
+    {
+        return 'expense_date';
+    }
 }

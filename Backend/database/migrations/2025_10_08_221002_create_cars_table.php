@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('cars', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->nullable();
             $table->foreignId('car_model_id')->constrained('car_models');
             $table->enum ('status', ['available', 'sold'])->default('available');
             $table->decimal('purchase_price', 10, 2);

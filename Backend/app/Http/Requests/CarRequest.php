@@ -14,6 +14,7 @@ class CarRequest extends FormRequest
     public function rules()
     {
         return [
+            'name' => 'nullable|string|max:255',
             'car_model_id' => 'required|exists:car_models,id',
             'status' => 'sometimes|required|in:available,sold',
             'purchase_price' => 'required|numeric|decimal:0,2',
@@ -24,6 +25,8 @@ class CarRequest extends FormRequest
     public function messages()
     {
         return [
+            'name.string' => 'The car name must be a string.',
+            'name.max' => 'The car name must not exceed 255 characters.',
             'car_model_id.required' => 'The car model is required.',
             'car_model_id.exists' => 'The selected car model does not exist.',
             'status.required' => 'The status field is required.',
