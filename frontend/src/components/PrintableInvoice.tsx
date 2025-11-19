@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import type { Invoice } from "../models/Invoice";
 import type { Payment } from "../models/Payment";
 import { formatCurrency, formatDate } from "../utils/formatters";
+import Logo from "../assets/Logo.png";
 
 interface PrintableInvoiceProps {
   invoice: Invoice;
@@ -13,11 +14,10 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
     const formatCurrencyAr = (amount: number) => formatCurrency(amount, 'ar');
     const formatDateAr = (dateString: string) => formatDate(dateString, 'ar');
 
-    // Calculate total paid from payments array
-    const totalPaid = payments && payments.length > 0 
-      ? payments.reduce((sum, payment) => sum + (payment.amount || 0), 0)
-      : 0;
-    const remainingBalance = invoice.amount - totalPaid;
+    // Calculate total paid from invoice.payed (which already includes all payments)
+    const totalPaid = parseFloat(String(invoice.payed || 0)) || 0;
+    const totalAmount = parseFloat(String(invoice.amount)) || 0;
+    const remainingBalance = totalAmount - totalPaid;
 
     // Extract car make and model - handle both camelCase and snake_case
     const carData: any = invoice.car;
@@ -102,6 +102,13 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
                 margin: -12px -12px 12px -12px;
                 border-bottom: 2px solid #000;
                 text-align: center;
+              }
+
+              .company-logo {
+                width: 80px;
+                height: auto;
+                margin: 0 auto 8px auto;
+                display: block;
               }
 
               .company-name {
@@ -457,7 +464,9 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
           <div className="content-wrapper">
             {/* Header */}
             <div className="print-header">
+              <img src={Logo} alt="شركة بيان" className="company-logo" />
               <div className="company-name">شركة بيان</div>
+              
               <div className="invoice-header-box">
                 <div className="invoice-title">فاتورة بيع</div>
                 <div className="invoice-number">رقم الفاتورة: #{invoice.id}</div>
@@ -478,11 +487,13 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
                 </div>
                 <div className="info-row">
                   <span className="info-label">رقم الهاتف:</span>
-                  <span className="info-value">{invoice.client?.phone || 'غير متوفر'}</span>
-                </div>
-                <div className="info-row">
-                  <span className="info-label">العنوان:</span>
-                  <span className="info-value">{invoice.client?.address || 'غير متوفر'}</span>
+                  <span className="info-value">
+                    {(() => {
+                      const client = invoice.client as any;
+                      const phone = client?.phone || client?.phone_number || client?.phoneNumber;
+                      return phone || 'غير متوفر';
+                    })()}
+                  </span>
                 </div>
               </div>
 
@@ -496,18 +507,6 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
                 <div className="info-row">
                   <span className="info-label">الموديل:</span>
                   <span className="info-value">{modelName}</span>
-                </div>
-                <div className="info-row">
-                  <span className="info-label">رقم السيارة:</span>
-                  <span className="info-value">#{invoice.car?.id || 'غير متوفر'}</span>
-                </div>
-                <div className="info-row">
-                  <span className="info-label">الحالة:</span>
-                  <span className="info-value">
-                    {invoice.car?.status === 'available' ? 'متاحة' : 
-                     invoice.car?.status === 'sold' ? 'مباعة' : 
-                     invoice.car?.status === 'reserved' ? 'محجوزة' : 'غير متوفر'}
-                  </span>
                 </div>
               </div>
             </div>
@@ -572,15 +571,7 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
             {/* Bottom Section */}
             <div className="bottom-section">
               {/* Notes Section */}
-              <div className="notes-section">
-                <div className="notes-title">ملاحظات:</div>
-                <div className="notes-content">
-                  • يرجى الاحتفاظ بهذه الفاتورة كإثبات للدفع<br/>
-                  • في حالة وجود أي استفسار، يرجى التواصل معنا<br/>
-                  • الفاتورة غير صالحة بدون توقيع أو ختم<br/>
-                  • شكراً لثقتكم بشركة بيان
-                </div>
-              </div>
+              
 
               {/* Stamp Section */}
               <div className="stamp-section">
