@@ -31,6 +31,8 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
       <div ref={ref} className="hidden print:block" dir="rtl">
         <style>
           {`
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
             @media print {
               @page {
                 size: A4;
@@ -46,7 +48,7 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
               }
 
               body {
-                font-family: 'Arial', 'Helvetica', sans-serif;
+                font-family: 'Cairo', 'Arial', 'Helvetica', sans-serif;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 color: #000;
@@ -75,15 +77,15 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
 
               .watermark {
                 position: absolute;
-                top: 50%;
+                top: 55%;
                 left: 50%;
-                transform: translate(-50%, -50%) rotate(-45deg);
-                font-size: 80pt;
-                color: rgba(0, 0, 0, 0.02);
-                font-weight: bold;
+                transform: translate(-50%, -50%);
+                opacity: 0.08;
                 z-index: 0;
                 pointer-events: none;
-                letter-spacing: 15px;
+                width: 70%;
+                max-width: 500px;
+                height: auto;
               }
 
               .content-wrapper {
@@ -96,65 +98,71 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
               }
 
               .print-header {
-                background: white;
-                color: black;
-                padding: 10px 15px;
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                color: white;
+                padding: 12px 15px 18px 15px;
                 margin: -12px -12px 12px -12px;
-                border-bottom: 2px solid #000;
                 text-align: center;
+                clip-path: ellipse(100% 100% at 50% 0%);
+                position: relative;
+                padding-bottom: 25px;
               }
 
               .company-logo {
-                width: 80px;
+                width: 100px;
                 height: auto;
-                margin: 0 auto 8px auto;
+                margin: 0 auto 6px auto;
                 display: block;
+                filter: brightness(0) invert(1);
               }
 
               .company-name {
-                font-size: 22pt;
+                font-size: 18pt;
                 font-weight: bold;
-                margin-bottom: 8px;
+                margin-bottom: 6px;
                 letter-spacing: 2px;
-                color: #000;
+                color: #ffffff;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
               }
 
               .invoice-header-box {
-                background: white;
-                color: #000;
-                padding: 8px 12px;
-                border: 2px solid #000;
+                background: rgba(255, 255, 255, 0.15);
+                color: #ffffff;
+                padding: 6px 10px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
                 border-radius: 5px;
                 text-align: center;
-                margin-top: 8px;
+                margin-top: 6px;
+                backdrop-filter: blur(10px);
               }
 
               .invoice-title {
-                font-size: 14pt;
+                font-size: 11pt;
                 font-weight: bold;
-                margin-bottom: 5px;
+                margin-bottom: 4px;
                 text-transform: uppercase;
                 letter-spacing: 1px;
+                color: #ffffff;
               }
 
               .invoice-number {
-                font-size: 12pt;
+                font-size: 10pt;
                 font-weight: bold;
-                color: #000;
-                padding: 3px 10px;
+                color: #ffffff;
+                padding: 2px 8px;
                 display: inline-block;
-                margin-bottom: 3px;
+                margin-bottom: 2px;
               }
 
               .invoice-date-badge {
-                background: #f5f5f5;
+                background: rgba(255, 255, 255, 0.25);
                 padding: 3px 10px;
-                border: 1px solid #000;
+                border: 1px solid rgba(255, 255, 255, 0.4);
                 border-radius: 15px;
                 display: inline-block;
                 margin-top: 3px;
                 font-size: 8.5pt;
-                color: #000;
+                color: #ffffff;
                 font-weight: 600;
               }
 
@@ -366,25 +374,28 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
               .footer {
                 margin-top: 12px;
                 text-align: center;
-                padding: 8px 0;
-                border-top: 1.5px solid #000;
-                background: white;
+                padding: 30px 15px 20px 15px;
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                color: white;
                 margin-left: -12px;
                 margin-right: -12px;
                 margin-bottom: -12px;
-                padding-bottom: 12px;
+                clip-path: ellipse(100% 100% at 50% 100%);
+                position: relative;
+                padding-top: 40px;
               }
 
               .footer-title {
                 font-size: 10pt;
                 font-weight: bold;
-                color: #000;
+                color: #ffffff;
                 margin-bottom: 4px;
+                margin-top: 8px;
               }
 
               .footer-text {
                 font-size: 7.5pt;
-                color: #333;
+                color: rgba(255, 255, 255, 0.9);
                 line-height: 1.4;
               }
 
@@ -459,7 +470,7 @@ export const PrintableInvoice = forwardRef<HTMLDivElement, PrintableInvoiceProps
 
         <div className="print-container">
           {/* Watermark */}
-          <div className="watermark">ركن بيان</div>
+          <img src={Logo} alt="" className="watermark" />
           
           <div className="content-wrapper">
             {/* Header */}
