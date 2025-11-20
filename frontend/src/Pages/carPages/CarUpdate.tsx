@@ -60,10 +60,23 @@ export function CarUpdate({ isOpen, onClose, onSuccess, car }: CarUpdateProps) {
   const fetchCarModels = async () => {
     setLoadingCarModels(true);
     try {
-      const response = await carModelServices.getAllCarModels(1);
+      // Fetch all car models by iterating through pages
+      const allCarModels: any[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await carModelServices.getAllCarModels(currentPage);
+        allCarModels.push(...response.data);
+        
+        if (currentPage >= response.last_page) {
+          hasMore = false;
+        }
+        currentPage++;
+      }
       
       // Convert to react-select format
-      const options = response.data.map((model) => ({
+      const options = allCarModels.map((model) => ({
         value: model.id,
         label: `${model.make?.name} - ${model.name}`,
       }));

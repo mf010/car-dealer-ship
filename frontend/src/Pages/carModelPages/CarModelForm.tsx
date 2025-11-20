@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
-import { Button, Label, TextInput, Modal, Select } from "flowbite-react";
+import { Button, Label, TextInput, Modal } from "flowbite-react";
 import { HiCheck, HiX } from "react-icons/hi";
 import { useTranslation } from 'react-i18next';
+import ReactSelect from "react-select";
 import { carModelServices } from "../../services/carModelServices";
 import { makeServices } from "../../services/makeServices";
 import type { CreateCarModelDTO } from "../../models/CarModel";
 import type { Make } from "../../models/Make";
+
+interface SelectOption {
+  value: number;
+  label: string;
+}
 
 interface CarModelFormProps {
   isOpen: boolean;
@@ -19,7 +25,8 @@ export function CarModelForm({ isOpen, onClose, onSuccess }: CarModelFormProps) 
     name: "",
     make_id: 0,
   });
-  const [makes, setMakes] = useState<Make[]>([]);
+  const [makeOptions, setMakeOptions] = useState<SelectOption[]>([]);
+  const [selectedMake, setSelectedMake] = useState<SelectOption | null>(null);
   const [loadingMakes, setLoadingMakes] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; make_id?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,8 +42,27 @@ export function CarModelForm({ isOpen, onClose, onSuccess }: CarModelFormProps) 
   const fetchMakes = async () => {
     setLoadingMakes(true);
     try {
-      const response = await makeServices.getAllMakes(1);
-      setMakes(response.data);
+      // Fetch all makes by iterating through pages
+      const allMakes: Make[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await makeServices.getAllMakes(currentPage);
+        allMakes.push(...response.data);
+        
+        if (currentPage >= response.last_page) {
+          hasMore = false;
+        }
+        currentPage++;
+      }
+      
+      // Convert to react-select format
+      const options = allMakes.map((make) => ({
+        value: make.id,
+        label: make.name,
+      }));
+      setMakeOptions(options);
     } catch (error) {
       console.error("Error fetching makes:", error);
       setErrors({ make_id: t('car.failedLoadMakes') });
@@ -82,6 +108,7 @@ export function CarModelForm({ isOpen, onClose, onSuccess }: CarModelFormProps) 
       
       // Reset form
       setFormData({ name: "", make_id: 0 });
+      setSelectedMake(null);
       setErrors({});
       
       // Wait a moment to show success message, then close and refresh
@@ -115,6 +142,7 @@ export function CarModelForm({ isOpen, onClose, onSuccess }: CarModelFormProps) 
   // Handle modal close
   const handleClose = () => {
     setFormData({ name: "", make_id: 0 });
+    setSelectedMake(null);
     setErrors({});
     setSuccessMessage(null);
     onClose();
@@ -136,26 +164,45 @@ export function CarModelForm({ isOpen, onClose, onSuccess }: CarModelFormProps) 
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="make_id" className="mb-2 block">
-              {t('make.makeName')} <span className="text-red-500 ml-1">*</span>
-            </Label>
-            <Select
+            <div className="mb-2 block">
+              <Label htmlFor="make_id">{t('make.makeName')} <span className="text-red-500 ml-1">*</span></Label>
+            </div>
+            <ReactSelect
               id="make_id"
               name="make_id"
-              value={formData.make_id}
-              onChange={handleChange}
-              color={errors.make_id ? "failure" : undefined}
-              disabled={isSubmitting || loadingMakes}
-            >
-              <option value={0}>
-                {loadingMakes ? t('car.loadingMakes') : t('carModel.selectMake')}
-              </option>
-              {makes.map((make) => (
-                <option key={make.id} value={make.id}>
-                  {make.name}
-                </option>
-              ))}
-            </Select>
+              options={makeOptions}
+              value={selectedMake}
+              onChange={(option) => {
+                setSelectedMake(option);
+                setFormData(prev => ({
+                  ...prev,
+                  make_id: option?.value || 0
+                }));
+                if (errors.make_id) {
+                  setErrors(prev => ({ ...prev, make_id: undefined }));
+                }
+              }}
+              isLoading={loadingMakes}
+              isDisabled={isSubmitting || loadingMakes}
+              isClearable
+              placeholder={loadingMakes ? t('common.loading') : t('carModel.selectMake')}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: errors.make_id ? '#f05252' : state.isFocused ? '#3b82f6' : '#d1d5db',
+                  '&:hover': {
+                    borderColor: errors.make_id ? '#f05252' : '#3b82f6'
+                  },
+                  boxShadow: state.isFocused ? '0 0 0 1px #3b82f6' : 'none',
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 9999
+                })
+              }}
+            />
             {errors.make_id && (
               <p className="mt-2 text-sm text-red-600 dark:text-red-500">
                 {errors.make_id}
