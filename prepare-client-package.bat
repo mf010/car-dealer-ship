@@ -32,11 +32,8 @@ copy /Y "%PROJECT_DIR%START_HERE.bat" "%TEMP_DIR%\" > nul
 copy /Y "%PROJECT_DIR%version.json" "%TEMP_DIR%\" > nul
 copy /Y "%PROJECT_DIR%.gitignore" "%TEMP_DIR%\" > nul
 
-REM نسخ التوثيق
-copy /Y "%PROJECT_DIR%README.md" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%CLIENT_GUIDE.md" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%QUICK_START.md" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%CHANGELOG.md" "%TEMP_DIR%\" > nul
+REM نسخ دليل التثبيت
+copy /Y "%PROJECT_DIR%دليل_التثبيت.md" "%TEMP_DIR%\" > nul
 
 echo    ✅ تم نسخ الملفات الأساسية
 echo.
@@ -93,8 +90,8 @@ echo.
 echo فقط اضغط دبل كليك على: update.bat
 echo Just double click on: update.bat
 echo.
-echo للمزيد من المعلومات، اقرأ: CLIENT_GUIDE.md
-echo For more information, read: CLIENT_GUIDE.md
+echo للمزيد من المعلومات، اقرأ: دليل_التثبيت.md
+echo For more information, read: دليل_التثبيت.md
 echo.
 ) > "%TEMP_DIR%\اقرأني_أولاً.txt"
 

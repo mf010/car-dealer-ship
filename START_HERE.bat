@@ -14,14 +14,8 @@ echo.
 echo.
 echo 📚 الأدلة المتوفرة - Available Guides:
 echo.
-echo    للعميل:
-echo    ├─ CLIENT_GUIDE.md        تعليمات مفصلة للعميل
-echo    └─ QUICK_START.md         دليل البدء السريع
-echo.
-echo    للمطور:
-echo    ├─ DEVELOPER_GUIDE.md     دليل المطور الكامل
-echo    ├─ GIT_PORTABLE_SETUP.md  إعداد Git Portable
-echo    └─ README_UPDATE_SYSTEM.md نظرة عامة شاملة
+echo    دليل_التثبيت.md          دليل التثبيت الكامل
+echo    Installation Guide        Complete setup guide
 echo.
 echo.
 echo 📁 الملفات المهمة - Important Files:
@@ -47,8 +41,8 @@ echo       http://localhost:8000/api/system/update
 echo.
 echo.
 echo 📞 للدعم الفني - Technical Support:
-echo    اقرأ ملف: CLIENT_GUIDE.md
-echo    Read file: CLIENT_GUIDE.md
+echo    اقرأ ملف: دليل_التثبيت.md
+echo    Read file: دليل_التثبيت.md
 echo.
 echo.
 echo ════════════════════════════════════════════════════════════
