@@ -1,0 +1,12 @@
+# Git Portable - لا يتم رفعه
+/git/
+
+# ملفات التحديث - خاصة بكل جهاز
+/logs/
+/backups/
+/version.json
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+*.log

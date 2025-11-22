@@ -12,6 +12,7 @@ use App\Http\Controllers\DealerShipExpenseController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MakeController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\UpdateSystemController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::delete('users/{id}', [AuthController::class, 'deleteUser']);
@@ -34,6 +35,15 @@ Route::apiResource('dealership-expenses', DealerShipExpenseController::class);
 Route::apiResource('invoices', InvoiceController::class);
 Route::apiResource('makes', MakeController::class);
 Route::apiResource('payments', PaymentController::class);
+
+// نظام التحديث - Update System
+Route::prefix('system')->group(function () {
+    Route::get('update', [UpdateSystemController::class, 'index']);
+    Route::post('update/run', [UpdateSystemController::class, 'runUpdate']);
+    Route::post('update/backup', [UpdateSystemController::class, 'createManualBackup']);
+    Route::get('update/version', [UpdateSystemController::class, 'getVersionInfo']);
+    Route::get('update/logs', [UpdateSystemController::class, 'getLogs']);
+});
 
 
 Route::group(['middleware' => 'auth:api'], function () {
