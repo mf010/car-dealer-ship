@@ -1,204 +1,198 @@
 @echo off
-chcp 65001 > nul
+chcp 65001 > nul 2>&1
 setlocal enabledelayedexpansion
 
 REM ===========================================================
-REM  التثبيت الأولي للمشروع - Initial Project Setup
+REM  Initial Project Setup
 REM  Car Dealership System - First Time Installation
 REM ===========================================================
 
 echo.
-echo ╔════════════════════════════════════════════════════════╗
-echo ║        التثبيت الأولي - Initial Installation         ║
-echo ║          Car Dealership System Setup                  ║
-echo ╚════════════════════════════════════════════════════════╝
+echo ========================================================
+echo        Initial Installation
+echo          Car Dealership System Setup
+echo ========================================================
 echo.
 
 set "PROJECT_DIR=%~dp0"
 cd /d "%PROJECT_DIR%"
 
 REM ===========================================================
-REM التحقق من المتطلبات - Check Requirements
+REM Check Requirements
 REM ===========================================================
-echo [1/7] 🔍 فحص المتطلبات - Checking Requirements...
+echo [1/7] Checking Requirements...
 echo.
 
-REM التحقق من PHP
+REM Check PHP
 php --version >nul 2>&1
 if errorlevel 1 (
-    echo    ❌ PHP غير مثبت - PHP is not installed
-    echo    يرجى تثبيت XAMPP أو PHP أولاً
+    echo    [X] PHP is not installed
     echo    Please install XAMPP or PHP first
+    echo.
+    pause
     goto :error
 ) else (
-    echo    ✅ PHP موجود - PHP found
+    echo    [OK] PHP found
 )
 
-REM التحقق من Composer
+REM Check Composer
 composer --version >nul 2>&1
 if errorlevel 1 (
-    echo    ❌ Composer غير مثبت - Composer is not installed
-    echo    يرجى تثبيت Composer من: https://getcomposer.org/
+    echo    [X] Composer is not installed
     echo    Please install Composer from: https://getcomposer.org/
+    echo.
+    pause
     goto :error
 ) else (
-    echo    ✅ Composer موجود - Composer found
+    echo    [OK] Composer found
 )
 
-REM التحقق من Git Portable
+REM Check Git Portable
 if exist "git\bin\git.exe" (
-    echo    ✅ Git Portable موجود - Git Portable found
+    echo    [OK] Git Portable found
 ) else (
-    echo    ⚠️  Git Portable غير موجود - Git Portable not found
-    echo    للتحديث المستقبلي، راجع: GIT_PORTABLE_SETUP.md
-    echo    For future updates, see: GIT_PORTABLE_SETUP.md
+    echo    [!] Git Portable not found
+    echo    For future updates, you may need Git
 )
 
 echo.
-echo    ✅ جميع المتطلبات الأساسية متوفرة
-echo    ✅ All basic requirements are met
+echo    [OK] All basic requirements are met
 echo.
 
 REM ===========================================================
-REM تثبيت مكتبات Backend - Install Backend Dependencies
+REM Install Backend Dependencies
 REM ===========================================================
-echo [2/7] 📦 تثبيت مكتبات PHP - Installing PHP Dependencies...
+echo [2/7] Installing PHP Dependencies...
 echo.
 
 cd Backend
 
 if not exist "vendor\" (
-    echo    جارِ تحميل المكتبات... يرجى الانتظار (قد يستغرق بضع دقائق)
     echo    Installing packages... Please wait (may take a few minutes)
     echo.
     composer install --no-dev --optimize-autoloader
     
     if errorlevel 1 (
-        echo    ❌ فشل تثبيت المكتبات
+        echo    [X] Failed to install packages
+        echo.
+        pause
         cd ..
         goto :error
     ) else (
-        echo    ✅ تم تثبيت المكتبات بنجاح
+        echo    [OK] Packages installed successfully
     )
 ) else (
-    echo    ℹ️  المكتبات مثبتة مسبقاً - Packages already installed
+    echo    [i] Packages already installed
 )
 
 cd ..
 echo.
 
 REM ===========================================================
-REM إعداد ملف البيئة - Setup Environment File
+REM Setup Environment File
 REM ===========================================================
-echo [3/7] ⚙️  إعداد ملف البيئة - Setting up Environment...
+echo [3/7] Setting up Environment...
 echo.
 
 cd Backend
 
 if not exist ".env" (
     if exist ".env.example" (
-        echo    نسخ ملف .env.example إلى .env
+        echo    Copying .env.example to .env
         copy ".env.example" ".env" >nul
-        echo    ✅ تم إنشاء ملف .env
+        echo    [OK] .env file created
         echo.
-        echo    ⚠️  مهم: يرجى تعديل ملف Backend\.env
-        echo    ⚠️  Important: Please edit Backend\.env file
+        echo    [!] Important: Please edit Backend\.env file
         echo.
-        echo    تحتاج لتعديل:
         echo    You need to set:
         echo    - DB_DATABASE=your_database_name
         echo    - DB_USERNAME=your_username
         echo    - DB_PASSWORD=your_password
         echo.
     ) else (
-        echo    ❌ ملف .env.example غير موجود
+        echo    [X] .env.example not found
+        echo.
+        pause
         cd ..
         goto :error
     )
 ) else (
-    echo    ℹ️  ملف .env موجود مسبقاً - .env file already exists
+    echo    [i] .env file already exists
 )
 
 cd ..
 echo.
 
 REM ===========================================================
-REM توليد مفتاح التطبيق - Generate Application Key
+REM Generate Application Key
 REM ===========================================================
-echo [4/7] 🔑 توليد مفتاح التطبيق - Generating App Key...
+echo [4/7] Generating App Key...
 echo.
 
 cd Backend
 php artisan key:generate
 
 if errorlevel 1 (
-    echo    ⚠️  تحذير: فشل توليد المفتاح
-    echo    Warning: Key generation failed
+    echo    [!] Warning: Key generation failed
 ) else (
-    echo    ✅ تم توليد مفتاح التطبيق بنجاح
+    echo    [OK] App key generated successfully
 )
 
 cd ..
 echo.
 
 REM ===========================================================
-REM إنشاء المجلدات المطلوبة - Create Required Directories
+REM Create Required Directories
 REM ===========================================================
-echo [5/7] 📁 إنشاء المجلدات - Creating Directories...
+echo [5/7] Creating Directories...
 echo.
 
 if not exist "logs" mkdir logs
 if not exist "backups" mkdir backups
 
-echo    ✅ تم إنشاء المجلدات المطلوبة
-echo    ✅ Required directories created
+echo    [OK] Required directories created
 echo.
 
 REM ===========================================================
-REM إعداد قاعدة البيانات - Setup Database
+REM Setup Database
 REM ===========================================================
-echo [6/7] 🗄️  إعداد قاعدة البيانات - Setting up Database...
+echo [6/7] Setting up Database...
 echo.
-echo    هل تريد تشغيل migrations الآن؟
 echo    Do you want to run migrations now? (Y/N)
 echo.
-set /p run_migrate="    اكتب Y للمتابعة أو N للتخطي - Type Y to continue or N to skip: "
+set /p run_migrate="    Type Y to continue or N to skip: "
 
 if /i "%run_migrate%"=="Y" (
     cd Backend
     php artisan migrate --force
     
     if errorlevel 1 (
-        echo    ⚠️  تحذير: فشل تشغيل migrations
-        echo    Warning: Migration failed
-        echo    تأكد من إعداد قاعدة البيانات في .env
+        echo    [!] Warning: Migration failed
         echo    Make sure database is configured in .env
         cd ..
     ) else (
-        echo    ✅ تم تشغيل migrations بنجاح
+        echo    [OK] Migrations completed successfully
         cd ..
         
         echo.
-        echo    هل تريد تشغيل seeders (بيانات تجريبية)؟
         echo    Do you want to run seeders (sample data)? (Y/N)
-        set /p run_seed="    اكتب Y للمتابعة أو N للتخطي - Type Y or N: "
+        set /p run_seed="    Type Y or N: "
         
         if /i "!run_seed!"=="Y" (
             cd Backend
             php artisan db:seed
             
             if errorlevel 1 (
-                echo    ⚠️  تحذير: فشل تشغيل seeders
+                echo    [!] Warning: Seeders failed
                 cd ..
             ) else (
-                echo    ✅ تم تشغيل seeders بنجاح
+                echo    [OK] Seeders completed successfully
                 cd ..
             )
         )
     )
 ) else (
-    echo    ℹ️  تم تخطي migrations
-    echo    يمكنك تشغيلها لاحقاً بالأمر:
+    echo    [i] Migrations skipped
     echo    You can run it later with:
     echo    cd Backend ^&^& php artisan migrate
 )
@@ -206,67 +200,49 @@ if /i "%run_migrate%"=="Y" (
 echo.
 
 REM ===========================================================
-REM الانتهاء - Complete
+REM Complete
 REM ===========================================================
-echo [7/7] ✅ اكتمل التثبيت - Installation Complete!
+echo [7/7] Installation Complete!
 echo.
 
 :success
 echo.
-echo ╔════════════════════════════════════════════════════════╗
-echo ║            ✅ اكتمل التثبيت بنجاح!                   ║
-echo ║          Installation Completed Successfully!         ║
-echo ╚════════════════════════════════════════════════════════╝
+echo ========================================================
+echo          Installation Completed Successfully!
+echo ========================================================
 echo.
-echo 📋 الخطوات التالية - Next Steps:
+echo Next Steps:
 echo.
-echo    1️⃣  تأكد من إعداد قاعدة البيانات في Backend\.env
-echo       Make sure database is configured in Backend\.env
+echo    1. Make sure database is configured in Backend\.env
 echo.
-echo    2️⃣  شغّل الخادم:
-echo       Run the server:
+echo    2. Run the server:
 echo       cd Backend
 echo       php artisan serve
 echo.
-echo    3️⃣  افتح المتصفح على:
-echo       Open browser at:
+echo    3. Open browser at:
 echo       http://localhost:8000
-echo       (النظام بالكامل يعمل الآن - Frontend + Backend)
+echo       (Full system Frontend + Backend works now)
 echo.
-echo    4️⃣  للتحديثات المستقبلية:
-echo       For future updates:
-echo       استخدم زر "تحديث النظام" في الإعدادات
+echo    4. For future updates:
 echo       Use "System Update" button in Settings
-echo       أو استخدم update.bat
 echo       Or use update.bat
 echo.
-echo 📚 للمساعدة - For Help:
-echo    - اقرأ CLIENT_GUIDE.md للتعليمات الكاملة
-echo    - Read CLIENT_GUIDE.md for full instructions
-echo    - شغّل START_HERE.bat لعرض جميع المعلومات
-echo    - Run START_HERE.bat to view all information
-echo.
-echo ════════════════════════════════════════════════════════════
+echo ========================================================
 echo.
 
-timeout /t 15
+pause
 exit /b 0
 
 REM ===========================================================
-REM الخطأ - Error Handler
+REM Error Handler
 REM ===========================================================
 :error
 echo.
-echo ╔════════════════════════════════════════════════════════╗
-echo ║              ❌ فشل التثبيت - Setup Failed           ║
-echo ╚════════════════════════════════════════════════════════╝
+echo ========================================================
+echo              Setup Failed
+echo ========================================================
 echo.
-echo يرجى مراجعة الأخطاء أعلاه وإعادة المحاولة
 echo Please review the errors above and try again
-echo.
-echo للمساعدة - For Help:
-echo    راجع CLIENT_GUIDE.md
-echo    Review CLIENT_GUIDE.md
 echo.
 pause
 exit /b 1
