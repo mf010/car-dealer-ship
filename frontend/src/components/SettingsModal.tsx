@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, Button, Label, TextInput } from "flowbite-react";
-import { HiCog, HiLockClosed, HiLogout } from "react-icons/hi";
+import { HiCog, HiLockClosed, HiLogout, HiRefresh } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { authServices } from "../services/authServices";
+import api from "../helper/api";
 import type { ChangePasswordRequest } from "../models/User";
 
 interface SettingsModalProps {
@@ -90,6 +91,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       } else {
         setErrors({ submit: t('messages.passwordChangeFailed') });
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateSystem = async () => {
+    if (!window.confirm(t('settings.updateSystemConfirm', 'Are you sure you want to update the system? This might restart the application.'))) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/system/update/run');
+      setSuccessMessage(t('settings.updateStarted', 'Update started in background. Please wait a few minutes.'));
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 5000);
+    } catch (error) {
+      console.error("Error starting update:", error);
+      setErrors({ submit: t('settings.updateFailed', 'Failed to start update.') });
     } finally {
       setLoading(false);
     }
@@ -258,6 +279,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {loading ? t('settings.changingPassword') : t('settings.changePassword')}
               </Button>
             </form>
+          </div>
+
+          {/* System Update Section */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <HiRefresh className="h-5 w-5" />
+              {t('settings.systemUpdate', 'System Update')}
+            </h4>
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                {t('settings.updateDescription', 'Check for updates and upgrade the system to the latest version.')}
+              </p>
+              <Button
+                color="warning"
+                onClick={handleUpdateSystem}
+                disabled={loading}
+                className="w-full"
+              >
+                <HiRefresh className="mr-2 h-5 w-5" />
+                {loading ? t('settings.updating', 'Updating...') : t('settings.checkForUpdates', 'Check for Updates')}
+              </Button>
+            </div>
           </div>
 
           {/* Logout Section */}

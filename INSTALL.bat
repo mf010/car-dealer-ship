@@ -231,11 +231,14 @@ echo.
 echo    3️⃣  افتح المتصفح على:
 echo       Open browser at:
 echo       http://localhost:8000
+echo       (النظام بالكامل يعمل الآن - Frontend + Backend)
 echo.
 echo    4️⃣  للتحديثات المستقبلية:
 echo       For future updates:
-echo       استخدم update.bat
-echo       Use update.bat
+echo       استخدم زر "تحديث النظام" في الإعدادات
+echo       Use "System Update" button in Settings
+echo       أو استخدم update.bat
+echo       Or use update.bat
 echo.
 echo 📚 للمساعدة - For Help:
 echo    - اقرأ CLIENT_GUIDE.md للتعليمات الكاملة
