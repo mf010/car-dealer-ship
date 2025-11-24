@@ -1,127 +1,70 @@
 @echo off
-chcp 65001 > nul
+chcp 65001 > nul 2>&1
+
 echo.
-echo ╔═══════════════════════════════════════════════════════════╗
-echo ║         تجهيز الحزمة للزبون - Prepare Client Package     ║
-echo ╚═══════════════════════════════════════════════════════════╝
+echo ========================================================
+echo        Preparing Client Package
+echo ========================================================
 echo.
 
 set "PROJECT_DIR=%~dp0"
 cd /d "%PROJECT_DIR%"
 
-REM إنشاء مجلد مؤقت للحزمة
 set "TEMP_DIR=%TEMP%\car-dealer-ship-client"
-set "ZIP_NAME=car-dealer-ship-v1.0-client.zip"
+set "ZIP_NAME=car-dealer-ship-client.zip"
 
-echo [1/6] 📁 إنشاء مجلد مؤقت...
-if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
-mkdir "%TEMP_DIR%"
-echo    ✅ تم إنشاء المجلد المؤقت
-echo.
-
-echo [2/6] 🏗️  بناء الواجهة الأمامية (Frontend Build)...
+echo [1/4] Building frontend...
 cd frontend
 call npm install
 call npm run build
 if errorlevel 1 (
-    echo    ❌ فشل بناء الواجهة الأمامية
-    cd ..
+    echo    [X] Build failed
     pause
     exit /b 1
 )
 cd ..
-echo    ✅ تم بناء الواجهة الأمامية
+echo    [OK] Frontend built
 echo.
 
-echo [3/6] 📋 نسخ الملفات...
-echo    جارِ النسخ... يرجى الانتظار
+echo [2/4] Copying files...
+if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
+mkdir "%TEMP_DIR%"
 
-REM نسخ Backend
 xcopy /E /I /Y /Q "%PROJECT_DIR%Backend" "%TEMP_DIR%\Backend" > nul
-
-REM نسخ ملفات البناء إلى Backend/public
-echo    نسخ ملفات الواجهة إلى Backend/public...
 xcopy /E /I /Y /Q "%PROJECT_DIR%frontend\dist" "%TEMP_DIR%\Backend\public" > nul
-
-REM نسخ Git Portable
 xcopy /E /I /Y /Q "%PROJECT_DIR%git" "%TEMP_DIR%\git" > nul
 
-REM نسخ الملفات الفردية
-copy /Y "%PROJECT_DIR%update.bat" "%TEMP_DIR%\" > nul
 copy /Y "%PROJECT_DIR%INSTALL.bat" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%START_HERE.bat" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%version.json" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%.gitignore" "%TEMP_DIR%\" > nul
-copy /Y "%PROJECT_DIR%دليل_التثبيت.md" "%TEMP_DIR%\" > nul
+copy /Y "%PROJECT_DIR%update.bat" "%TEMP_DIR%\" > nul
 
-echo    ✅ تم نسخ الملفات الأساسية
+echo    [OK] Files copied
 echo.
 
-echo [4/6] 🗑️  تنظيف الملفات...
-REM حذف vendor من النسخة (سيتم تثبيته عند العميل)
-if exist "%TEMP_DIR%\Backend\vendor" (
-    rmdir /s /q "%TEMP_DIR%\Backend\vendor"
-)
+echo [3/4] Cleaning up...
+if exist "%TEMP_DIR%\Backend\vendor" rmdir /s /q "%TEMP_DIR%\Backend\vendor"
+if exist "%TEMP_DIR%\Backend\.env" del /q "%TEMP_DIR%\Backend\.env"
+if exist "%TEMP_DIR%\Backend\storage\logs\*.*" del /q "%TEMP_DIR%\Backend\storage\logs\*.*" 2>nul
 
-REM حذف ملفات غير مهمة
-if exist "%TEMP_DIR%\Backend\storage\logs\*.*" del /q "%TEMP_DIR%\Backend\storage\logs\*.*" > nul 2>&1
-if exist "%TEMP_DIR%\Backend\.env" del /q "%TEMP_DIR%\Backend\.env" > nul 2>&1
-
-echo    ✅ تم تنظيف الملفات
+echo    [OK] Cleaned
 echo.
 
-echo [5/6] 📝 إنشاء ملف تعليمات للزبون...
-(
-echo ═══════════════════════════════════════════════════════════
-echo      تعليمات التثبيت - Installation Instructions
-echo ═══════════════════════════════════════════════════════════
-echo.
-echo 1. فك ضغط هذا الملف
-echo.
-echo 2. شغّل ملف: INSTALL.bat
-echo    - سيقوم بتثبيت النظام بالكامل
-echo.
-echo 3. عدّل ملف: Backend\.env (قاعدة البيانات)
-echo.
-echo 4. شغّل الخادم:
-echo    cd Backend
-echo    php artisan serve
-echo.
-echo 5. افتح المتصفح:
-echo    http://localhost:8000
-echo.
-echo ═══════════════════════════════════════════════════════════
-echo      للتحديثات - Updates
-echo ═══════════════════════════════════════════════════════════
-echo.
-echo يمكنك التحديث من داخل النظام (الإعدادات - تحديث النظام)
-echo أو تشغيل ملف update.bat
-echo.
-) > "%TEMP_DIR%\اقرأني_أولاً.txt"
-
-echo    ✅ تم إنشاء ملف التعليمات
-echo.
-
-echo [6/6] 📦 ضغط الحزمة...
+echo [4/4] Creating package...
 powershell -Command "Compress-Archive -Path '%TEMP_DIR%\*' -DestinationPath '%PROJECT_DIR%\%ZIP_NAME%' -Force" 2>nul
 
 if exist "%PROJECT_DIR%\%ZIP_NAME%" (
     echo.
-    echo ╔═══════════════════════════════════════════════════════════╗
-    echo ║              ✅ اكتمل التجهيز بنجاح!                     ║
-    echo ╚═══════════════════════════════════════════════════════════╝
+    echo ========================================================
+    echo          Package Ready!
+    echo ========================================================
     echo.
-    echo 📦 ملف الحزمة: %ZIP_NAME%
-    echo 📁 الموقع: %PROJECT_DIR%
+    echo File: %ZIP_NAME%
+    echo Location: %PROJECT_DIR%
     echo.
-    echo 📤 هذا الملف جاهز للإرسال للزبون
+    echo Ready to send to client!
     echo.
 ) else (
-    echo    ❌ فشل إنشاء الملف المضغوط
+    echo    [X] Failed to create package
 )
 
-REM تنظيف
 rmdir /s /q "%TEMP_DIR%" 2>nul
-
-echo.
 pause
