@@ -5,6 +5,6 @@ import flowbiteReact from "flowbite-react/plugin/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/rakan-bayan/',
+  base: '/',
   plugins: [react(), tailwindcss(), flowbiteReact()],
 })

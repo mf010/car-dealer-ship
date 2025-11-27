@@ -1,6 +1,6 @@
 @echo off
-chcp 65001 > nul 2>&1
-setlocal enabledelayedexpansion
+title Car Dealership System - Installation
+cls
 
 echo.
 echo ========================================================
@@ -8,82 +8,101 @@ echo        Car Dealership System - Installation
 echo ========================================================
 echo.
 
-set "PROJECT_DIR=%~dp0"
-cd /d "%PROJECT_DIR%"
+REM Change to script directory
+cd /d "%~dp0"
 
-echo [1/5] Checking Requirements...
+echo [1/4] Checking Requirements...
 echo.
 
-php --version >nul 2>&1
-if errorlevel 1 (
+REM Check PHP
+php -v >nul 2>&1
+if %errorlevel% neq 0 (
     echo    [X] PHP not found. Please install XAMPP
     echo.
-    pause
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
 echo    [OK] PHP found
+echo.
 
-composer --version >nul 2>&1
-if errorlevel 1 (
-    echo    [X] Composer not found. Install from: https://getcomposer.org/
+echo [2/4] Checking installation files...
+echo.
+if not exist "Backend" (
+    echo    [X] Backend folder not found!
     echo.
-    pause
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
-echo    [OK] Composer found
-echo.
 
-echo [2/5] Installing PHP packages...
-echo.
-cd Backend
-composer install --no-dev --optimize-autoloader
-if errorlevel 1 (
-    echo    [X] Installation failed
-    pause
+if not exist "Backend\vendor" (
+    echo    [X] Dependencies missing! Package may be corrupted.
+    echo.
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
-echo    [OK] Packages installed
-cd ..
+echo    [OK] All files present
 echo.
 
-echo [3/5] Setting up environment...
+echo [3/4] Setting up environment...
 echo.
 cd Backend
 if not exist ".env" (
-    copy ".env.example" ".env" >nul
-    echo    [OK] .env file created
-    echo.
-    echo    [!] Edit Backend\.env and set:
-    echo        DB_DATABASE=your_database_name
-    echo        DB_USERNAME=root
-    echo        DB_PASSWORD=
-    echo.
+    if exist ".env.example" (
+        copy ".env.example" ".env" >nul
+        echo    [OK] .env file created
+        
+        echo    [i] Generating application keys...
+        call php artisan key:generate --force
+        call php artisan jwt:secret --force
+
+        echo.
+        echo    [!] Important: Edit Backend\.env and set:
+        echo        DB_DATABASE=your_database_name
+        echo        DB_USERNAME=root
+        echo        DB_PASSWORD=
+        echo.
+    ) else (
+        echo    [X] .env.example not found!
+        echo.
+        echo Press any key to exit...
+        pause >nul
+        cd ..
+        exit /b 1
+    )
+) else (
+    echo    [i] .env file already exists
+    echo    [i] Checking application keys...
+    call php artisan key:generate
+    call php artisan jwt:secret
 )
-php artisan key:generate
 cd ..
 echo.
 
-echo [4/5] Creating directories...
-echo.
+REM Create directories
 if not exist "logs" mkdir logs
 if not exist "backups" mkdir backups
-echo    [OK] Directories created
-echo.
 
-echo [5/5] Setting up database...
+echo [4/4] Setting up database...
 echo.
 set /p run_migrate="    Run database setup now? (Y/N): "
 if /i "%run_migrate%"=="Y" (
     cd Backend
     php artisan migrate --force
-    if not errorlevel 1 (
+    if %errorlevel% equ 0 (
         echo    [OK] Database setup complete
         set /p run_seed="    Add sample data? (Y/N): "
-        if /i "!run_seed!"=="Y" (
+        if /i "%run_seed%"=="Y" (
             php artisan db:seed
         )
+    ) else (
+        echo    [!] Migration failed - check your database settings
     )
     cd ..
+) else (
+    echo    [i] Database setup skipped
 )
 echo.
 
@@ -92,11 +111,13 @@ echo          Installation Complete!
 echo ========================================================
 echo.
 echo Next steps:
-echo   1. Edit Backend\.env (database settings)
-echo   2. Run: cd Backend ^&^& php artisan serve
-echo   3. Open: http://localhost:8000
+echo   1. Start MySQL from XAMPP Control Panel
+echo   2. Edit Backend\.env (database settings if needed)
+echo   3. Run: START.bat
+echo   4. System will open at: http://localhost:8000
 echo.
-echo For updates: Use Settings ^> System Update button
+echo For updates: Use Settings - System Update button
 echo ========================================================
 echo.
-pause
+echo Press any key to exit...
+pause >nul

@@ -38,8 +38,8 @@ api.interceptors.response.use(
       localStorage.removeItem('auth_user');
       
       // Redirect to login page if not already there
-      if (window.location.pathname !== '/rakan-bayan/login') {
-        window.location.href = '/rakan-bayan/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);

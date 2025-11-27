@@ -1,10 +1,9 @@
 @echo off
-chcp 65001 > nul 2>&1
 setlocal enabledelayedexpansion
 
 echo.
 echo ========================================================
-echo        System Update - جاري التحديث
+echo        System Update
 echo ========================================================
 echo.
 

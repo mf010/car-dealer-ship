@@ -21,7 +21,7 @@ export function Login() {
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (authServices.isAuthenticated()) {
-      navigate("/rakan-bayan/dashboard", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
 
@@ -64,7 +64,7 @@ export function Login() {
       await authServices.login(formData);
       
       // Redirect to dashboard after successful login
-      navigate("/rakan-bayan/dashboard");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Error logging in:", error);
       

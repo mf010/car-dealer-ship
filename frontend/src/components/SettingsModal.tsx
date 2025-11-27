@@ -125,13 +125,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     try {
       await authServices.logout();
       onClose();
-      navigate("/rakan-bayan/login");
+      navigate("/login");
     } catch (error) {
       console.error("Error logging out:", error);
       // Still logout locally even if API call fails
       authServices.clearAuth();
       onClose();
-      navigate("/rakan-bayan/login");
+      navigate("/login");
     } finally {
       setLoading(false);
     }

@@ -45,7 +45,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
         {/* Main Navigation */}
         <SidebarItemGroup className="flex-1">
           <SidebarItem 
-            href="dashboard" 
+            href="/dashboard" 
             icon={HiChartPie}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -54,7 +54,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="cars" 
+            href="/cars" 
             icon={HiViewBoards}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -63,7 +63,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="invoices" 
+            href="/invoices" 
             icon={HiDocumentText}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -72,7 +72,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="payments" 
+            href="/payments" 
             icon={HiCash}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -81,7 +81,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="account-withdrawals" 
+            href="/account-withdrawals" 
             icon={HiCurrencyDollar}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -90,7 +90,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="car-expenses" 
+            href="/car-expenses" 
             icon={HiShoppingBag}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -99,7 +99,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="make" 
+            href="/make" 
             icon={HiTag}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -108,7 +108,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="car-models" 
+            href="/car-models" 
             icon={HiCollection}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -117,7 +117,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="accounts" 
+            href="/accounts" 
             icon={HiInbox}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -126,7 +126,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="clients" 
+            href="/clients" 
             icon={HiUser}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -135,7 +135,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="users" 
+            href="/users" 
             icon={HiUsers}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
@@ -144,7 +144,7 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="expenses" 
+            href="/expenses" 
             icon={HiShoppingBag}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
