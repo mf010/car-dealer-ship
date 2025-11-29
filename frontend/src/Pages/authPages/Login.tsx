@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button, Label, TextInput, Checkbox } from "flowbite-react";
+import { Label, Checkbox } from "flowbite-react";
 import { HiMail, HiLockClosed, HiEye, HiEyeOff } from "react-icons/hi";
+import { FaCar } from "react-icons/fa";
 import { authServices } from "../../services/authServices";
 import type { LoginRequest } from "../../models/User";
 
 export function Login() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -79,70 +81,65 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full filter blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-96 h-96 bg-cyan-500/20 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/2 w-96 h-96 bg-indigo-500/20 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
+        {/* Grid overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Login Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 border border-gray-100 dark:border-gray-700">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 relative overflow-hidden">
+          {/* Decorative corner */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/20 to-transparent rounded-bl-full"></div>
+          
           {/* Logo/Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
-              <svg
-                className="w-10 h-10 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
+          <div className="text-center mb-8 relative z-10">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-2xl mb-6 shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-transform duration-300">
+              <FaCar className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
               {t('auth.welcomeBack')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-blue-200/80 text-sm">
               {t('auth.signInMessage')}
             </p>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div>
               <Label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
+                className="mb-2 block text-sm font-medium text-blue-100"
               >
                 {t('auth.email')}
               </Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                  <HiMail className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <div className="relative group">
+                <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none z-10`}>
+                  <HiMail className="w-5 h-5 text-blue-300 group-focus-within:text-blue-400 transition-colors" />
                 </div>
-                <TextInput
+                <input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  color={errors.email ? "failure" : undefined}
                   placeholder="name@company.com"
-                  className="pl-10"
-                  style={{ paddingLeft: "2.5rem" }}
+                  className={`w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3.5 bg-white/5 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-blue-400'} rounded-xl text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 ${errors.email ? 'focus:ring-red-500/30' : 'focus:ring-blue-500/30'} transition-all duration-300 backdrop-blur-sm`}
+                  dir="ltr"
                 />
               </div>
               {errors.email && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-500">
+                <p className={`mt-2 text-sm text-red-400 flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
                   {errors.email}
                 </p>
               )}
@@ -152,29 +149,28 @@ export function Login() {
             <div>
               <Label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
+                className="mb-2 block text-sm font-medium text-blue-100"
               >
                 {t('auth.password')}
               </Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                  <HiLockClosed className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <div className="relative group">
+                <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none z-10`}>
+                  <HiLockClosed className="w-5 h-5 text-blue-300 group-focus-within:text-blue-400 transition-colors" />
                 </div>
-                <TextInput
+                <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  color={errors.password ? "failure" : undefined}
                   placeholder="••••••••"
-                  className="pl-10 pr-10"
-                  style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }}
+                  className={`w-full ${isRTL ? 'pr-12 pl-12' : 'pl-12 pr-12'} py-3.5 bg-white/5 border ${errors.password ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-blue-400'} rounded-xl text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 ${errors.password ? 'focus:ring-red-500/30' : 'focus:ring-blue-500/30'} transition-all duration-300 backdrop-blur-sm`}
+                  dir="ltr"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-4' : 'right-0 pr-4'} flex items-center text-blue-300 hover:text-blue-200 transition-colors z-10`}
                 >
                   {showPassword ? (
                     <HiEyeOff className="w-5 h-5" />
@@ -184,31 +180,34 @@ export function Login() {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-500">
+                <p className={`mt-2 text-sm text-red-400 flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
                   {errors.password}
                 </p>
               )}
             </div>
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Checkbox
                   id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-500 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-offset-0"
                 />
                 <Label
                   htmlFor="remember"
-                  className="ml-2 text-sm text-gray-600 dark:text-gray-400"
+                  className="text-sm text-blue-200/80 cursor-pointer hover:text-blue-100 transition-colors"
                 >
                   {t('auth.rememberMe')}
                 </Label>
               </div>
               <a
                 href="#"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400"
+                className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
               >
                 {t('auth.forgotPassword')}
               </a>
@@ -216,9 +215,9 @@ export function Login() {
 
             {/* Submit Error */}
             {errors.submit && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
+                <p className={`text-sm text-red-400 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -231,16 +230,15 @@ export function Login() {
             )}
 
             {/* Submit Button */}
-            <Button
+            <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
-              size="lg"
+              className="w-full py-3.5 px-6 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 hover:from-blue-600 hover:via-cyan-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? (
-                <>
+                <span className={`flex items-center justify-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -260,20 +258,20 @@ export function Login() {
                     ></path>
                   </svg>
                   {t('auth.signingIn')}
-                </>
+                </span>
               ) : (
                 t('auth.signIn')
               )}
-            </Button>
+            </button>
           </form>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-blue-200/70">
               {t('auth.noAccount')}{" "}
               <a
                 href="#"
-                className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400"
+                className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
               >
                 {t('auth.contactAdmin')}
               </a>
@@ -283,8 +281,8 @@ export function Login() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            © 2025 Your Company. All rights reserved.
+          <p className="text-sm text-blue-200/50">
+            © 2025 Car Dealership. {t('common.allRightsReserved') || 'All rights reserved.'}
           </p>
         </div>
       </div>
