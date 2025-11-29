@@ -31,9 +31,16 @@ echo.
 
 echo [2/4] Downloading updates...
 echo.
-if exist "git\bin\git.exe" (
-    set "GIT_EXE=%PROJECT_DIR%git\bin\git.exe"
-    "%GIT_EXE%" pull origin main >> "%LOG_FILE%" 2>&1
+set "GIT_PATH=git\bin\git.exe"
+if exist "%GIT_PATH%" (
+    set "GIT_EXE=%PROJECT_DIR%%GIT_PATH%"
+    
+    REM Fix for "dubious ownership" error
+    "%PROJECT_DIR%git\bin\git.exe" config --global --add safe.directory "*" >nul 2>&1
+    
+    "%PROJECT_DIR%git\bin\git.exe" fetch origin main >> "%LOG_FILE%" 2>&1
+    "%PROJECT_DIR%git\bin\git.exe" reset --hard origin/main >> "%LOG_FILE%" 2>&1
+    
     if not errorlevel 1 (
         echo    [OK] Updates downloaded
     ) else (
