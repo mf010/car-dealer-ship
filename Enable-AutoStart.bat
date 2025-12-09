@@ -8,7 +8,7 @@ echo.
 
 set "LINK_NAME=Car Dealership System.lnk"
 set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
-set "TARGET_PATH=%~dp0Run-System.bat"
+set "TARGET_PATH=%~dp0Start-Server-Only.bat"
 set "WORK_DIR=%~dp0"
 
 echo Creating shortcut in: %STARTUP_DIR%

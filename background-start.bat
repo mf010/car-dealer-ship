@@ -62,10 +62,16 @@ goto :CHECK_MYSQL
 :MYSQL_OK
 echo [%date% %time%] MySQL is running >> "%LOG_FILE%"
 
+if "%1"=="no-browser" (
+    echo [%date% %time%] Skipping browser start (Server-only mode) >> "%LOG_FILE%"
+    goto :START_SERVER
+)
+
 REM Start Browser
 echo [%date% %time%] Opening browser... >> "%LOG_FILE%"
 start http://localhost:8000
 
+:START_SERVER
 REM Start Server
 echo [%date% %time%] Starting Laravel... >> "%LOG_FILE%"
 cd Backend
