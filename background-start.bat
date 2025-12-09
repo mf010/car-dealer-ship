@@ -32,12 +32,13 @@ exit /b 1
 :FOUND_PHP
 echo [%date% %time%] Using PHP at: %PHP_CMD% >> "%LOG_FILE%"
 
-REM Check MySQL
-echo [%date% %time%] Checking MySQL... >> "%LOG_FILE%"
-netstat -an | findstr "3306" >nul
+REM Check MySQL using PHP (More reliable than netstat)
+echo [%date% %time%] Checking MySQL connection... >> "%LOG_FILE%"
+"%PHP_CMD%" -r "$fp = @fsockopen('127.0.0.1', 3306, $errno, $errstr, 1); exit($fp ? 0 : 1);"
+
 if %errorlevel% neq 0 (
-    echo [%date% %time%] MySQL not running (Port 3306 not detected) >> "%LOG_FILE%"
-    mshta javascript:alert("Error: MySQL is not running. Please start XAMPP.");close();
+    echo [%date% %time%] MySQL unreachable on 127.0.0.1:3306 >> "%LOG_FILE%"
+    powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Error: MySQL is not running. Please start XAMPP Database.', 'System Error', 'OK', 'Error')"
     exit /b 1
 )
 echo [%date% %time%] MySQL is running >> "%LOG_FILE%"
