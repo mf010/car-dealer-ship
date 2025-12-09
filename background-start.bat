@@ -2,6 +2,7 @@
 cd /d "%~dp0"
 
 if not exist "logs" mkdir logs
+echo [%date% %time%] Background script started > "logs\debug_start.log"
 
 REM Check MySQL
 netstat -an | find "3306" | find "LISTENING" >nul
