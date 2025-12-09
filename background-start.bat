@@ -32,15 +32,34 @@ exit /b 1
 :FOUND_PHP
 echo [%date% %time%] Using PHP at: %PHP_CMD% >> "%LOG_FILE%"
 
-REM Check MySQL using PHP (More reliable than netstat)
-echo [%date% %time%] Checking MySQL connection... >> "%LOG_FILE%"
-"%PHP_CMD%" -r "$fp = @fsockopen('127.0.0.1', 3306, $errno, $errstr, 1); exit($fp ? 0 : 1);"
+REM --- Check if Laravel is already running ---
+netstat -an | findstr "8000" >nul
+if %errorlevel% equ 0 (
+    echo [%date% %time%] Port 8000 is already in use. System likely running. >> "%LOG_FILE%"
+    echo [%date% %time%] Opening browser and exiting... >> "%LOG_FILE%"
+    start http://localhost:8000
+    exit /b 0
+)
 
-if %errorlevel% neq 0 (
-    echo [%date% %time%] MySQL unreachable on 127.0.0.1:3306 >> "%LOG_FILE%"
+REM --- Check MySQL with Retry Loop (Max 30 seconds) ---
+echo [%date% %time%] Checking MySQL connection... >> "%LOG_FILE%"
+set RETRY_COUNT=0
+:CHECK_MYSQL
+"%PHP_CMD%" -r "$fp = @fsockopen('127.0.0.1', 3306, $errno, $errstr, 1); exit($fp ? 0 : 1);"
+if %errorlevel% equ 0 goto :MYSQL_OK
+
+set /a RETRY_COUNT+=1
+if %RETRY_COUNT% geq 15 (
+    echo [%date% %time%] MySQL unreachable after 15 attempts >> "%LOG_FILE%"
     powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Error: MySQL is not running. Please start XAMPP Database.', 'System Error', 'OK', 'Error')"
     exit /b 1
 )
+
+echo [%date% %time%] MySQL not ready, retrying (%RETRY_COUNT%/15)... >> "%LOG_FILE%"
+timeout /t 2 >nul
+goto :CHECK_MYSQL
+
+:MYSQL_OK
 echo [%date% %time%] MySQL is running >> "%LOG_FILE%"
 
 REM Start Browser
