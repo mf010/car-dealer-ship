@@ -81,31 +81,31 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-gray-100 flex items-center justify-center p-4 relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full filter blur-3xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-96 h-96 bg-cyan-500/20 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/2 w-96 h-96 bg-indigo-500/20 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-300/30 rounded-full filter blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-96 h-96 bg-cyan-300/30 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/2 w-96 h-96 bg-indigo-300/30 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
         {/* Grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Login Card */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 relative overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/50 relative overflow-hidden">
           {/* Decorative corner */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/20 to-transparent rounded-bl-full"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-400/20 to-transparent rounded-bl-full"></div>
           
           {/* Logo/Header */}
           <div className="text-center mb-8 relative z-10">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-2xl mb-6 shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-transform duration-300">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 rounded-2xl mb-6 shadow-lg shadow-blue-500/40 transform hover:scale-105 transition-transform duration-300">
               <FaCar className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 tracking-tight">
               {t('auth.welcomeBack')}
             </h1>
-            <p className="text-blue-200/80 text-sm">
+            <p className="text-gray-500 text-sm">
               {t('auth.signInMessage')}
             </p>
           </div>
@@ -116,13 +116,13 @@ export function Login() {
             <div>
               <Label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-blue-100"
+                className="mb-2 block text-sm font-medium text-gray-700"
               >
                 {t('auth.email')}
               </Label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none z-10`}>
-                  <HiMail className="w-5 h-5 text-blue-300 group-focus-within:text-blue-400 transition-colors" />
+                  <HiMail className="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                   id="email"
@@ -131,7 +131,7 @@ export function Login() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="name@company.com"
-                  className={`w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3.5 bg-white/5 border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-blue-400'} rounded-xl text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 ${errors.email ? 'focus:ring-red-500/30' : 'focus:ring-blue-500/30'} transition-all duration-300 backdrop-blur-sm`}
+                  className={`w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3.5 bg-white/50 border ${errors.email ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'} rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 ${errors.email ? 'focus:ring-red-500/30' : 'focus:ring-blue-500/30'} transition-all duration-300 backdrop-blur-sm`}
                   dir="ltr"
                 />
               </div>
@@ -149,13 +149,13 @@ export function Login() {
             <div>
               <Label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-blue-100"
+                className="mb-2 block text-sm font-medium text-gray-700"
               >
                 {t('auth.password')}
               </Label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-4' : 'left-0 pl-4'} flex items-center pointer-events-none z-10`}>
-                  <HiLockClosed className="w-5 h-5 text-blue-300 group-focus-within:text-blue-400 transition-colors" />
+                  <HiLockClosed className="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                   id="password"
@@ -164,13 +164,13 @@ export function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className={`w-full ${isRTL ? 'pr-12 pl-12' : 'pl-12 pr-12'} py-3.5 bg-white/5 border ${errors.password ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-blue-400'} rounded-xl text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 ${errors.password ? 'focus:ring-red-500/30' : 'focus:ring-blue-500/30'} transition-all duration-300 backdrop-blur-sm`}
+                  className={`w-full ${isRTL ? 'pr-12 pl-12' : 'pl-12 pr-12'} py-3.5 bg-white/50 border ${errors.password ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'} rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 ${errors.password ? 'focus:ring-red-500/30' : 'focus:ring-blue-500/30'} transition-all duration-300 backdrop-blur-sm`}
                   dir="ltr"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-4' : 'right-0 pr-4'} flex items-center text-blue-300 hover:text-blue-200 transition-colors z-10`}
+                  className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-4' : 'right-0 pr-4'} flex items-center text-gray-400 hover:text-blue-500 transition-colors z-10`}
                 >
                   {showPassword ? (
                     <HiEyeOff className="w-5 h-5" />
@@ -196,18 +196,18 @@ export function Login() {
                   id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-blue-500 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-offset-0"
+                  className="w-4 h-4 text-blue-600 bg-white/50 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0"
                 />
                 <Label
                   htmlFor="remember"
-                  className="text-sm text-blue-200/80 cursor-pointer hover:text-blue-100 transition-colors"
+                  className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
                 >
                   {t('auth.rememberMe')}
                 </Label>
               </div>
               <a
                 href="#"
-                className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
               >
                 {t('auth.forgotPassword')}
               </a>
@@ -267,11 +267,11 @@ export function Login() {
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-blue-200/70">
+            <p className="text-sm text-gray-500">
               {t('auth.noAccount')}{" "}
               <a
                 href="#"
-                className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
               >
                 {t('auth.contactAdmin')}
               </a>
@@ -281,7 +281,7 @@ export function Login() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-blue-200/50">
+          <p className="text-sm text-gray-400">
             © 2025 Car Dealership. {t('common.allRightsReserved') || 'All rights reserved.'}
           </p>
         </div>
