@@ -34,9 +34,9 @@ echo [%date% %time%] Using PHP at: %PHP_CMD% >> "%LOG_FILE%"
 
 REM Check MySQL
 echo [%date% %time%] Checking MySQL... >> "%LOG_FILE%"
-netstat -an | find "3306" | find "LISTENING" >nul
+netstat -an | findstr "3306" >nul
 if %errorlevel% neq 0 (
-    echo [%date% %time%] MySQL not running >> "%LOG_FILE%"
+    echo [%date% %time%] MySQL not running (Port 3306 not detected) >> "%LOG_FILE%"
     mshta javascript:alert("Error: MySQL is not running. Please start XAMPP.");close();
     exit /b 1
 )
