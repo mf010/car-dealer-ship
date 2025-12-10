@@ -33,11 +33,13 @@ exit /b 1
 echo [%date% %time%] Using PHP at: %PHP_CMD% >> "%LOG_FILE%"
 
 REM --- Check if Laravel is already running ---
-netstat -an | findstr "8000" >nul
+netstat -an | findstr /C:":8000 " >nul
 if %errorlevel% equ 0 (
     echo [%date% %time%] Port 8000 is already in use. System likely running. >> "%LOG_FILE%"
     echo [%date% %time%] Opening browser and exiting... >> "%LOG_FILE%"
-    start http://localhost:8000
+    
+    REM Use PowerShell to open URL reliably
+    powershell -Command "Start-Process 'http://localhost:8000'"
     exit /b 0
 )
 
@@ -69,7 +71,7 @@ if "%1"=="no-browser" (
 
 REM Start Browser
 echo [%date% %time%] Opening browser... >> "%LOG_FILE%"
-start http://localhost:8000
+powershell -Command "Start-Process 'http://localhost:8000'"
 
 :START_SERVER
 REM Start Server
