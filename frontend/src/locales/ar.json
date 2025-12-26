@@ -648,6 +648,7 @@
     "financialInfo": "المعلومات المالية",
     "salesInfo": "معلومات البيع",
     "soldAfterDate": "تم البيع بعد التاريخ",
+    "totalInvoiceAmount": "إجمالي مبالغ الفواتير",
     "soldDate": "تاريخ البيع",
     "notSoldYet": "لم يتم البيع بعد",
     "invoiceId": "رقم الفاتورة",

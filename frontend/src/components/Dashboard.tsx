@@ -340,6 +340,17 @@ export function Dashboard() {
                       </tr>
                     ))
                   )}
+                  {soldReport.cars.length > 0 && (
+                    <tr className="bg-gray-50 dark:bg-gray-700 font-bold">
+                      <td colSpan={7} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                        {t("dashboard.totalInvoiceAmount")}:
+                      </td>
+                      <td className="px-6 py-4 text-green-600 dark:text-green-400">
+                        {formatCurrency(soldReport.cars.reduce((sum, car) => sum + Number(car.invoice_amount), 0))}
+                      </td>
+                      <td></td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

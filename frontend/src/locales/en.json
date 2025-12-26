@@ -648,6 +648,7 @@
     "financialInfo": "Financial Information",
     "salesInfo": "Sales Information",
     "soldAfterDate": "Sold After Date",
+    "totalInvoiceAmount": "Total Invoice Amount",
     "soldDate": "Sold Date",
     "notSoldYet": "Not Sold Yet",
     "invoiceId": "Invoice ID",
