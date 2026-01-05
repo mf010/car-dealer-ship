@@ -355,15 +355,27 @@ export function Dashboard() {
                     ))
                   )}
                   {soldReport.cars.length > 0 && (
-                    <tr className="bg-gray-50 dark:bg-gray-700 font-bold">
-                      <td colSpan={7} className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                        {t("dashboard.totalInvoiceAmount")}:
-                      </td>
-                      <td className="px-6 py-4 text-green-600 dark:text-green-400">
-                        {formatCurrency(soldReport.cars.reduce((sum, car) => sum + Number(car.invoice_amount), 0))}
-                      </td>
-                      <td></td>
-                    </tr>
+                    <>
+                      <tr className="bg-gray-50 dark:bg-gray-700 font-bold">
+                        <td colSpan={7} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                          {t("dashboard.totalInvoiceAmount")}:
+                        </td>
+                        <td className="px-6 py-4 text-green-600 dark:text-green-400">
+                          {formatCurrency(soldReport.cars.reduce((sum, car) => sum + Number(car.invoice_amount), 0))}
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr className="bg-green-100 dark:bg-green-900/40 font-bold border-t-2 border-green-300 dark:border-green-700">
+                        <td colSpan={7} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                          {t("dashboard.totalProfit")}:
+                        </td>
+                        <td className="px-6 py-4 text-green-700 dark:text-green-300 text-lg">
+                          {formatCurrency(soldReport.cars.reduce((sum, car) => 
+                            sum + (Number(car.invoice_amount) - Number(car.purchase_price) - Number(car.total_expenses)), 0))}
+                        </td>
+                        <td></td>
+                      </tr>
+                    </>
                   )}
                 </tbody>
               </table>
