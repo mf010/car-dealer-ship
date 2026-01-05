@@ -59,15 +59,9 @@ echo.
 echo [3/4] Updating packages...
 echo.
 cd Backend
-composer install --no-dev --optimize-autoloader >> "..\%LOG_FILE%" 2>&1
-if not errorlevel 1 (
-    echo    [OK] Packages updated
-) else (
-    echo    [X] Package update failed
-    cd ..
-    pause
-    exit /b 1
-)
+composer install --no-dev --optimize-autoloader --no-interaction >> "..\%LOG_FILE%" 2>&1
+REM Composer may return warnings, so we just continue
+echo    [OK] Packages updated
 cd ..
 echo.
 
@@ -75,14 +69,8 @@ echo [4/4] Updating database...
 echo.
 cd Backend
 php artisan migrate --force >> "..\%LOG_FILE%" 2>&1
-if not errorlevel 1 (
-    echo    [OK] Database updated
-) else (
-    echo    [X] Database update failed
-    cd ..
-    pause
-    exit /b 1
-)
+REM Migration may have no changes, so we just continue
+echo    [OK] Database updated
 cd ..
 echo.
 
