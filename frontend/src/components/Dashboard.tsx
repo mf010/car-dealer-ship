@@ -221,6 +221,20 @@ export function Dashboard() {
                       </tr>
                     ))
                   )}
+                  {notSoldReport.cars.length > 0 && (
+                    <tr className="bg-blue-50 dark:bg-blue-900/30 font-bold border-t-2 border-blue-200 dark:border-blue-700">
+                      <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                        {t("dashboard.total")}:
+                      </td>
+                      <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
+                        {formatCurrency(notSoldReport.cars.reduce((sum, car) => sum + Number(car.purchase_price), 0))}
+                      </td>
+                      <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
+                        {formatCurrency(notSoldReport.cars.reduce((sum, car) => sum + Number(car.total_expenses), 0))}
+                      </td>
+                      <td colSpan={3}></td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
