@@ -82,14 +82,42 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
   const fetchInitialData = async () => {
     setLoadingData(true);
     try {
-      const [clientsRes, carsRes, accountsRes] = await Promise.all([
-        clientServices.getAllClients(1),
-        carServices.getAllCars(1, { status: 'available' }),
-        accountServices.getAllAccounts(1)
-      ]);
-      setClients(clientsRes.data);
-      setCars(carsRes.data);
-      setAccounts(accountsRes.data);
+      // Fetch all clients (all pages)
+      const allClients: Client[] = [];
+      let clientPage = 1;
+      let hasMoreClients = true;
+      while (hasMoreClients) {
+        const clientsRes = await clientServices.getAllClients(clientPage);
+        allClients.push(...clientsRes.data);
+        hasMoreClients = clientPage < clientsRes.last_page;
+        clientPage++;
+      }
+
+      // Fetch all available cars (all pages)
+      const allCars: Car[] = [];
+      let carPage = 1;
+      let hasMoreCars = true;
+      while (hasMoreCars) {
+        const carsRes = await carServices.getAllCars(carPage, { status: 'available' });
+        allCars.push(...carsRes.data);
+        hasMoreCars = carPage < carsRes.last_page;
+        carPage++;
+      }
+
+      // Fetch all accounts (all pages)
+      const allAccounts: Account[] = [];
+      let accountPage = 1;
+      let hasMoreAccounts = true;
+      while (hasMoreAccounts) {
+        const accountsRes = await accountServices.getAllAccounts(accountPage);
+        allAccounts.push(...accountsRes.data);
+        hasMoreAccounts = accountPage < accountsRes.last_page;
+        accountPage++;
+      }
+
+      setClients(allClients);
+      setCars(allCars);
+      setAccounts(allAccounts);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
