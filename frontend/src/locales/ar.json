@@ -145,6 +145,8 @@
   "car": {
     "management": "إدارة السيارات",
     "manageDescription": "إدارة مخزون السيارات",
+    "name": "اسم السيارة",
+    "status": "الحالة",
     "addCar": "إضافة سيارة",
     "updateCar": "تحديث السيارة",
     "car": "السيارة",
@@ -662,7 +664,19 @@
     "noReportData": "لا توجد بيانات متاحة. يرجى إنشاء التقرير.",
     "loadingReport": "جاري تحميل بيانات التقرير...",
     "reportGenerated": "تم إنشاء التقرير بنجاح",
-    "failedToLoadReport": "فشل تحميل بيانات التقرير"
+    "failedToLoadReport": "فشل تحميل بيانات التقرير",
+    "carsPurchasedWithinPeriod": "السيارات المشتراة خلال الفترة",
+    "dealershipExpenses": "مصروفات المعرض",
+    "totalExpensesCount": "إجمالي عدد المصروفات",
+    "totalAmount": "إجمالي المبلغ",
+    "reportInputPanel": "لوحة إدخال التقارير",
+    "usedForReport1": "يستخدم للتقرير الأول",
+    "usedForReport2": "يستخدم لجميع التقارير الأخرى",
+    "generateAllReports": "توليد جميع التقارير",
+    "sellingPrice": "سعر البيع",
+    "invoiceDate": "تاريخ الفاتورة",
+    "profit": "الربح",
+    "clientName": "اسم العميل"
   },
   "financial": {
     "currency": "د.ل",

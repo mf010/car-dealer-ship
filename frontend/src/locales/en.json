@@ -145,6 +145,8 @@
   "car": {
     "management": "Car Management",
     "manageDescription": "Manage your vehicle inventory",
+    "name": "Car Name",
+    "status": "Status",
     "addCar": "Add Car",
     "updateCar": "Update Car",
     "car": "Car",
@@ -662,7 +664,19 @@
     "noReportData": "No data available. Please generate a report.",
     "loadingReport": "Loading report data...",
     "reportGenerated": "Report generated successfully",
-    "failedToLoadReport": "Failed to load report data"
+    "failedToLoadReport": "Failed to load report data",
+    "carsPurchasedWithinPeriod": "Cars Purchased Within Period",
+    "dealershipExpenses": "Dealership Expenses",
+    "totalExpensesCount": "Total Expenses Count",
+    "totalAmount": "Total Amount",
+    "reportInputPanel": "Report Input Panel",
+    "usedForReport1": "Used for the first report",
+    "usedForReport2": "Used for all other reports",
+    "generateAllReports": "Generate All Reports",
+    "sellingPrice": "Selling Price",
+    "invoiceDate": "Invoice Date",
+    "profit": "Profit",
+    "clientName": "Client Name"
   },
   "financial": {
     "currency": "LYD",

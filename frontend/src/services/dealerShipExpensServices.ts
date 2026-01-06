@@ -9,7 +9,7 @@ export const dealerShipExpenseServices = {
   getAllDealerShipExpenses: async (page: number = 1, filters?: DealerShipExpenseFilters): Promise<PaginatedResponse<DealerShipExpense>> => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
-    
+
     if (filters) {
       // Send filters as individual query parameters instead of JSON string
       if (filters.description) {
@@ -25,7 +25,7 @@ export const dealerShipExpenseServices = {
         params.append('amount_to', filters.amount_to.toString());
       }
     }
-    
+
     const response = await api.get<PaginatedResponse<DealerShipExpense>>(`${BASE_URL}?${params.toString()}`);
     return response.data;
   },
@@ -57,7 +57,7 @@ export const dealerShipExpenseServices = {
   getDeletedDealerShipExpenses: async (page: number = 1, filters?: DealerShipExpenseFilters): Promise<PaginatedResponse<DealerShipExpense>> => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
-    
+
     if (filters) {
       // Send filters as individual query parameters instead of JSON string
       if (filters.description) {
@@ -73,7 +73,7 @@ export const dealerShipExpenseServices = {
         params.append('amount_to', filters.amount_to.toString());
       }
     }
-    
+
     const response = await api.get<PaginatedResponse<DealerShipExpense>>(`${BASE_URL}/deleted?${params.toString()}`);
     return response.data;
   },
@@ -81,6 +81,22 @@ export const dealerShipExpenseServices = {
   // Restore a deleted dealership expense
   restoreDealerShipExpense: async (id: number): Promise<DealerShipExpense> => {
     const response = await api.post<DealerShipExpense>(`${BASE_URL}/${id}/restore`);
+    return response.data;
+  },
+
+  // Report: Dealership expenses between dates
+  reportExpensesBetweenDates: async (startingDate: string, endingDate: string): Promise<{
+    starting_date: string;
+    ending_date: string;
+    total_expenses: number;
+    total_amount: number;
+    expenses: DealerShipExpense[];
+  }> => {
+    const params = new URLSearchParams();
+    params.append('starting_date', startingDate);
+    params.append('ending_date', endingDate);
+
+    const response = await api.get(`/reports/dealership-expenses-between-dates?${params.toString()}`);
     return response.data;
   }
 };

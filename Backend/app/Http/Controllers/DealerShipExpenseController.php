@@ -88,4 +88,38 @@ class DealerShipExpenseController extends Controller
 
         return response()->json($expense);
     }
+    /**
+     * Report: Dealership expenses between two dates
+     * 
+     * @param Request $request - expects 'starting_date' and 'ending_date' parameters (format: Y-m-d)
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reportExpensesBetweenDates(Request $request)
+    {
+        // Validate the date parameters
+        $request->validate([
+            'starting_date' => 'required|date|date_format:Y-m-d',
+            'ending_date' => 'required|date|date_format:Y-m-d|after_or_equal:starting_date',
+        ]);
+
+        $startingDate = $request->starting_date;
+        $endingDate = $request->ending_date;
+
+        // Get dealership expenses between the date range
+        $expenses = DealerShipExpense::where('expense_date', '>=', $startingDate)
+            ->where('expense_date', '<=', $endingDate)
+            ->orderBy('expense_date', 'asc')
+            ->get();
+
+        // Calculate total amount
+        $totalAmount = $expenses->sum('amount');
+
+        return response()->json([
+            'starting_date' => $startingDate,
+            'ending_date' => $endingDate,
+            'total_expenses' => $expenses->count(),
+            'total_amount' => $totalAmount,
+            'expenses' => $expenses,
+        ]);
+    }
 }

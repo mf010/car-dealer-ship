@@ -9,7 +9,7 @@ export const carServices = {
   getAllCars: async (page: number = 1, filters?: CarFilters): Promise<PaginatedResponse<Car>> => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
-    
+
     if (filters) {
       // Send filters as individual query parameters instead of JSON string
       if (filters.status) {
@@ -19,7 +19,7 @@ export const carServices = {
         params.append('car_model_id', filters.car_model_id.toString());
       }
     }
-    
+
     const response = await api.get<PaginatedResponse<Car>>(`${BASE_URL}?${params.toString()}`);
     return response.data;
   },
@@ -51,7 +51,7 @@ export const carServices = {
   getDeletedCars: async (page: number = 1, filters?: CarFilters): Promise<PaginatedResponse<Car>> => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
-    
+
     if (filters) {
       // Send filters as individual query parameters instead of JSON string
       if (filters.status) {
@@ -61,7 +61,7 @@ export const carServices = {
         params.append('car_model_id', filters.car_model_id.toString());
       }
     }
-    
+
     const response = await api.get<PaginatedResponse<Car>>(`${BASE_URL}/deleted?${params.toString()}`);
     return response.data;
   },
@@ -92,17 +92,19 @@ export const carServices = {
       id: number;
       make: string | null;
       model: string | null;
+      name: string;
       status: string;
       purchase_price: number;
       total_expenses: number;
       created_at: string;
       sold_after_starting_date: boolean;
       sold_date: string | null;
+      selling_price: number | null;
     }>;
   }> => {
     const params = new URLSearchParams();
     params.append('starting_date', startingDate);
-    
+
     const response = await api.get(`/reports/cars-not-sold-before-date?${params.toString()}`);
     return response.data;
   },
@@ -130,8 +132,41 @@ export const carServices = {
     const params = new URLSearchParams();
     params.append('starting_date', startingDate);
     params.append('ending_date', endingDate);
-    
+
     const response = await api.get(`/reports/cars-sold-between-dates?${params.toString()}`);
+    return response.data;
+  },
+
+  // Report: All Cars purchased between dates
+  reportInvoicesBetweenDates: async (startingDate: string, endingDate: string): Promise<{
+    starting_date: string;
+    ending_date: string;
+    total_cars: number;
+    total_invoice_amount: number;
+    total_purchase_price: number;
+    total_expenses: number;
+    total_profit: number;
+    cars: Array<{
+      car_id: number;
+      car_name: string | null;
+      car_make: string | null;
+      car_model: string | null;
+      car_purchase_price: number;
+      car_total_expenses: number;
+      car_created_at: string;
+      invoice_id: number | null;
+      invoice_date: string | null;
+      invoice_amount: number;
+      profit: number;
+      client_id: number | null;
+      client_name: string | null;
+    }>;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('starting_date', startingDate);
+    params.append('ending_date', endingDate);
+
+    const response = await api.get(`/reports/invoices-between-dates?${params.toString()}`);
     return response.data;
   }
 };
