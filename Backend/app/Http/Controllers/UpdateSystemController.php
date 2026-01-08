@@ -30,6 +30,9 @@ class UpdateSystemController extends Controller
             set_time_limit(300); // 5 دقائق
 
             $logFile = $this->createLogFile();
+            // Initialize progress file
+            $progressFile = base_path('../logs/update_progress.txt');
+            \Illuminate\Support\Facades\File::put($progressFile, "0\n");
             
             // تسجيل بداية التحديث
             $this->logMessage($logFile, "Starting update process...");
@@ -46,6 +49,7 @@ class UpdateSystemController extends Controller
             if (File::exists($updateScriptPath)) {
                 // تشغيل الملف في الخلفية
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    // Start update script; it will update the progress file
                     pclose(popen("start /B \"\" \"$updateScriptPath\"", "r"));
                     $message = "Update script started successfully. The system will update in the background.";
                 } else {
@@ -58,7 +62,8 @@ class UpdateSystemController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'تم بدء عملية التحديث بنجاح! سيتم تحديث النظام خلال دقائق.',
-                    'log_file' => basename($logFile)
+                    'log_file' => basename($logFile),
+                    'progress' => 0
                 ]);
             } else {
                 throw new \Exception("Update script not found at: $updateScriptPath");
@@ -72,6 +77,37 @@ class UpdateSystemController extends Controller
                 'message' => 'فشل التحديث: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * الحصول على نسبة تقدم التحديث
+     */
+    public function getUpdateProgress()
+    {
+        $progressFile = base_path('../logs/update_progress.txt');
+        $percent = 0;
+        if (File::exists($progressFile)) {
+            $content = trim(File::get($progressFile));
+            if (is_numeric($content)) {
+                $percent = (int) $content;
+            }
+        }
+
+        // Provide a simple step label based on percent
+        $step = match (true) {
+            $percent < 1 => 'Starting',
+            $percent < 25 => 'Backing up',
+            $percent < 50 => 'Downloading updates',
+            $percent < 75 => 'Updating database',
+            $percent < 100 => 'Updating packages',
+            default => 'Completed',
+        };
+
+        return response()->json([
+            'success' => true,
+            'percent' => $percent,
+            'step' => $step,
+        ]);
     }
 
     /**

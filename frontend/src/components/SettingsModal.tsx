@@ -23,6 +23,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [updateInProgress, setUpdateInProgress] = useState(false);
+  const [updatePercent, setUpdatePercent] = useState(0);
+  const [updateStep, setUpdateStep] = useState<string>("");
 
   const currentUser = authServices.getUser();
 
@@ -102,12 +105,30 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
 
     setLoading(true);
+    setUpdateInProgress(true);
+    setUpdatePercent(0);
+    setUpdateStep('Starting');
     try {
       await api.post('/system/update/run');
       setSuccessMessage(t('settings.updateStarted', 'Update started in background. Please wait a few minutes.'));
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000);
+      // Poll progress
+      const interval = setInterval(async () => {
+        try {
+          const res = await api.get('/system/update/progress');
+          const percent = res.data?.percent ?? 0;
+          const step = res.data?.step ?? '';
+          setUpdatePercent(percent);
+          setUpdateStep(step);
+          if (percent >= 100 || percent < 0) {
+            clearInterval(interval);
+            setUpdateInProgress(false);
+          }
+        } catch (e) {
+          // stop polling on error
+          clearInterval(interval);
+          setUpdateInProgress(false);
+        }
+      }, 2000);
     } catch (error) {
       console.error("Error starting update:", error);
       setErrors({ submit: t('settings.updateFailed', 'Failed to start update.') });
@@ -291,6 +312,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 {t('settings.updateDescription', 'Check for updates and upgrade the system to the latest version.')}
               </p>
+              {updateInProgress && (
+                <div className="mb-4">
+                  <div className="h-3 w-full bg-gray-200 dark:bg-gray-600 rounded">
+                    <div
+                      className="h-3 bg-blue-600 rounded"
+                      style={{ width: `${Math.max(0, Math.min(updatePercent, 100))}%` }}
+                    />
+                  </div>
+                  <div className="mt-2 text-sm text-gray-700 dark:text-gray-300 flex justify-between">
+                    <span>{t('settings.updating', 'Updating...')}</span>
+                    <span>{updatePercent}%{updateStep ? ` (${updateStep})` : ''}</span>
+                  </div>
+                </div>
+              )}
               <Button
                 color="warning"
                 onClick={handleUpdateSystem}

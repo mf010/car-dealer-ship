@@ -13,8 +13,10 @@ cd /d "%PROJECT_DIR%"
 if not exist "logs" mkdir logs
 set LOG_FILE=logs\update_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%time:~6,2%.log
 set LOG_FILE=%LOG_FILE: =0%
+set PROGRESS_FILE=logs\update_progress.txt
 
 echo [%date% %time%] Update started > "%LOG_FILE%"
+echo 0 > "%PROGRESS_FILE%"
 
 REM Ensure PHP is available before proceeding
 where php >nul 2>&1
@@ -32,6 +34,7 @@ cd Backend
 php artisan db:backup >> "..\%LOG_FILE%" 2>&1
 if not errorlevel 1 (
     echo    [OK] Backup created
+    echo 25 > "..\%PROGRESS_FILE%"
 ) else (
     echo    [!] Backup failed, continuing...
 )
@@ -52,14 +55,17 @@ if exist "%GIT_PATH%" (
     
     if not errorlevel 1 (
         echo    [OK] Updates downloaded
+        echo 50 > "%PROGRESS_FILE%"
     ) else (
         echo    [X] Download failed
         echo [%date% %time%] Git pull failed >> "%LOG_FILE%"
+        echo -1 > "%PROGRESS_FILE%"
         pause
         exit /b 1
     )
 ) else (
     echo    [X] Git not found
+    echo -1 > "%PROGRESS_FILE%"
     pause
     exit /b 1
 )
@@ -71,8 +77,10 @@ cd Backend
 php artisan migrate --force >> "..\%LOG_FILE%" 2>&1
 if errorlevel 1 (
     echo    [X] Database migration failed. Check log for details.
+    echo -1 > "%PROGRESS_FILE%"
 ) else (
     echo    [OK] Database updated
+    echo 75 > "%PROGRESS_FILE%"
 )
 cd ..
 echo.
@@ -83,6 +91,7 @@ cd Backend
 composer install --no-dev --optimize-autoloader --no-interaction >> "..\%LOG_FILE%" 2>&1
 REM Composer may return warnings, so we just continue
 echo    [OK] Packages updated
+echo 100 > "%PROGRESS_FILE%"
 cd ..
 echo.
 

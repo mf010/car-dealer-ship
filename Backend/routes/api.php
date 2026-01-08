@@ -48,6 +48,7 @@ Route::prefix('system')->group(function () {
     Route::post('update/backup', [UpdateSystemController::class, 'createManualBackup']);
     Route::get('update/version', [UpdateSystemController::class, 'getVersionInfo']);
     Route::get('update/logs', [UpdateSystemController::class, 'getLogs']);
+    Route::get('update/progress', [UpdateSystemController::class, 'getUpdateProgress']);
 });
 
 
