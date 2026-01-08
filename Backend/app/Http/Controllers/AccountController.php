@@ -55,7 +55,7 @@ class AccountController extends Controller
     // Delete an account
     public function destroy($id)
     {
-        $account = Account::with(['invoices', 'accountWithdrawals'])->findOrFail($id);
+        $account = Account::with(['invoices', 'accountWithdrawals', 'accountDeposits'])->findOrFail($id);
         
         // Check if account has any linked invoices
         if ($account->invoices()->count() > 0) {
@@ -70,6 +70,14 @@ class AccountController extends Controller
             return response()->json([
                 'error' => 'Cannot delete account',
                 'message' => 'This account is linked to one or more account withdrawals. Please remove the account withdrawals before deleting the account.'
+            ], 422);
+        }
+        
+        // Check if account has any linked account deposits
+        if ($account->accountDeposits()->count() > 0) {
+            return response()->json([
+                'error' => 'Cannot delete account',
+                'message' => 'This account is linked to one or more account deposits. Please remove the account deposits before deleting the account.'
             ], 422);
         }
         

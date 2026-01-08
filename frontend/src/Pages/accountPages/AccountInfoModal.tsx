@@ -20,8 +20,8 @@ export function AccountInfoModal({ isOpen, onClose, account }: AccountInfoModalP
     if (account) {
       // Close the modal first
       onClose();
-      // Navigate to withdrawals page with account filter
-      navigate(`/account-withdrawals?account_id=${account.id}`);
+      // Navigate to account transactions page with account filter
+      navigate(`/account-transactions?account_id=${account.id}`);
     }
   };
 
@@ -100,12 +100,12 @@ export function AccountInfoModal({ isOpen, onClose, account }: AccountInfoModalP
           </div>
         </div>
 
-        {/* Withdrawals Section */}
+        {/* Account Transactions Section */}
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                {t('accountWithdrawal.accountWithdrawals')}
+                {t('accountTransaction.management')}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {t('account.viewWithdrawalsDescription')}

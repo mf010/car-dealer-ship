@@ -81,12 +81,12 @@ export function Component({ onNavigate }: SidebarProps = {}) {
           </SidebarItem>
           
           <SidebarItem 
-            href="/account-withdrawals" 
+            href="/account-transactions" 
             icon={HiCurrencyDollar}
             className="hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-200"
             onClick={handleNavClick}
           >
-            <span className="font-medium">{t('sidebar.accountWithdrawals')}</span>
+            <span className="font-medium">{t('sidebar.accountTransactions')}</span>
           </SidebarItem>
           
           <SidebarItem 

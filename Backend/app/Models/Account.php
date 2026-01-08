@@ -25,5 +25,10 @@ class Account extends Model
     {
         return $this->hasMany(AccountWithdrawal::class);
     }
+    
+    public function accountDeposits()
+    {
+        return $this->hasMany(AccountDeposit::class);
+    }
 
 }

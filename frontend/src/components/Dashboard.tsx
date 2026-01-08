@@ -9,6 +9,7 @@ import type { DealerShipExpense } from "../models/DealerShipExpenses";
 
 interface CarNotSoldReport {
   id: number;
+  name: string | null;
   make: string | null;
   model: string | null;
   status: string;

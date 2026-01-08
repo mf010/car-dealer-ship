@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AccountWithdrawalController;
+use App\Http\Controllers\AccountDepositController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CarExpenseController;
 use App\Http\Controllers\CarModelController;
@@ -25,6 +26,7 @@ Route::get('users', [AuthController::class, 'index']);
 
 Route::apiResource('accounts', AccountController::class);
 Route::apiResource('account-withdrawals', AccountWithdrawalController::class);
+Route::apiResource('account-deposits', AccountDepositController::class);
 Route::apiResource('cars', CarController::class);
 Route::get('reports/cars-not-sold-before-date', [CarController::class, 'reportCarsNotSoldBeforeStartDate']);
 Route::get('reports/cars-sold-between-dates', [CarController::class, 'reportCarsSoldBetweenDates']);
@@ -59,6 +61,9 @@ Route::prefix('deleted')->group(function () {
     
     Route::get('account-withdrawals', [AccountWithdrawalController::class, 'indexDeleted']);
     Route::post('account-withdrawals/{id}/restore', [AccountWithdrawalController::class, 'undelete']);
+    
+    Route::get('account-deposits', [AccountDepositController::class, 'indexDeleted']);
+    Route::post('account-deposits/{id}/restore', [AccountDepositController::class, 'undelete']);
     
     Route::get('cars', [CarController::class, 'indexDeleted']);
     Route::post('cars/{id}/restore', [CarController::class, 'undelete']);
