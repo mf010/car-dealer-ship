@@ -65,16 +65,7 @@ if exist "%GIT_PATH%" (
 )
 echo.
 
-echo [3/4] Updating packages...
-echo.
-cd Backend
-composer install --no-dev --optimize-autoloader --no-interaction >> "..\%LOG_FILE%" 2>&1
-REM Composer may return warnings, so we just continue
-echo    [OK] Packages updated
-cd ..
-echo.
-
-echo [4/4] Updating database...
+echo [3/4] Updating database...
 echo.
 cd Backend
 php artisan migrate --force >> "..\%LOG_FILE%" 2>&1
@@ -83,6 +74,15 @@ if errorlevel 1 (
 ) else (
     echo    [OK] Database updated
 )
+cd ..
+echo.
+
+echo [4/4] Updating packages...
+echo.
+cd Backend
+composer install --no-dev --optimize-autoloader --no-interaction >> "..\%LOG_FILE%" 2>&1
+REM Composer may return warnings, so we just continue
+echo    [OK] Packages updated
 cd ..
 echo.
 
