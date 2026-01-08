@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Label, TextInput, Spinner } from 'flowbite-react';
-import { HiX } from 'react-icons/hi';
+import { HiX, HiSearch } from 'react-icons/hi';
 import { useTranslation } from 'react-i18next';
 import { accountWithdrawalServices } from '../../services/accountWithdrawalServices';
 import { accountServices } from '../../services/accountServices';
@@ -16,9 +16,15 @@ interface AccountWithdrawalFormProps {
 export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalFormProps) {
   const { t, i18n } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<CreateAccountWithdrawalDTO>({
     account_id: 0,
@@ -26,19 +32,76 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
     withdrawal_date: new Date().toISOString().split('T')[0],
   });
 
+  // Handle click outside to close dropdown
   useEffect(() => {
-    fetchAccounts();
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchAccounts = async () => {
-    setLoadingAccounts(true);
-    try {
-      const response = await accountServices.getAllAccounts(1, {});
-      setAccounts(response.data);
-    } catch (error) {
-      console.error('Error fetching accounts:', error);
-    } finally {
-      setLoadingAccounts(false);
+  // Search accounts when search term changes
+  useEffect(() => {
+    const searchAccounts = async () => {
+      if (searchTerm.length >= 1) {
+        setLoadingAccounts(true);
+        try {
+          const results = await accountServices.searchAccounts(searchTerm);
+          setAccounts(results);
+          setShowDropdown(true);
+        } catch (error) {
+          console.error('Error searching accounts:', error);
+        } finally {
+          setLoadingAccounts(false);
+        }
+      } else if (searchTerm.length === 0 && showDropdown) {
+        // Load all accounts when search is empty and dropdown is open
+        setLoadingAccounts(true);
+        try {
+          const results = await accountServices.searchAccounts('');
+          setAccounts(results);
+        } catch (error) {
+          console.error('Error fetching accounts:', error);
+        } finally {
+          setLoadingAccounts(false);
+        }
+      }
+    };
+
+    const debounceTimer = setTimeout(searchAccounts, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+
+  const handleSelectAccount = (account: Account) => {
+    setSelectedAccount(account);
+    setFormData(prev => ({ ...prev, account_id: account.id }));
+    setSearchTerm(account.name);
+    setShowDropdown(false);
+    // Clear error for this field
+    if (errors.account_id) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.account_id;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSearchFocus = async () => {
+    setShowDropdown(true);
+    if (accounts.length === 0) {
+      setLoadingAccounts(true);
+      try {
+        const results = await accountServices.searchAccounts('');
+        setAccounts(results);
+      } catch (error) {
+        console.error('Error fetching accounts:', error);
+      } finally {
+        setLoadingAccounts(false);
+      }
     }
   };
 
@@ -99,8 +162,6 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
     return formatCurrencyUtil(amount, i18n.language);
   };
 
-  const selectedAccount = accounts.find((acc) => acc.id === formData.account_id);
-
   return (
     <Modal show onClose={onClose} size="lg">
       <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -120,34 +181,71 @@ export function AccountWithdrawalForm({ onClose, onSuccess }: AccountWithdrawalF
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Account Selection */}
-          <div>
-            <Label htmlFor="account_id" className="mb-2 block">
+          {/* Account Search */}
+          <div ref={searchRef} className="relative">
+            <Label htmlFor="account_search" className="mb-2 block">
               {t('account.account')} *
             </Label>
-            {loadingAccounts ? (
-              <div className="flex items-center justify-center p-4">
-                <Spinner size="md" />
+            <div className="relative">
+              <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <HiSearch className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
-            ) : (
-              <select
-                id="account_id"
-                value={formData.account_id}
-                onChange={(e) => handleInputChange('account_id', Number(e.target.value))}
-                className={`w-full rounded-lg border ${
+              <input
+                id="account_search"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (selectedAccount && e.target.value !== selectedAccount.name) {
+                    setSelectedAccount(null);
+                    setFormData(prev => ({ ...prev, account_id: 0 }));
+                  }
+                }}
+                onFocus={handleSearchFocus}
+                placeholder={t('account.searchAccount')}
+                className={`w-full ps-10 rounded-lg border ${
                   errors.account_id
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 dark:border-gray-600'
+                    : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500'
                 } dark:bg-gray-700 dark:text-white`}
-              >
-                <option value={0}>{t('account.selectAccount')}</option>
-                {accounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.name} - {formatCurrency(account.balance || 0)}
-                  </option>
-                ))}
-              </select>
+              />
+            </div>
+            
+            {/* Dropdown */}
+            {showDropdown && (
+              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {loadingAccounts ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Spinner size="sm" />
+                    <span className="ms-2 text-sm text-gray-500">{t('common.loading')}</span>
+                  </div>
+                ) : accounts.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                    {t('account.noAccountsFound')}
+                  </div>
+                ) : (
+                  accounts.map((account) => (
+                    <div
+                      key={account.id}
+                      onClick={() => handleSelectAccount(account)}
+                      className="px-4 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-gray-900 dark:text-white">{account.name}</span>
+                        <span className={`text-sm font-semibold ${
+                          (account.balance || 0) >= 0
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {formatCurrency(account.balance || 0)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             )}
+            
             {errors.account_id && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.account_id}</p>
             )}

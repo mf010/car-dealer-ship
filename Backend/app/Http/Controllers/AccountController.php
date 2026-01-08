@@ -20,6 +20,20 @@ class AccountController extends Controller
         return response()->json($query->paginate(10));
     }
 
+    // Search accounts by name (returns all matching results)
+    public function search(Request $request)
+    {
+        $query = Account::query();
+        
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where('name', 'like', "%{$searchTerm}%");
+        }
+        
+        // Return all matching accounts (no pagination for search dropdown)
+        return response()->json($query->orderBy('name')->get());
+    }
+
     // Store a new account
     public function store(AccountRequest $request)
     {

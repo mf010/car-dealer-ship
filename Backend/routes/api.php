@@ -24,6 +24,7 @@ Route::post('logout', [AuthController::class, 'logout']);
 Route::post('refresh', [AuthController::class, 'refresh']);
 Route::get('users', [AuthController::class, 'index']);
 
+Route::get('accounts/search', [AccountController::class, 'search']);
 Route::apiResource('accounts', AccountController::class);
 Route::apiResource('account-withdrawals', AccountWithdrawalController::class);
 Route::apiResource('account-deposits', AccountDepositController::class);

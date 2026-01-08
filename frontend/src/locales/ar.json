@@ -413,6 +413,8 @@
     "noAccount": "بدون حساب",
     "allAccounts": "جميع الحسابات",
     "selectAccount": "اختر الحساب",
+    "searchAccount": "ابحث عن حساب...",
+    "noAccountsFound": "لم يتم العثور على حسابات",
     "currentBalance": "الرصيد الحالي",
     "viewAccountDetails": "عرض تفاصيل الحساب",
     "viewDetails": "عرض التفاصيل",

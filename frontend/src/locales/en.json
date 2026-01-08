@@ -413,6 +413,8 @@
     "noAccount": "No Account",
     "allAccounts": "All Accounts",
     "selectAccount": "Select Account",
+    "searchAccount": "Search for account...",
+    "noAccountsFound": "No accounts found",
     "currentBalance": "Current Balance",
     "viewAccountDetails": "View Account Details",
     "viewDetails": "View Details",

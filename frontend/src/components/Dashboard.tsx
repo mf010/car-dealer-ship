@@ -77,8 +77,8 @@ export function Dashboard() {
     cars: CarNotSoldReport[];
   } | null>(null);
 
-  // State for second report (Cars Sold Between Dates)
-  const [soldReport, setSoldReport] = useState<{
+  // State for second report (Cars Sold Between Dates) - HIDDEN but kept for future use
+  const [_soldReport, setSoldReport] = useState<{
     starting_date: string;
     ending_date: string;
     total_cars: number;
@@ -176,9 +176,7 @@ export function Dashboard() {
               icon={HiCalendar}
               className="mt-1"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {t("dashboard.usedForReport1") || "Used for Report 1"}
-            </p>
+
           </div>
           <div>
             <Label htmlFor="endingDate" className="text-gray-700 dark:text-gray-300 font-medium">
@@ -193,11 +191,8 @@ export function Dashboard() {
               icon={HiCalendar}
               className="mt-1"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {t("dashboard.usedForReport2") || "Used for Report 2"}
-            </p>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-center pt-6">
             <Button
               onClick={handleGenerateAllReports}
               disabled={loadingReports || !startingDate || !endingDate}
@@ -330,7 +325,7 @@ export function Dashboard() {
         </Card>
       )}
 
-      {/* Report 2: Cars Sold Between Dates */}
+      {/* Report 2: Cars Sold Between Dates - HIDDEN
       {soldReport && (
         <Card>
           <div className="flex items-center gap-2 mb-4">
@@ -421,6 +416,7 @@ export function Dashboard() {
           </div>
         </Card>
       )}
+      */}
 
       {/* Report 3: Invoices Between Dates */}
       {invoicesReport && (

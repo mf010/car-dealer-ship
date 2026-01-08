@@ -18,6 +18,17 @@ export const accountServices = {
     return response.data;
   },
 
+  // Search accounts by name (returns all matching results)
+  searchAccounts: async (searchTerm: string): Promise<Account[]> => {
+    const params = new URLSearchParams();
+    if (searchTerm) {
+      params.append('search', searchTerm);
+    }
+    
+    const response = await api.get<Account[]>(`${BASE_URL}/search?${params.toString()}`);
+    return response.data;
+  },
+
   // Create a new account
   createAccount: async (accountData: CreateAccountDTO): Promise<Account> => {
     const response = await api.post<Account>(BASE_URL, accountData);
