@@ -16,6 +16,15 @@ set LOG_FILE=%LOG_FILE: =0%
 
 echo [%date% %time%] Update started > "%LOG_FILE%"
 
+REM Ensure PHP is available before proceeding
+where php >nul 2>&1
+if errorlevel 1 (
+    echo    [X] PHP not found in PATH. Please install PHP or add it to PATH. >> "%LOG_FILE%"
+    echo    [X] PHP not found. Update aborted.
+    pause
+    exit /b 1
+)
+
 echo [1/4] Creating backup...
 echo.
 if not exist "backups" mkdir backups
@@ -69,8 +78,11 @@ echo [4/4] Updating database...
 echo.
 cd Backend
 php artisan migrate --force >> "..\%LOG_FILE%" 2>&1
-REM Migration may have no changes, so we just continue
-echo    [OK] Database updated
+if errorlevel 1 (
+    echo    [X] Database migration failed. Check log for details.
+) else (
+    echo    [OK] Database updated
+)
 cd ..
 echo.
 
