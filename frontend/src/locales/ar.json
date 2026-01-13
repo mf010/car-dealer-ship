@@ -722,7 +722,11 @@
     "sellingPrice": "سعر البيع",
     "invoiceDate": "تاريخ الفاتورة",
     "profit": "الربح",
-    "clientName": "اسم العميل"
+    "clientName": "اسم العميل",
+    "availableCars": "السيارات المتاحة",
+    "unavailableCars": "السيارات غير المتاحة (المباعة)",
+    "totalSellingPrice": "إجمالي سعر البيع",
+    "subtotal": "المجموع الفرعي"
   },
   "financial": {
     "currency": "د.ل",

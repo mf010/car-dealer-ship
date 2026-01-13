@@ -224,106 +224,220 @@ export function Dashboard() {
         */}
       </Card>
 
-      {/* Report 1: Cars Not Sold Before Date */}
-      {notSoldReport && (
-        <Card>
-          <div className="flex items-center gap-2 mb-4">
-            <HiDocumentReport className="text-2xl text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {t("dashboard.carsNotSoldBeforeDate")}
-            </h2>
-            <Badge color="blue" className="ml-auto">
-              {t("dashboard.startingDate")}: {formatDate(notSoldReport.starting_date)}
-            </Badge>
-          </div>
+      {/* Report 1: Cars Not Sold Before Date - Grouped by Status */}
+      {notSoldReport && (() => {
+        // Separate cars by status and selling status
+        const availableCars = notSoldReport.cars.filter(car => car.status === "available");
+        // Unavailable includes: reserved, sold, or any status that's not available
+        const unavailableCars = notSoldReport.cars.filter(car => car.status !== "available");
+        
+        // Further separate unavailable cars into actually sold (with invoice) and others
+        const soldCars = unavailableCars.filter(car => car.selling_price !== null);
+        
+        // Calculate totals for available cars
+        const availableTotalPurchase = availableCars.reduce((sum, car) => sum + Number(car.purchase_price), 0);
+        const availableTotalExpenses = availableCars.reduce((sum, car) => sum + Number(car.total_expenses), 0);
+        
+        // Calculate totals for sold cars (unavailable with selling_price)
+        const soldTotalPurchase = soldCars.reduce((sum, car) => sum + Number(car.purchase_price), 0);
+        const soldTotalExpenses = soldCars.reduce((sum, car) => sum + Number(car.total_expenses), 0);
+        const soldTotalSelling = soldCars.reduce((sum, car) => sum + Number(car.selling_price), 0);
+        const soldTotalProfit = soldTotalSelling - soldTotalPurchase - soldTotalExpenses;
 
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">{t("dashboard.totalCars")}:</span>{" "}
-              {notSoldReport.total_cars}
-            </p>
-          </div>
+        // Table header component to avoid repetition
+        const TableHeader = () => (
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr className="bg-blue-50 dark:bg-blue-900/20">
+              <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.make")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.model")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.name")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
+              <th scope="col" className="px-6 py-3">{t("dashboard.sellingPrice")}</th>
+              <th scope="col" className="px-6 py-3">{t("common.createdAt")}</th>
+              <th scope="col" className="px-6 py-3">{t("dashboard.soldDate")}</th>
+            </tr>
+          </thead>
+        );
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr className="bg-blue-50 dark:bg-blue-900/20">
-                  <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.make")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.model")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.name")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.status")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.sellingPrice")}</th>
-                  <th scope="col" className="px-6 py-3">{t("common.createdAt")}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.soldAfterDate")}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.soldDate")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {notSoldReport.cars.length === 0 ? (
-                  <tr className="bg-white dark:bg-gray-800">
-                    <td colSpan={9} className="px-6 py-8 text-center">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        {t("dashboard.noReportData")}
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  notSoldReport.cars.map((car) => (
-                    <tr key={car.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                        #{car.id}
-                      </td>
-                      <td className="px-6 py-4">{car.make || t("common.notAvailable")}</td>
-                      <td className="px-6 py-4">{car.model || t("common.notAvailable")}</td>
-                      <td className="px-6 py-4">{car.name || t("common.notAvailable")}</td>
-                      <td className="px-6 py-4">
-                        <Badge color={car.status === "available" ? "success" : "gray"}>
-                          {t(`car.${car.status}`)}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">{formatCurrency(car.purchase_price)}</td>
-                      <td className="px-6 py-4">{formatCurrency(car.total_expenses)}</td>
-                      <td className="px-6 py-4">
-                        {car.selling_price ? formatCurrency(car.selling_price) : "-"}
-                      </td>
-                      <td className="px-6 py-4">{formatDate(car.created_at)}</td>
-                      <td className="px-6 py-4">
-                        <Badge color={car.sold_after_starting_date ? "success" : "failure"}>
-                          {car.sold_after_starting_date ? t("common.yes") : t("common.no")}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        {car.sold_date ? formatDate(car.sold_date) : t("dashboard.notSoldYet")}
-                      </td>
-                    </tr>
-                  ))
-                )}
-                {notSoldReport.cars.length > 0 && (
-                  <tr className="bg-blue-50 dark:bg-blue-900/30 font-bold border-t-2 border-blue-200 dark:border-blue-700">
-                    <td colSpan={5} className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                      {t("dashboard.total")}:
-                    </td>
-                    <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
-                      {formatCurrency(notSoldReport.cars.reduce((sum, car) => sum + Number(car.purchase_price), 0))}
-                    </td>
-                    <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
-                      {formatCurrency(notSoldReport.cars.reduce((sum, car) => sum + Number(car.total_expenses), 0))}
-                    </td>
-                    <td colSpan={3}></td>
-                    <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
-                      {formatCurrency(notSoldReport.cars.reduce((sum, car) => sum + (Number(car.selling_price) || 0), 0))}
-                    </td>
+        // Car row component
+        const CarRow = ({ car }: { car: CarNotSoldReport }) => (
+          <tr key={car.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+              #{car.id}
+            </td>
+            <td className="px-6 py-4">{car.make || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{car.model || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{car.name || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{formatCurrency(car.purchase_price)}</td>
+            <td className="px-6 py-4">{formatCurrency(car.total_expenses)}</td>
+            <td className="px-6 py-4">
+              {car.selling_price ? formatCurrency(car.selling_price) : "-"}
+            </td>
+            <td className="px-6 py-4">{formatDate(car.created_at)}</td>
+            <td className="px-6 py-4">
+              {car.sold_date ? formatDate(car.sold_date) : t("dashboard.notSoldYet")}
+            </td>
+          </tr>
+        );
 
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
+        return (
+          <Card>
+            <div className="flex items-center gap-2 mb-4">
+              <HiDocumentReport className="text-2xl text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {t("dashboard.carsNotSoldBeforeDate")}
+              </h2>
+              <Badge color="blue" className="ml-auto">
+                {t("dashboard.startingDate")}: {formatDate(notSoldReport.starting_date)}
+              </Badge>
+            </div>
+
+            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-semibold">{t("dashboard.totalCars")}:</span>{" "}
+                {notSoldReport.total_cars}
+              </p>
+            </div>
+
+            {notSoldReport.cars.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t("dashboard.noReportData")}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Available Cars Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-green-300 dark:border-green-700">
+                    <Badge color="success" size="lg">
+                      {t("dashboard.availableCars")}
+                    </Badge>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      ({availableCars.length} {t("dashboard.totalCars").toLowerCase()})
+                    </span>
+                  </div>
+                  
+                  {availableCars.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {t("dashboard.noReportData")}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <TableHeader />
+                        <tbody>
+                          {availableCars.map((car) => (
+                            <CarRow key={car.id} car={car} />
+                          ))}
+                          {/* Subtotal row for available cars */}
+                          <tr className="bg-green-50 dark:bg-green-900/30 font-bold border-t-2 border-green-200 dark:border-green-700">
+                            <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                              {t("dashboard.subtotal")}:
+                            </td>
+                            <td className="px-6 py-4 text-green-600 dark:text-green-400">
+                              {formatCurrency(availableTotalPurchase)}
+                            </td>
+                            <td className="px-6 py-4 text-green-600 dark:text-green-400">
+                              {formatCurrency(availableTotalExpenses)}
+                            </td>
+                            <td colSpan={3}></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  
+                  {/* Summary for available cars */}
+                  {availableCars.length > 0 && (
+                    <div className="mt-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice")}</p>
+                        <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(availableTotalPurchase)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalExpensesSum")}</p>
+                        <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(availableTotalExpenses)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Unavailable (Sold) Cars Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
+                    <Badge color="gray" size="lg">
+                      {t("dashboard.unavailableCars")}
+                    </Badge>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      ({soldCars.length} {t("dashboard.totalCars").toLowerCase()})
+                    </span>
+                  </div>
+                  
+                  {soldCars.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {t("dashboard.noReportData")}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <TableHeader />
+                        <tbody>
+                          {soldCars.map((car) => (
+                            <CarRow key={car.id} car={car} />
+                          ))}
+                          {/* Subtotal row for sold cars */}
+                          <tr className="bg-gray-100 dark:bg-gray-700 font-bold border-t-2 border-gray-300 dark:border-gray-600">
+                            <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                              {t("dashboard.subtotal")}:
+                            </td>
+                            <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                              {formatCurrency(soldTotalPurchase)}
+                            </td>
+                            <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                              {formatCurrency(soldTotalExpenses)}
+                            </td>
+                            <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                              {formatCurrency(soldTotalSelling)}
+                            </td>
+                            <td colSpan={2}></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  
+                  {/* Summary for sold cars */}
+                  {soldCars.length > 0 && (
+                    <div className="mt-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice")}</p>
+                        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(soldTotalPurchase)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalExpensesSum")}</p>
+                        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(soldTotalExpenses)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalSellingPrice")}</p>
+                        <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(soldTotalSelling)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalProfit")}</p>
+                        <p className={`text-lg font-semibold ${soldTotalProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {formatCurrency(soldTotalProfit)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {/* Report 2: Cars Sold Between Dates - HIDDEN
       {soldReport && (
@@ -418,112 +532,249 @@ export function Dashboard() {
       )}
       */}
 
-      {/* Report 3: Invoices Between Dates */}
-      {invoicesReport && (
-        <Card>
-          <div className="flex items-center gap-2 mb-4">
-            <HiDocumentReport className="text-2xl text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {t("dashboard.carsPurchasedWithinPeriod") || "Cars Purchased Within Period"}
-            </h2>
-            <Badge color="purple" className="ml-auto">
-              {formatDate(invoicesReport.starting_date)} - {formatDate(invoicesReport.ending_date)}
-            </Badge>
-          </div>
+      {/* Report 3: Invoices Between Dates - Grouped by Status */}
+      {invoicesReport && (() => {
+        // Separate cars by sold status (has invoice = sold, no invoice = available)
+        const availableCars = invoicesReport.cars.filter(car => car.invoice_id === null);
+        const soldCars = invoicesReport.cars.filter(car => car.invoice_id !== null);
+        
+        // Calculate totals for available cars
+        const availableTotalPurchase = availableCars.reduce((sum, car) => sum + Number(car.car_purchase_price), 0);
+        const availableTotalExpenses = availableCars.reduce((sum, car) => sum + Number(car.car_total_expenses), 0);
+        
+        // Calculate totals for sold cars
+        const soldTotalPurchase = soldCars.reduce((sum, car) => sum + Number(car.car_purchase_price), 0);
+        const soldTotalExpenses = soldCars.reduce((sum, car) => sum + Number(car.car_total_expenses), 0);
+        const soldTotalSelling = soldCars.reduce((sum, car) => sum + Number(car.invoice_amount), 0);
+        const soldTotalProfit = soldCars.reduce((sum, car) => sum + Number(car.profit), 0);
 
-          <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalCars")}</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">{invoicesReport.total_cars}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalInvoiceAmount")}</p>
-              <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(invoicesReport.total_invoice_amount)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice") || "Total Purchase Price"}</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(invoicesReport.total_purchase_price)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalProfit")}</p>
-              <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(invoicesReport.total_profit)}</p>
-            </div>
-          </div>
+        // Table header component for available cars
+        const AvailableTableHeader = () => (
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr className="bg-green-50 dark:bg-green-900/20">
+              <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.name")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.make")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.model")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
+              <th scope="col" className="px-6 py-3">{t("common.createdAt")}</th>
+            </tr>
+          </thead>
+        );
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr className="bg-purple-50 dark:bg-purple-900/20">
-                  <th scope="col" className="px-6 py-3">{t("dashboard.invoiceId")}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.invoiceDate") || "Invoice Date"}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.name")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.make")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.model")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
-                  <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.invoiceAmount")}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.profit") || "Profit"}</th>
-                  <th scope="col" className="px-6 py-3">{t("dashboard.clientName") || "Client"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoicesReport.cars.length === 0 ? (
-                  <tr className="bg-white dark:bg-gray-800">
-                    <td colSpan={11} className="px-6 py-8 text-center">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        {t("dashboard.noReportData")}
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  invoicesReport.cars.map((car) => (
-                    <tr key={car.car_id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                        #{car.invoice_id || '-'}
-                      </td>
-                      <td className="px-6 py-4">{car.invoice_date ? formatDate(car.invoice_date) : '-'}</td>
-                      <td className="px-6 py-4">#{car.car_id}</td>
-                      <td className="px-6 py-4">{car.car_name || t("common.notAvailable")}</td>
-                      <td className="px-6 py-4">{car.car_make || t("common.notAvailable")}</td>
-                      <td className="px-6 py-4">{car.car_model || t("common.notAvailable")}</td>
-                      <td className="px-6 py-4">{formatCurrency(car.car_purchase_price)}</td>
-                      <td className="px-6 py-4">{formatCurrency(car.car_total_expenses)}</td>
-                      <td className="px-6 py-4 font-semibold text-purple-600 dark:text-purple-400">
-                        {formatCurrency(car.invoice_amount)}
-                      </td>
-                      <td className={`px-6 py-4 font-semibold ${car.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {formatCurrency(car.profit)}
-                      </td>
-                      <td className="px-6 py-4">{car.client_name || t("common.notAvailable")}</td>
-                    </tr>
-                  ))
-                )}
-                {invoicesReport.cars.length > 0 && (
-                  <tr className="bg-purple-50 dark:bg-purple-900/30 font-bold border-t-2 border-purple-200 dark:border-purple-700">
-                    <td colSpan={6} className="px-6 py-4 text-right text-gray-900 dark:text-white">
-                      {t("dashboard.total")}:
-                    </td>
-                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
-                      {formatCurrency(invoicesReport.total_purchase_price)}
-                    </td>
-                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
-                      {formatCurrency(invoicesReport.total_expenses)}
-                    </td>
-                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
-                      {formatCurrency(invoicesReport.total_invoice_amount)}
-                    </td>
-                    <td className="px-6 py-4 text-green-600 dark:text-green-400">
-                      {formatCurrency(invoicesReport.total_profit)}
-                    </td>
-                    <td></td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
+        // Table header component for sold cars
+        const SoldTableHeader = () => (
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr className="bg-purple-50 dark:bg-purple-900/20">
+              <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.name")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.make")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.model")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
+              <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
+              <th scope="col" className="px-6 py-3">{t("dashboard.invoiceAmount")}</th>
+              <th scope="col" className="px-6 py-3">{t("dashboard.profit")}</th>
+              <th scope="col" className="px-6 py-3">{t("dashboard.clientName")}</th>
+            </tr>
+          </thead>
+        );
+
+        // Car row component for available cars
+        const AvailableCarRow = ({ car }: { car: CarPurchasedAndSoldReport }) => (
+          <tr key={car.car_id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+              #{car.car_id}
+            </td>
+            <td className="px-6 py-4">{car.car_name || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{car.car_make || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{car.car_model || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{formatCurrency(car.car_purchase_price)}</td>
+            <td className="px-6 py-4">{formatCurrency(car.car_total_expenses)}</td>
+            <td className="px-6 py-4">{formatDate(car.car_created_at)}</td>
+          </tr>
+        );
+
+        // Car row component for sold cars
+        const SoldCarRow = ({ car }: { car: CarPurchasedAndSoldReport }) => (
+          <tr key={car.car_id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+              #{car.car_id}
+            </td>
+            <td className="px-6 py-4">{car.car_name || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{car.car_make || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{car.car_model || t("common.notAvailable")}</td>
+            <td className="px-6 py-4">{formatCurrency(car.car_purchase_price)}</td>
+            <td className="px-6 py-4">{formatCurrency(car.car_total_expenses)}</td>
+            <td className="px-6 py-4 font-semibold text-purple-600 dark:text-purple-400">
+              {formatCurrency(car.invoice_amount)}
+            </td>
+            <td className={`px-6 py-4 font-semibold ${car.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {formatCurrency(car.profit)}
+            </td>
+            <td className="px-6 py-4">{car.client_name || t("common.notAvailable")}</td>
+          </tr>
+        );
+
+        return (
+          <Card>
+            <div className="flex items-center gap-2 mb-4">
+              <HiDocumentReport className="text-2xl text-purple-600" />
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {t("dashboard.carsPurchasedWithinPeriod") || "Cars Purchased Within Period"}
+              </h2>
+              <Badge color="purple" className="ml-auto">
+                {formatDate(invoicesReport.starting_date)} - {formatDate(invoicesReport.ending_date)}
+              </Badge>
+            </div>
+
+            <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-semibold">{t("dashboard.totalCars")}:</span>{" "}
+                {invoicesReport.total_cars}
+              </p>
+            </div>
+
+            {invoicesReport.cars.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t("dashboard.noReportData")}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Available Cars Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-green-300 dark:border-green-700">
+                    <Badge color="success" size="lg">
+                      {t("dashboard.availableCars")}
+                    </Badge>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      ({availableCars.length} {t("dashboard.totalCars").toLowerCase()})
+                    </span>
+                  </div>
+                  
+                  {availableCars.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {t("dashboard.noReportData")}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <AvailableTableHeader />
+                        <tbody>
+                          {availableCars.map((car) => (
+                            <AvailableCarRow key={car.car_id} car={car} />
+                          ))}
+                          {/* Subtotal row for available cars */}
+                          <tr className="bg-green-50 dark:bg-green-900/30 font-bold border-t-2 border-green-200 dark:border-green-700">
+                            <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                              {t("dashboard.subtotal")}:
+                            </td>
+                            <td className="px-6 py-4 text-green-600 dark:text-green-400">
+                              {formatCurrency(availableTotalPurchase)}
+                            </td>
+                            <td className="px-6 py-4 text-green-600 dark:text-green-400">
+                              {formatCurrency(availableTotalExpenses)}
+                            </td>
+                            <td></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  
+                  {/* Summary for available cars */}
+                  {availableCars.length > 0 && (
+                    <div className="mt-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice")}</p>
+                        <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(availableTotalPurchase)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalExpensesSum")}</p>
+                        <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(availableTotalExpenses)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sold Cars Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
+                    <Badge color="gray" size="lg">
+                      {t("dashboard.unavailableCars")}
+                    </Badge>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      ({soldCars.length} {t("dashboard.totalCars").toLowerCase()})
+                    </span>
+                  </div>
+                  
+                  {soldCars.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {t("dashboard.noReportData")}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <SoldTableHeader />
+                        <tbody>
+                          {soldCars.map((car) => (
+                            <SoldCarRow key={car.car_id} car={car} />
+                          ))}
+                          {/* Subtotal row for sold cars */}
+                          <tr className="bg-gray-100 dark:bg-gray-700 font-bold border-t-2 border-gray-300 dark:border-gray-600">
+                            <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                              {t("dashboard.subtotal")}:
+                            </td>
+                            <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                              {formatCurrency(soldTotalPurchase)}
+                            </td>
+                            <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                              {formatCurrency(soldTotalExpenses)}
+                            </td>
+                            <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
+                              {formatCurrency(soldTotalSelling)}
+                            </td>
+                            <td className={`px-6 py-4 font-semibold ${soldTotalProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {formatCurrency(soldTotalProfit)}
+                            </td>
+                            <td></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  
+                  {/* Summary for sold cars */}
+                  {soldCars.length > 0 && (
+                    <div className="mt-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice")}</p>
+                        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(soldTotalPurchase)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalExpensesSum")}</p>
+                        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(soldTotalExpenses)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalSellingPrice")}</p>
+                        <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(soldTotalSelling)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalProfit")}</p>
+                        <p className={`text-lg font-semibold ${soldTotalProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {formatCurrency(soldTotalProfit)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {/* Report 4: Dealership Expenses Between Dates */}
       {expensesReport && (

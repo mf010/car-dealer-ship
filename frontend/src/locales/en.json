@@ -722,7 +722,11 @@
     "sellingPrice": "Selling Price",
     "invoiceDate": "Invoice Date",
     "profit": "Profit",
-    "clientName": "Client Name"
+    "clientName": "Client Name",
+    "availableCars": "Available Cars",
+    "unavailableCars": "Unavailable Cars (Sold)",
+    "totalSellingPrice": "Total Selling Price",
+    "subtotal": "Subtotal"
   },
   "financial": {
     "currency": "LYD",
