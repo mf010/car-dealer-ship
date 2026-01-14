@@ -27,6 +27,44 @@ class CarController extends Controller
         return response()->json($query->paginate(10));
     }
 
+    /**
+     * Fast search for cars by name, make, model or ID
+     * Used for autocomplete in expense forms, invoices, etc.
+     */
+    public function search(Request $request)
+    {
+        $search = $request->get('q', '');
+        $limit = min($request->get('limit', 10), 50); // Max 50 results
+        $status = $request->get('status'); // Optional status filter
+        
+        if (empty($search)) {
+            return response()->json([]);
+        }
+        
+        $query = Car::with(['carModel.make'])
+            ->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhereHas('carModel', function($modelQuery) use ($search) {
+                        $modelQuery->where('name', 'like', "%{$search}%")
+                            ->orWhereHas('make', function($makeQuery) use ($search) {
+                                $makeQuery->where('name', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        
+        // Apply optional status filter
+        if ($status) {
+            $query->where('status', $status);
+        }
+        
+        $cars = $query->orderBy('id', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        return response()->json($cars);
+    }
+
     // Store a new car
     public function store(CarRequest $request)
     {

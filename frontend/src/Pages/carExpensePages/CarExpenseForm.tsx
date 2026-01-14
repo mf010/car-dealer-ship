@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Label, TextInput, Textarea } from 'flowbite-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Modal, Button, Label, TextInput, Textarea, Spinner } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
 import { useTranslation } from 'react-i18next';
 import { carExpenseServices } from '../../services/carExpensServices';
@@ -13,9 +13,26 @@ interface CarExpenseFormProps {
   onSuccess: () => void;
 }
 
+// Custom debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
   const { t, i18n } = useTranslation();
-  const [cars, setCars] = useState<Car[]>([]);
+  const [searchResults, setSearchResults] = useState<Car[]>([]);
   const [formData, setFormData] = useState<CreateCarExpenseDTO>({
     car_id: 0,
     description: '',
@@ -23,39 +40,39 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
     expense_date: new Date().toISOString().split('T')[0],
   });
   const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [carSearch, setCarSearch] = useState<string>('');
   const [showCarDropdown, setShowCarDropdown] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const carDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch all cars on mount
+  // Debounce search query - wait 300ms after user stops typing
+  const debouncedSearchQuery = useDebounce(carSearch, 300);
+
+  // Search cars when debounced query changes
   useEffect(() => {
-    const fetchCars = async () => {
+    const searchCars = async () => {
+      if (!debouncedSearchQuery || debouncedSearchQuery.trim() === '' || selectedCar) {
+        setSearchResults([]);
+        setSearching(false);
+        return;
+      }
+
+      setSearching(true);
       try {
-        // Fetch multiple pages to get all cars with carModel.make data
-        const allCars: Car[] = [];
-        let currentPage = 1;
-        let hasMore = true;
-        
-        while (hasMore && currentPage <= 10) { // Limit to 10 pages max
-          const response = await carServices.getAllCars(currentPage, undefined);
-          allCars.push(...response.data);
-          
-          if (currentPage >= response.last_page) {
-            hasMore = false;
-          }
-          currentPage++;
-        }
-        
-        setCars(allCars);
+        const results = await carServices.searchCars(debouncedSearchQuery, 15);
+        setSearchResults(results);
       } catch (err) {
-        console.error('Error fetching cars:', err);
-        setError(t('messages.loadingError'));
+        console.error('Error searching cars:', err);
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
       }
     };
-    fetchCars();
-  }, [t]);
+
+    searchCars();
+  }, [debouncedSearchQuery, selectedCar]);
 
   // Click outside handler
   useEffect(() => {
@@ -109,22 +126,6 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
     return formatCurrencyUtil(amount, i18n.language);
   };
 
-  // Filtered cars based on search
-  const filteredCars = cars.filter(car => {
-    const searchLower = carSearch.toLowerCase();
-    const carName = car.name?.toLowerCase() || '';
-    // Support both camelCase and snake_case from API
-    const carModelData = car.carModel || car.car_model;
-    const makeName = carModelData?.make?.name?.toLowerCase() || '';
-    const modelName = carModelData?.name?.toLowerCase() || '';
-    const carId = car.id.toString();
-    
-    return carName.includes(searchLower) ||
-           makeName.includes(searchLower) ||
-           modelName.includes(searchLower) ||
-           carId.includes(searchLower);
-  });
-
   return (
     <Modal show onClose={onClose} size="2xl">
       <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -151,7 +152,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
               </div>
             )}
 
-            {/* Car Selection - Searchable */}
+            {/* Car Selection - Searchable with API */}
             <div ref={carDropdownRef}>
               <Label htmlFor="car_search">
                 {t('car.carName')} <span className="text-red-500">*</span>
@@ -160,41 +161,55 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
                 <TextInput
                   id="car_search"
                   type="text"
-                  placeholder={t('car.enterCarId')}
+                  placeholder={t('car.searchByName')}
                   value={carSearch}
                   onChange={(e) => {
                     setCarSearch(e.target.value);
                     setShowCarDropdown(true);
+                    if (selectedCar) {
+                      setSelectedCar(null);
+                      setFormData({ ...formData, car_id: 0 });
+                    }
                   }}
                   onFocus={() => setShowCarDropdown(true)}
-                  required
                 />
-                {showCarDropdown && carSearch && (
+                {/* Search indicator */}
+                {searching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Spinner size="sm" />
+                  </div>
+                )}
+                {showCarDropdown && carSearch && !selectedCar && (
                   <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {filteredCars.length > 0 ? (
-                      filteredCars.slice(0, 10).map((car) => {
+                    {searching ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                        <Spinner size="sm" />
+                        <span>{t('common.searching')}...</span>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      searchResults.map((car) => {
                         const carModelData = car.carModel || car.car_model;
                         const displayName = car.name || `${carModelData?.make?.name || ''} ${carModelData?.name || ''}`.trim();
                         
                         return (
-                        <button
-                          key={car.id}
-                          type="button"
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white"
-                          onClick={() => {
-                            setFormData({ ...formData, car_id: car.id });
-                            setCarSearch(displayName);
-                            setSelectedCar(car);
-                            setShowCarDropdown(false);
-                          }}
-                        >
-                          <div className="font-medium">
-                            {displayName}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            ID: #{car.id} • {carModelData?.make?.name || ''} {carModelData?.name || ''}
-                          </div>
-                        </button>
+                          <button
+                            key={car.id}
+                            type="button"
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-900 dark:text-white"
+                            onClick={() => {
+                              setFormData({ ...formData, car_id: car.id });
+                              setCarSearch(displayName);
+                              setSelectedCar(car);
+                              setShowCarDropdown(false);
+                            }}
+                          >
+                            <div className="font-medium">
+                              {displayName}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              ID: #{car.id} • {carModelData?.make?.name || ''} {carModelData?.name || ''}
+                            </div>
+                          </button>
                         );
                       })
                     ) : (
@@ -205,7 +220,7 @@ export function CarExpenseForm({ onClose, onSuccess }: CarExpenseFormProps) {
                   </div>
                 )}
               </div>
-              {formData.car_id && (
+              {formData.car_id > 0 && (
                 <button
                   type="button"
                   onClick={() => {

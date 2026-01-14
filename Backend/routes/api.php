@@ -28,6 +28,7 @@ Route::get('accounts/search', [AccountController::class, 'search']);
 Route::apiResource('accounts', AccountController::class);
 Route::apiResource('account-withdrawals', AccountWithdrawalController::class);
 Route::apiResource('account-deposits', AccountDepositController::class);
+Route::get('cars/search', [CarController::class, 'search']);
 Route::apiResource('cars', CarController::class);
 Route::get('reports/cars-not-sold-before-date', [CarController::class, 'reportCarsNotSoldBeforeStartDate']);
 Route::get('reports/cars-sold-between-dates', [CarController::class, 'reportCarsSoldBetweenDates']);

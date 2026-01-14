@@ -5,6 +5,30 @@ import type { PaginatedResponse } from '../models/Make';
 const BASE_URL = '/cars'; // Adjust this based on your API base URL
 
 export const carServices = {
+  /**
+   * Fast search for cars by name, make, model or ID
+   * Used for autocomplete in expense forms, invoices, etc.
+   * @param query - Search query string
+   * @param limit - Maximum number of results (default 10, max 50)
+   * @param status - Optional status filter ('available' | 'sold')
+   */
+  searchCars: async (query: string, limit: number = 10, status?: string): Promise<Car[]> => {
+    if (!query || query.trim() === '') {
+      return [];
+    }
+    
+    const params = new URLSearchParams();
+    params.append('q', query.trim());
+    params.append('limit', limit.toString());
+    
+    if (status) {
+      params.append('status', status);
+    }
+    
+    const response = await api.get<Car[]>(`${BASE_URL}/search?${params.toString()}`);
+    return response.data;
+  },
+
   // Get all cars with pagination and filtering
   getAllCars: async (page: number = 1, filters?: CarFilters): Promise<PaginatedResponse<Car>> => {
     const params = new URLSearchParams();
