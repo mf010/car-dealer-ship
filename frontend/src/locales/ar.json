@@ -727,7 +727,11 @@
     "availableCars": "السيارات المتاحة",
     "unavailableCars": "السيارات غير المتاحة (المباعة)",
     "totalSellingPrice": "إجمالي سعر البيع",
-    "subtotal": "المجموع الفرعي"
+    "subtotal": "المجموع الفرعي",
+    "selectReportType": "اختر نوع التقرير",
+    "unsoldCarsReport": "تقرير السيارات غير المباعة",
+    "soldCarsReport": "تقرير السيارات المباعة",
+    "totalCost": "إجمالي التكلفة"
   },
   "financial": {
     "currency": "د.ل",

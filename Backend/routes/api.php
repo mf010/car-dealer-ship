@@ -34,6 +34,8 @@ Route::get('reports/cars-not-sold-before-date', [CarController::class, 'reportCa
 Route::get('reports/cars-sold-between-dates', [CarController::class, 'reportCarsSoldBetweenDates']);
 Route::get('reports/invoices-between-dates', [CarController::class, 'reportInvoicesBetweenDates']);
 Route::get('reports/dealership-expenses-between-dates', [DealerShipExpenseController::class, 'reportExpensesBetweenDates']);
+Route::get('reports/unsold-cars', [CarController::class, 'reportUnsoldCars']);
+Route::get('reports/sold-cars', [CarController::class, 'reportSoldCars']);
 Route::apiResource('car-expenses', CarExpenseController::class);
 Route::apiResource('car-models', CarModelController::class);
 Route::apiResource('clients', ClientController::class);

@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { Button, Card, Badge, Label, TextInput, Spinner } from "flowbite-react";
+import { Button, Card, Badge, Label, TextInput, Spinner, Select } from "flowbite-react";
 import { HiCalendar, HiDocumentReport, HiPlay } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { carServices } from "../services/carServices";
 import { dealerShipExpenseServices } from "../services/dealerShipExpensServices";
 import { formatCurrency } from "../utils/formatters";
 import type { DealerShipExpense } from "../models/DealerShipExpenses";
+
+// Report type enum
+type ReportType = 
+  | "unsold-cars"      // New: Unsold cars report
+  | "sold-cars"        // New: Sold cars report
+  | "not-sold-before"  // Existing: Cars not sold before date
+  | "sold-between"     // Existing: Cars sold between dates (hidden but kept)
+  | "purchased-period" // Existing: Cars purchased within period
+  | "expenses";        // Existing: Dealership expenses
 
 interface CarNotSoldReport {
   id: number;
@@ -60,8 +69,41 @@ interface DealershipExpenseReport {
   expenses: DealerShipExpense[];
 }
 
+// New interfaces for new reports
+interface UnsoldCarReport {
+  car_id: number;
+  car_name: string | null;
+  car_make: string | null;
+  car_model: string | null;
+  car_status: string;
+  car_purchase_price: number;
+  car_total_expenses: number;
+  car_total_cost: number;
+  car_created_at: string;
+}
+
+interface SoldCarReport {
+  car_id: number;
+  car_name: string | null;
+  car_make: string | null;
+  car_model: string | null;
+  car_status: string;
+  car_purchase_price: number;
+  car_total_expenses: number;
+  car_created_at: string;
+  invoice_id: number;
+  invoice_date: string;
+  invoice_amount: number;
+  profit: number;
+  client_id: number;
+  client_name: string | null;
+}
+
 export function Dashboard() {
   const { t } = useTranslation();
+
+  // Selected report type
+  const [selectedReport, setSelectedReport] = useState<ReportType>("unsold-cars");
 
   // Shared date inputs
   const [startingDate, setStartingDate] = useState("");
@@ -70,22 +112,22 @@ export function Dashboard() {
   // Loading state for all reports
   const [loadingReports, setLoadingReports] = useState(false);
 
-  // State for first report (Cars Not Sold Before Date)
+  // State for first report (Cars Not Sold Before Date) - existing
   const [notSoldReport, setNotSoldReport] = useState<{
     starting_date: string;
     total_cars: number;
     cars: CarNotSoldReport[];
   } | null>(null);
 
-  // State for second report (Cars Sold Between Dates) - HIDDEN but kept for future use
-  const [_soldReport, setSoldReport] = useState<{
+  // State for second report (Cars Sold Between Dates) - existing but hidden
+  const [soldBetweenReport, setSoldBetweenReport] = useState<{
     starting_date: string;
     ending_date: string;
     total_cars: number;
     cars: CarSoldReport[];
   } | null>(null);
 
-  // State for third report (All Cars Purchased Within Period)
+  // State for third report (All Cars Purchased Within Period) - existing
   const [invoicesReport, setInvoicesReport] = useState<{
     starting_date: string;
     ending_date: string;
@@ -97,38 +139,91 @@ export function Dashboard() {
     cars: CarPurchasedAndSoldReport[];
   } | null>(null);
 
-  // State for fourth report (Dealership Expenses Between Dates)
+  // State for fourth report (Dealership Expenses Between Dates) - existing
   const [expensesReport, setExpensesReport] = useState<DealershipExpenseReport | null>(null);
 
-  // Generate all reports with single button
-  const handleGenerateAllReports = async () => {
+  // NEW: State for Unsold Cars Report
+  const [unsoldCarsReport, setUnsoldCarsReport] = useState<{
+    starting_date: string;
+    ending_date: string;
+    total_cars: number;
+    total_purchase_price: number;
+    total_expenses: number;
+    total_cost: number;
+    cars: UnsoldCarReport[];
+  } | null>(null);
+
+  // NEW: State for Sold Cars Report
+  const [soldCarsReport, setSoldCarsReport] = useState<{
+    starting_date: string;
+    ending_date: string;
+    total_cars: number;
+    total_purchase_price: number;
+    total_expenses: number;
+    total_invoice_amount: number;
+    total_profit: number;
+    cars: SoldCarReport[];
+  } | null>(null);
+
+  // Clear all reports
+  const clearAllReports = () => {
+    setNotSoldReport(null);
+    setSoldBetweenReport(null);
+    setInvoicesReport(null);
+    setExpensesReport(null);
+    setUnsoldCarsReport(null);
+    setSoldCarsReport(null);
+  };
+
+  // Generate selected report
+  const handleGenerateReport = async () => {
     if (!startingDate || !endingDate) {
       alert(t("validation.required"));
       return;
     }
 
-    if (startingDate >= endingDate) {
+    if (startingDate > endingDate) {
       alert(t("validation.invalidDate"));
       return;
     }
 
     setLoadingReports(true);
+    clearAllReports();
 
     try {
-      // Generate all reports in parallel
-      const [notSoldData, soldData, invoicesData, expensesData] = await Promise.all([
-        carServices.reportCarsNotSoldBeforeStartDate(startingDate),
-        carServices.reportCarsSoldBetweenDates(startingDate, endingDate),
-        carServices.reportInvoicesBetweenDates(startingDate, endingDate),
-        dealerShipExpenseServices.reportExpensesBetweenDates(startingDate, endingDate)
-      ]);
+      switch (selectedReport) {
+        case "unsold-cars":
+          const unsoldData = await carServices.reportUnsoldCars(startingDate, endingDate);
+          setUnsoldCarsReport(unsoldData);
+          break;
 
-      setNotSoldReport(notSoldData);
-      setSoldReport(soldData);
-      setInvoicesReport(invoicesData);
-      setExpensesReport(expensesData);
+        case "sold-cars":
+          const soldData = await carServices.reportSoldCars(startingDate, endingDate);
+          setSoldCarsReport(soldData);
+          break;
+
+        case "not-sold-before":
+          const notSoldData = await carServices.reportCarsNotSoldBeforeStartDate(startingDate);
+          setNotSoldReport(notSoldData);
+          break;
+
+        case "sold-between":
+          const soldBetweenData = await carServices.reportCarsSoldBetweenDates(startingDate, endingDate);
+          setSoldBetweenReport(soldBetweenData);
+          break;
+
+        case "purchased-period":
+          const invoicesData = await carServices.reportInvoicesBetweenDates(startingDate, endingDate);
+          setInvoicesReport(invoicesData);
+          break;
+
+        case "expenses":
+          const expensesData = await dealerShipExpenseServices.reportExpensesBetweenDates(startingDate, endingDate);
+          setExpensesReport(expensesData);
+          break;
+      }
     } catch (error) {
-      console.error("Error generating reports:", error);
+      console.error("Error generating report:", error);
       alert(t("dashboard.failedToLoadReport"));
     } finally {
       setLoadingReports(false);
@@ -138,6 +233,15 @@ export function Dashboard() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
   };
+
+  // Report options for dropdown
+  const reportOptions = [
+    { value: "unsold-cars", label: t("dashboard.unsoldCarsReport") },
+    { value: "sold-cars", label: t("dashboard.soldCarsReport") },
+    { value: "not-sold-before", label: t("dashboard.carsNotSoldBeforeDate") },
+    { value: "purchased-period", label: t("dashboard.carsPurchasedWithinPeriod") },
+    { value: "expenses", label: t("dashboard.dealershipExpenses") },
+  ];
 
   return (
     <div className="space-y-6 p-4">
@@ -153,16 +257,36 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Unified Report Input Panel */}
+      {/* Report Selection and Input Panel */}
       <Card className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-800 border-2 border-blue-200 dark:border-gray-600">
         <div className="flex items-center gap-2 mb-4">
           <HiDocumentReport className="text-2xl text-indigo-600" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t("dashboard.reportInputPanel") || "Report Input Panel"}
+            {t("dashboard.reportInputPanel")}
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          {/* Report Type Selection */}
+          <div>
+            <Label htmlFor="reportType" className="text-gray-700 dark:text-gray-300 font-medium">
+              {t("dashboard.selectReportType")}
+            </Label>
+            <Select
+              id="reportType"
+              value={selectedReport}
+              onChange={(e) => setSelectedReport(e.target.value as ReportType)}
+              className="mt-1"
+            >
+              {reportOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Starting Date */}
           <div>
             <Label htmlFor="startingDate" className="text-gray-700 dark:text-gray-300 font-medium">
               {t("dashboard.startingDate")}
@@ -176,8 +300,9 @@ export function Dashboard() {
               icon={HiCalendar}
               className="mt-1"
             />
-
           </div>
+
+          {/* Ending Date */}
           <div>
             <Label htmlFor="endingDate" className="text-gray-700 dark:text-gray-300 font-medium">
               {t("dashboard.endingDate")}
@@ -192,13 +317,13 @@ export function Dashboard() {
               className="mt-1"
             />
           </div>
+
+          {/* Generate Button */}
           <div className="flex items-center pt-6">
             <Button
-              onClick={handleGenerateAllReports}
+              onClick={handleGenerateReport}
               disabled={loadingReports || !startingDate || !endingDate}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
-            // gradientDuoTone="purpleToBlue" // Removed to fix error
-
             >
               {loadingReports ? (
                 <>
@@ -208,21 +333,220 @@ export function Dashboard() {
               ) : (
                 <>
                   <HiPlay className="mr-2 h-5 w-5" />
-                  {t("dashboard.generateAllReports") || "Generate Reports"}
+                  {t("dashboard.generateReport")}
                 </>
               )}
             </Button>
           </div>
         </div>
-
-        {/* Space for additional reports - Add your future reports here */}
-        {/* 
-          Future Report Example:
-          <div className="border-t border-gray-200 dark:border-gray-600 pt-4 mt-4">
-            <p className="text-sm text-gray-500">Report 3: Your new report here</p>
-          </div>
-        */}
       </Card>
+
+      {/* NEW: Unsold Cars Report */}
+      {unsoldCarsReport && (
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <HiDocumentReport className="text-2xl text-orange-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {t("dashboard.unsoldCarsReport")}
+            </h2>
+            <Badge color="warning" className="ml-auto">
+              {formatDate(unsoldCarsReport.starting_date)} - {formatDate(unsoldCarsReport.ending_date)}
+            </Badge>
+          </div>
+
+          <div className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalCars")}</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{unsoldCarsReport.total_cars}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice")}</p>
+              <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(unsoldCarsReport.total_purchase_price)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalExpensesSum")}</p>
+              <p className="text-lg font-semibold text-red-600 dark:text-red-400">{formatCurrency(unsoldCarsReport.total_expenses)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalCost")}</p>
+              <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(unsoldCarsReport.total_cost)}</p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr className="bg-orange-50 dark:bg-orange-900/20">
+                  <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.name")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.make")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.model")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
+                  <th scope="col" className="px-6 py-3">{t("dashboard.totalCost")}</th>
+                  <th scope="col" className="px-6 py-3">{t("common.createdAt")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unsoldCarsReport.cars.length === 0 ? (
+                  <tr className="bg-white dark:bg-gray-800">
+                    <td colSpan={8} className="px-6 py-8 text-center">
+                      <p className="text-gray-500 dark:text-gray-400">
+                        {t("dashboard.noReportData")}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  unsoldCarsReport.cars.map((car) => (
+                    <tr key={car.car_id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                        #{car.car_id}
+                      </td>
+                      <td className="px-6 py-4">{car.car_name || t("common.notAvailable")}</td>
+                      <td className="px-6 py-4">{car.car_make || t("common.notAvailable")}</td>
+                      <td className="px-6 py-4">{car.car_model || t("common.notAvailable")}</td>
+                      <td className="px-6 py-4">{formatCurrency(car.car_purchase_price)}</td>
+                      <td className="px-6 py-4">{formatCurrency(car.car_total_expenses)}</td>
+                      <td className="px-6 py-4 font-semibold text-purple-600 dark:text-purple-400">
+                        {formatCurrency(car.car_total_cost)}
+                      </td>
+                      <td className="px-6 py-4">{formatDate(car.car_created_at)}</td>
+                    </tr>
+                  ))
+                )}
+                {unsoldCarsReport.cars.length > 0 && (
+                  <tr className="bg-orange-50 dark:bg-orange-900/30 font-bold border-t-2 border-orange-200 dark:border-orange-700">
+                    <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                      {t("dashboard.total")}:
+                    </td>
+                    <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
+                      {formatCurrency(unsoldCarsReport.total_purchase_price)}
+                    </td>
+                    <td className="px-6 py-4 text-red-600 dark:text-red-400">
+                      {formatCurrency(unsoldCarsReport.total_expenses)}
+                    </td>
+                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
+                      {formatCurrency(unsoldCarsReport.total_cost)}
+                    </td>
+                    <td></td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* NEW: Sold Cars Report */}
+      {soldCarsReport && (
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <HiDocumentReport className="text-2xl text-green-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {t("dashboard.soldCarsReport")}
+            </h2>
+            <Badge color="success" className="ml-auto">
+              {formatDate(soldCarsReport.starting_date)} - {formatDate(soldCarsReport.ending_date)}
+            </Badge>
+          </div>
+
+          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalCars")}</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{soldCarsReport.total_cars}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalPurchasePrice")}</p>
+              <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(soldCarsReport.total_purchase_price)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalExpensesSum")}</p>
+              <p className="text-lg font-semibold text-red-600 dark:text-red-400">{formatCurrency(soldCarsReport.total_expenses)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalSellingPrice")}</p>
+              <p className="text-lg font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(soldCarsReport.total_invoice_amount)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("dashboard.totalProfit")}</p>
+              <p className={`text-lg font-semibold ${soldCarsReport.total_profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                {formatCurrency(soldCarsReport.total_profit)}
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr className="bg-green-50 dark:bg-green-900/20">
+                  <th scope="col" className="px-6 py-3">{t("dashboard.carId")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.name")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.make")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.model")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.purchasePrice")}</th>
+                  <th scope="col" className="px-6 py-3">{t("car.totalExpenses")}</th>
+                  <th scope="col" className="px-6 py-3">{t("dashboard.invoiceAmount")}</th>
+                  <th scope="col" className="px-6 py-3">{t("dashboard.profit")}</th>
+                  <th scope="col" className="px-6 py-3">{t("dashboard.soldDate")}</th>
+                  <th scope="col" className="px-6 py-3">{t("dashboard.clientName")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {soldCarsReport.cars.length === 0 ? (
+                  <tr className="bg-white dark:bg-gray-800">
+                    <td colSpan={10} className="px-6 py-8 text-center">
+                      <p className="text-gray-500 dark:text-gray-400">
+                        {t("dashboard.noReportData")}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  soldCarsReport.cars.map((car) => (
+                    <tr key={car.car_id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                        #{car.car_id}
+                      </td>
+                      <td className="px-6 py-4">{car.car_name || t("common.notAvailable")}</td>
+                      <td className="px-6 py-4">{car.car_make || t("common.notAvailable")}</td>
+                      <td className="px-6 py-4">{car.car_model || t("common.notAvailable")}</td>
+                      <td className="px-6 py-4">{formatCurrency(car.car_purchase_price)}</td>
+                      <td className="px-6 py-4">{formatCurrency(car.car_total_expenses)}</td>
+                      <td className="px-6 py-4 font-semibold text-purple-600 dark:text-purple-400">
+                        {formatCurrency(car.invoice_amount)}
+                      </td>
+                      <td className={`px-6 py-4 font-semibold ${car.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {formatCurrency(car.profit)}
+                      </td>
+                      <td className="px-6 py-4">{formatDate(car.invoice_date)}</td>
+                      <td className="px-6 py-4">{car.client_name || t("common.notAvailable")}</td>
+                    </tr>
+                  ))
+                )}
+                {soldCarsReport.cars.length > 0 && (
+                  <tr className="bg-green-50 dark:bg-green-900/30 font-bold border-t-2 border-green-200 dark:border-green-700">
+                    <td colSpan={4} className="px-6 py-4 text-right text-gray-900 dark:text-white">
+                      {t("dashboard.total")}:
+                    </td>
+                    <td className="px-6 py-4 text-blue-600 dark:text-blue-400">
+                      {formatCurrency(soldCarsReport.total_purchase_price)}
+                    </td>
+                    <td className="px-6 py-4 text-red-600 dark:text-red-400">
+                      {formatCurrency(soldCarsReport.total_expenses)}
+                    </td>
+                    <td className="px-6 py-4 text-purple-600 dark:text-purple-400">
+                      {formatCurrency(soldCarsReport.total_invoice_amount)}
+                    </td>
+                    <td className={`px-6 py-4 ${soldCarsReport.total_profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {formatCurrency(soldCarsReport.total_profit)}
+                    </td>
+                    <td colSpan={2}></td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       {/* Report 1: Cars Not Sold Before Date - Grouped by Status */}
       {notSoldReport && (() => {
@@ -439,8 +763,8 @@ export function Dashboard() {
         );
       })()}
 
-      {/* Report 2: Cars Sold Between Dates - HIDDEN
-      {soldReport && (
+      {/* Report 2: Cars Sold Between Dates - Kept for backward compatibility */}
+      {soldBetweenReport && (
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <HiDocumentReport className="text-2xl text-green-600" />
@@ -448,14 +772,14 @@ export function Dashboard() {
               {t("dashboard.carsSoldBetweenDates")}
             </h2>
             <Badge color="green" className="ml-auto">
-              {formatDate(soldReport.starting_date)} - {formatDate(soldReport.ending_date)}
+              {formatDate(soldBetweenReport.starting_date)} - {formatDate(soldBetweenReport.ending_date)}
             </Badge>
           </div>
 
           <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
             <p className="text-sm text-gray-700 dark:text-gray-300">
               <span className="font-semibold">{t("dashboard.totalCars")}:</span>{" "}
-              {soldReport.total_cars}
+              {soldBetweenReport.total_cars}
             </p>
           </div>
 
@@ -475,7 +799,7 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {soldReport.cars.length === 0 ? (
+                {soldBetweenReport.cars.length === 0 ? (
                   <tr className="bg-white dark:bg-gray-800">
                     <td colSpan={9} className="px-6 py-8 text-center">
                       <p className="text-gray-500 dark:text-gray-400">
@@ -484,7 +808,7 @@ export function Dashboard() {
                     </td>
                   </tr>
                 ) : (
-                  soldReport.cars.map((car) => (
+                  soldBetweenReport.cars.map((car) => (
                     <tr key={car.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                       <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                         #{car.id}
@@ -502,14 +826,14 @@ export function Dashboard() {
                     </tr>
                   ))
                 )}
-                {soldReport.cars.length > 0 && (
+                {soldBetweenReport.cars.length > 0 && (
                   <>
                     <tr className="bg-gray-50 dark:bg-gray-700 font-bold">
                       <td colSpan={7} className="px-6 py-4 text-right text-gray-900 dark:text-white">
                         {t("dashboard.totalInvoiceAmount")}:
                       </td>
                       <td className="px-6 py-4 text-green-600 dark:text-green-400">
-                        {formatCurrency(soldReport.cars.reduce((sum, car) => sum + Number(car.invoice_amount), 0))}
+                        {formatCurrency(soldBetweenReport.cars.reduce((sum, car) => sum + Number(car.invoice_amount), 0))}
                       </td>
                       <td></td>
                     </tr>
@@ -518,7 +842,7 @@ export function Dashboard() {
                         {t("dashboard.totalProfit")}:
                       </td>
                       <td className="px-6 py-4 text-green-700 dark:text-green-300 text-lg">
-                        {formatCurrency(soldReport.cars.reduce((sum, car) =>
+                        {formatCurrency(soldBetweenReport.cars.reduce((sum, car) =>
                           sum + (Number(car.invoice_amount) - Number(car.purchase_price) - Number(car.total_expenses)), 0))}
                       </td>
                       <td></td>
@@ -530,7 +854,6 @@ export function Dashboard() {
           </div>
         </Card>
       )}
-      */}
 
       {/* Report 3: Invoices Between Dates - Grouped by Status */}
       {invoicesReport && (() => {

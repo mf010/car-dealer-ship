@@ -727,7 +727,11 @@
     "availableCars": "Available Cars",
     "unavailableCars": "Unavailable Cars (Sold)",
     "totalSellingPrice": "Total Selling Price",
-    "subtotal": "Subtotal"
+    "subtotal": "Subtotal",
+    "selectReportType": "Select Report Type",
+    "unsoldCarsReport": "Unsold Cars Report",
+    "soldCarsReport": "Sold Cars Report",
+    "totalCost": "Total Cost"
   },
   "financial": {
     "currency": "LYD",

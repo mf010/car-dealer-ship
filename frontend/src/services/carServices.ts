@@ -192,5 +192,67 @@ export const carServices = {
 
     const response = await api.get(`/reports/invoices-between-dates?${params.toString()}`);
     return response.data;
+  },
+
+  // Report: Unsold Cars (cars with status 'available' and no invoices) within date range
+  reportUnsoldCars: async (startingDate: string, endingDate: string): Promise<{
+    starting_date: string;
+    ending_date: string;
+    total_cars: number;
+    total_purchase_price: number;
+    total_expenses: number;
+    total_cost: number;
+    cars: Array<{
+      car_id: number;
+      car_name: string | null;
+      car_make: string | null;
+      car_model: string | null;
+      car_status: string;
+      car_purchase_price: number;
+      car_total_expenses: number;
+      car_total_cost: number;
+      car_created_at: string;
+    }>;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('starting_date', startingDate);
+    params.append('ending_date', endingDate);
+
+    const response = await api.get(`/reports/unsold-cars?${params.toString()}`);
+    return response.data;
+  },
+
+  // Report: Sold Cars (cars with invoices) within date range
+  reportSoldCars: async (startingDate: string, endingDate: string): Promise<{
+    starting_date: string;
+    ending_date: string;
+    total_cars: number;
+    total_purchase_price: number;
+    total_expenses: number;
+    total_invoice_amount: number;
+    total_profit: number;
+    cars: Array<{
+      car_id: number;
+      car_name: string | null;
+      car_make: string | null;
+      car_model: string | null;
+      car_status: string;
+      car_purchase_price: number;
+      car_total_expenses: number;
+      car_created_at: string;
+      invoice_id: number;
+      invoice_date: string;
+      invoice_amount: number;
+      profit: number;
+      client_id: number;
+      client_name: string | null;
+    }>;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('starting_date', startingDate);
+    params.append('ending_date', endingDate);
+
+    const response = await api.get(`/reports/sold-cars?${params.toString()}`);
+    return response.data;
   }
 };

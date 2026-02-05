@@ -362,4 +362,134 @@ class CarController extends Controller
             'cars' => $report,
         ]);
     }
+
+    /**
+     * Report: Unsold cars (cars without invoices) within a date range
+     * 
+     * @param Request $request - expects 'starting_date' and 'ending_date' parameters (format: Y-m-d)
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reportUnsoldCars(Request $request)
+    {
+        // Validate the date parameters
+        $request->validate([
+            'starting_date' => 'required|date|date_format:Y-m-d',
+            'ending_date' => 'required|date|date_format:Y-m-d|after_or_equal:starting_date',
+        ]);
+
+        $startingDate = $request->starting_date;
+        $endingDate = $request->ending_date;
+
+        // Get cars that were created within the date range and have no invoices (not sold)
+        $cars = Car::with(['carModel.make'])
+            ->where('created_at', '>=', $startingDate)
+            ->where('created_at', '<=', $endingDate)
+            ->where('status', 'available')
+            ->doesntHave('invoices')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Format the response with detailed information
+        $report = $cars->map(function ($car) {
+            return [
+                'car_id' => $car->id,
+                'car_name' => $car->name,
+                'car_make' => $car->carModel->make->name ?? null,
+                'car_model' => $car->carModel->name ?? null,
+                'car_status' => $car->status,
+                'car_purchase_price' => $car->purchase_price,
+                'car_total_expenses' => $car->total_expenses,
+                'car_total_cost' => $car->purchase_price + $car->total_expenses,
+                'car_created_at' => $car->created_at,
+            ];
+        });
+
+        // Calculate totals
+        $totalPurchasePrice = $report->sum('car_purchase_price');
+        $totalExpenses = $report->sum('car_total_expenses');
+        $totalCost = $report->sum('car_total_cost');
+
+        return response()->json([
+            'starting_date' => $startingDate,
+            'ending_date' => $endingDate,
+            'total_cars' => $report->count(),
+            'total_purchase_price' => $totalPurchasePrice,
+            'total_expenses' => $totalExpenses,
+            'total_cost' => $totalCost,
+            'cars' => $report,
+        ]);
+    }
+
+    /**
+     * Report: Sold cars (cars with invoices) within a date range
+     * 
+     * @param Request $request - expects 'starting_date' and 'ending_date' parameters (format: Y-m-d)
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reportSoldCars(Request $request)
+    {
+        // Validate the date parameters
+        $request->validate([
+            'starting_date' => 'required|date|date_format:Y-m-d',
+            'ending_date' => 'required|date|date_format:Y-m-d|after_or_equal:starting_date',
+        ]);
+
+        $startingDate = $request->starting_date;
+        $endingDate = $request->ending_date;
+
+        // Get cars that have invoices (sold) within the date range
+        $cars = Car::with(['carModel.make', 'invoices.client'])
+            ->whereHas('invoices', function ($query) use ($startingDate, $endingDate) {
+                $query->where('invoice_date', '>=', $startingDate)
+                      ->where('invoice_date', '<=', $endingDate);
+            })
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        // Format the response with detailed information
+        $report = $cars->map(function ($car) use ($startingDate, $endingDate) {
+            // Get the first invoice within the date range
+            $invoice = $car->invoices()
+                ->where('invoice_date', '>=', $startingDate)
+                ->where('invoice_date', '<=', $endingDate)
+                ->orderBy('invoice_date', 'asc')
+                ->first();
+
+            $profit = $invoice->amount - $car->purchase_price - $car->total_expenses;
+
+            return [
+                'car_id' => $car->id,
+                'car_name' => $car->name,
+                'car_make' => $car->carModel->make->name ?? null,
+                'car_model' => $car->carModel->name ?? null,
+                'car_status' => $car->status,
+                'car_purchase_price' => $car->purchase_price,
+                'car_total_expenses' => $car->total_expenses,
+                'car_created_at' => $car->created_at,
+                'invoice_id' => $invoice->id,
+                'invoice_date' => $invoice->invoice_date,
+                'invoice_amount' => $invoice->amount,
+                'profit' => $profit,
+                'client_id' => $invoice->client_id,
+                'client_name' => $invoice->client->name ?? null,
+            ];
+        });
+
+        // Calculate totals
+        $totalPurchasePrice = $report->sum('car_purchase_price');
+        $totalExpenses = $report->sum('car_total_expenses');
+        $totalInvoiceAmount = $report->sum('invoice_amount');
+        $totalProfit = $report->sum('profit');
+
+        return response()->json([
+            'starting_date' => $startingDate,
+            'ending_date' => $endingDate,
+            'total_cars' => $report->count(),
+            'total_purchase_price' => $totalPurchasePrice,
+            'total_expenses' => $totalExpenses,
+            'total_invoice_amount' => $totalInvoiceAmount,
+            'total_profit' => $totalProfit,
+            'cars' => $report,
+        ]);
+    }
 }
